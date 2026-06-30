@@ -1,6 +1,7 @@
 /************************************************************
  * 🔐 AUTHENTIFICATION
  ************************************************************/
+
 function initAuth(){
 
   const role = localStorage.getItem("userRole");

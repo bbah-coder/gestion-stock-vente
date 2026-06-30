@@ -2,63 +2,106 @@
 
 // ✅ LOGIN
 
-function login(){
+
+async function login() {
 
   const userEl = document.getElementById("username");
   const passEl = document.getElementById("password");
   const errorEl = document.getElementById("error");
 
-  if(!userEl || !passEl){
-    alert("Erreur HTML : input introuvable");
-    return;
-  }
-
   const username = userEl.value.trim();
   const password = passEl.value;
 
-  // ✅ reset erreur
   errorEl.innerText = "";
 
-  // ✅ récupération users
-  const users = JSON.parse(localStorage.getItem("users") || "[]");
+  const email = toEmail(username);
 
-  // ✅ checkpoint : aucun compte
-  if(users.length === 0){
-    errorEl.innerText = "⚠️ Aucun compte trouvé, créez-en un";
-    return;
-  }
+  try {
 
-  // ✅ recherche utilisateur
-  const user = users.find(u =>
-    u.username === username &&
-    u.password === btoa(password)
-  );
+    // ✅ ✅ ✅ ONLINE → Supabase
+    if (navigator.onLine) {
 
-  // ❌ utilisateur non trouvé
-  if (!user) {
+      const { data, error } = await supabaseClient.auth.signInWithPassword({
+        email,
+        password
+      });
+
+      if (error || !data.user) {
+        errorEl.innerText = "❌ Identifiants incorrects";
+        return;
+      }
+
+      const user = data.user;
+
+      console.log("✅ Supabase connecté");
+
+      // ✅ récupérer profil
+      const { data: profile } = await supabaseClient
+        .from("profiles")
+        .select("role, username, active")
+        .eq("id", user.id)
+        .single();
+
+      // ✅ sécurité
+      if (!profile) {
+        errorEl.innerText = "❌ Profil introuvable";
+        return;
+      }
+
+      // ✅ 🔥 bloquer si désactivé
+      if (profile.active === false) {
+        await supabaseClient.auth.signOut();
+        errorEl.innerText = "⛔ Compte désactivé";
+        return;
+      }
+
+      // ✅ session
+      localStorage.setItem("isLoggedIn", "true");
+      localStorage.setItem("userId", user.id);
+      localStorage.setItem("email", user.email);
+      localStorage.setItem("username", profile.username);
+      localStorage.setItem("userRole", profile.role);
+
+      window.location.href = profile.role === "admin" ? "admin" : "index";
+      return;
+    }
+
+    // ✅ ✅ ✅ OFFLINE → fallback local
+    console.log("📴 Mode offline → fallback");
+
+    const users = JSON.parse(localStorage.getItem("users") || "[]");
+
+    const user = users.find(u =>
+      u.username === username &&
+      u.password === btoa(password)
+    );
+
+    if (!user) {
       errorEl.innerText = "❌ Identifiants incorrects";
       return;
-  }
-  // ✅ bloque si désactivé
-  if (user.active === false) {
+    }
+
+    // ✅ vérifier actif
+    if (user.active === false) {
       errorEl.innerText = "⛔ Compte désactivé";
       return;
+    }
+
+    // ✅ session offline
+    localStorage.setItem("isLoggedIn", "true");
+    localStorage.setItem("username", user.username);
+    localStorage.setItem("userRole", user.role);
+
+    window.location.href = user.role === "admin" ? "admin" : "index";
+
+  } catch (err) {
+
+    console.error("❌ ERROR:", err);
+    errorEl.innerText = "❌ Erreur réseau";
+
   }
-  // ✅ session
-  localStorage.setItem("isLoggedIn", "true");
-  localStorage.setItem("userRole", user.role);
-  localStorage.setItem("username", user.username);
-
-  console.log("✅ Connecté :", user.username);
-
-  // ✅ redirection
-  if(user.role === "admin"){
-    window.location.href = "admin";
-  }else{
-    window.location.href = "index.html";
-  }
-
 }
+
 
 // ✅ reset erreur quand user tape
 document.getElementById("username")?.addEventListener("input", () => {
@@ -69,52 +112,13 @@ document.getElementById("password")?.addEventListener("input", () => {
   document.getElementById("error").innerText = "";
 });
 
-/*function login(){
-
-  const userEl = document.getElementById("username");
-  const passEl = document.getElementById("password");
-  const errorEl = document.getElementById("error");
-
-  if(!userEl || !passEl){
-    alert("Erreur HTML : input introuvable");
-    return;
-  }
-
-  const user = userEl.value.trim();
-  const pass = passEl.value.trim();
-
-  console.log("login cliqué", user);
-
-  // ✅ ADMIN
-  if(user === "admin" && pass === "1234"){
-    localStorage.setItem("isLoggedIn", "true");
-    localStorage.setItem("userRole", "admin");
-    localStorage.setItem("username", user);
-
-    window.location.href = "admin.html";
-    return;
-  }
-
-  // ✅ VENDEUR
-  if(user === "vendeur" && pass === "1234"){
-    localStorage.setItem("isLoggedIn", "true");
-    localStorage.setItem("userRole", "vendeur");
-    localStorage.setItem("username", user);
-
-    window.location.href = "index.html";
-    return;
-  }
-
-  // ❌ ERREUR
-  errorEl.innerText = "Identifiants incorrects";
-}*/
 
 // ✅ LIAISON BOUTON (ULTRA FIABLE)
-document.addEventListener("DOMContentLoaded", function(){
+document.addEventListener("DOMContentLoaded", function () {
 
   const btn = document.getElementById("loginBtn");
 
-  if(btn){
+  if (btn) {
     btn.addEventListener("click", login);
   } else {
     alert("Bouton login introuvable ❌");
@@ -122,8 +126,8 @@ document.addEventListener("DOMContentLoaded", function(){
 
 });
 
-document.getElementById("password").addEventListener("keypress", function(e){
-  if(e.key === "Enter"){
+document.getElementById("password").addEventListener("keypress", function (e) {
+  if (e.key === "Enter") {
     document.getElementById("loginBtn").click();
   }
 });

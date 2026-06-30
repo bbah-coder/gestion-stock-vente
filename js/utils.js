@@ -26,7 +26,16 @@
  * - getTopProductsWithTie()    → top produits avec égalités
  *
  ************************************************************/
- 
+
+ const supabaseClient = supabase.createClient(
+  "https://amtlfqzhuqwrudaachvy.supabase.co",
+  "sb_publishable_fc5s-5QrMhO9Daiw-ADDcQ_OA6HRPpD"
+);
+
+// ✅ transforme username → email technique
+function toEmail(username){
+  return username.trim().toLowerCase() + "@posapp.com";
+}
  function getPaymentSplit(sale){
 
   const saleTotal = sale.payment?.total || sale.total || 0;

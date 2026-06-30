@@ -2,90 +2,124 @@
  * INIT USER DEFAULT
  ***********************************************************/
 
-document.addEventListener("DOMContentLoaded", () => {
-  initDefaultUser();
-});
-
-function initDefaultUser(){
-
-  let users = JSON.parse(localStorage.getItem("users") || "[]");
-
-  // ✅ si aucun utilisateur → créer admin par défaut
-  if(users.length === 0){
-
-    const defaultUser = {
-      username: "admin",
-      password: btoa("1234"),
-      role: "admin",
-      active: true
-    };
-
-    users.push(defaultUser);
-
-    localStorage.setItem("users", JSON.stringify(users));
-
-    console.log("✅ Admin par défaut créé");
-  }
-}
-
-
-function goLogin(){
+function goLogin() {
   window.location.href = "login.html";
 }
 
-function goRegister(){
+function goRegister() {
   window.location.href = "register.html";
 }
 
 
-function showRegister(){
+function showRegister() {
   document.getElementById("registerForm").classList.remove("hidden");
 }
 
-function hideRegister(){
+function hideRegister() {
   document.getElementById("registerForm").classList.add("hidden");
   document.getElementById("formRegister").classList.add("hidden");
 }
 
 
-//CREATION COMPTE userAgent
-function createAccount(){
+// ✅ CREATE ACCOUNT COMPLET
+async function createAccount() {
 
-  const username = document.getElementById("newUsername").value.trim();
-  const password = document.getElementById("newPassword").value;
-  const role = document.getElementById("role").value;
+  const usernameEl = document.getElementById("newUsername");
+  const passwordEl = document.getElementById("newPassword");
+  const roleEl = document.getElementById("role");
 
-  if(!username || !password){
+  const username = usernameEl.value.trim();
+  const password = passwordEl.value;
+  const role = roleEl.value;
+
+  if (!username || !password) {
     alert("⚠️ Remplir tous les champs");
     return;
   }
 
-  let users = JSON.parse(localStorage.getItem("users") || "[]");
-
-  const exists = users.find(u => u.username === username);
-
-  if(exists){
-    alert("❌ Utilisateur déjà existant");
+  if (username.includes(" ")) {
+    alert("❌ Nom utilisateur invalide");
     return;
   }
 
-  users.push({
-    username,
-    password: btoa(password),
-    role,
-    active: true
-  });
+  const email = toEmail(username);
 
-  localStorage.setItem("users", JSON.stringify(users));
+  try {
 
-  alert("✅ Compte créé");
+    // ✅ 1. Signup
+    const { error } = await supabaseClient.auth.signUp({
+      email,
+      password
+    });
 
-  // reset form
-  document.getElementById("newUsername").value = "";
-  document.getElementById("newPassword").value = "";
+    if (error) {
+      alert("❌ " + error.message);
+      return;
+    }
 
-  hideRegister();
+    console.log("✅ User créé Supabase :", email);
+
+    // ✅ 2. RÉCUPÉRER USER CONNECTÉ (SOLUTION FIABLE)
+    const { data: userData } = await supabaseClient.auth.getUser();
+
+    const userId = userData?.user?.id;
+
+    if (!userId) {
+      alert("❌ Impossible de récupérer userId");
+      return;
+    }
+
+    console.log("✅ USER ID:", userId);
+
+    // ✅ 3. INSERT PROFILE
+    const { data: profileData, error: profileError } = await supabaseClient
+      .from("profiles")
+      .insert([
+        {
+          id: userId,
+          username,
+          role
+        }
+      ])
+      .select();
+
+    console.log("PROFILE INSERT DATA:", profileData);
+    console.log("PROFILE INSERT ERROR:", profileError);
+
+    if (profileError) {
+      console.error(profileError);
+      alert("❌ Erreur création profil");
+      return;
+    }
+
+    // ✅ 4. fallback local
+    let users = JSON.parse(localStorage.getItem("users") || "[]");
+
+    users.push({
+      id: userId,
+      username,
+      password: btoa(password),
+      role,
+      active: true
+    });
+
+    localStorage.setItem("users", JSON.stringify(users));
+
+    alert("✅ Compte créé");
+
+    usernameEl.value = "";
+    passwordEl.value = "";
+
+    hideRegister();
+
+    if (typeof renderUsers === "function") {
+      renderUsers();
+    }
+
+  } catch (err) {
+
+    console.error(err);
+    alert("❌ Erreur réseau");
+
+  }
 }
-
-
-

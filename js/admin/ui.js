@@ -2,14 +2,14 @@
  * 🎨 UI / RENDER
  ************************************************************/
 
-function updateUserInfo(){
+function updateUserInfo() {
 
   const role = localStorage.getItem("userRole");
   const label = document.getElementById("userInfo");
 
-  if(!label) return;
+  if (!label) return;
 
-  if(role === "admin"){
+  if (role === "admin") {
     label.innerText = "👑 Admin";
     label.style.color = "#2c3e50";
   } else {
@@ -19,7 +19,7 @@ function updateUserInfo(){
 }
 
 
-function updateUserUI(){
+function updateUserUI() {
 
   const username = localStorage.getItem("username");
   const role = localStorage.getItem("userRole");
@@ -27,44 +27,44 @@ function updateUserUI(){
   // ✅ HEADER
   const userEl = document.getElementById("userInfo");
 
- if (userEl) {
+  if (userEl) {
 
     if (role === "admin") {
-        userEl.innerText = "👑 Admin";
+      userEl.innerText = "👑 Admin";
     } else if (role === "vendeur") {
-        userEl.innerText = "🛒 Vendeur";
+      userEl.innerText = "🛒 Vendeur";
     } else if (username) {
-        userEl.innerText = `👤 ${username}`;
+      userEl.innerText = `👤 ${username}`;
     } else {
-        userEl.innerText = "👤 Utilisateur";
+      userEl.innerText = "👤 Utilisateur";
     }
   }
 
   // ✅ FOOTER USER
   const footerUser = document.getElementById("footerUser");
 
-  if(footerUser){
+  if (footerUser) {
     footerUser.innerText = username || "Utilisateur";
   }
 
   // ✅ FOOTER DATE
   const footerDate = document.getElementById("footerDate");
 
-  if(footerDate){
+  if (footerDate) {
     footerDate.innerText = formatDateFR(new Date());
   }
 
   // ✅ FOOTER YEAR
   const yearEl = document.getElementById("year");
 
-  if(yearEl){
+  if (yearEl) {
     yearEl.innerText = new Date().getFullYear();
   }
 }
 
-function switchUser(){
+function switchUser() {
 
-  if(!confirm("Voulez-vous changer de compte ?")) return;
+  if (!confirm("Voulez-vous changer de compte ?")) return;
 
   localStorage.removeItem("userRole");
   localStorage.removeItem("lastActivity");
@@ -72,31 +72,31 @@ function switchUser(){
   window.location.href = "login.html";
 }
 
-function updateUI(){
+function updateUI() {
 
   const btn = document.getElementById("btnSettings");
 
-  if(!btn) return;
+  if (!btn) return;
 
-  if(isLoggedIn){
+  if (isLoggedIn) {
     btn.style.display = "inline-block"; // ✅ visible
   } else {
     btn.style.display = "none"; // ❌ caché
   }
 }
 
-function updateLastActivity(){
+function updateLastActivity() {
   localStorage.setItem("lastActivity", Date.now());
 }
 
-function initPDFDate(){
+function initPDFDate() {
 
   const pdfInput = document.getElementById("pdfDate");
 
-  if(!pdfInput) return;
+  if (!pdfInput) return;
 
   // ✅ ne pas écraser si déjà rempli
-  if(pdfInput.value) return;
+  if (pdfInput.value) return;
 
   // ✅ date du jour fiable
   const today = new Date();
@@ -107,9 +107,9 @@ function initPDFDate(){
 }
 
 
-function render(){
-  
- hideAllSections();
+function render() {
+
+  hideAllSections();
 
   // ✅ RÉAFFICHER
   document.getElementById("searchContainer").style.display = "block";
@@ -122,10 +122,10 @@ function render(){
   document.getElementById("pagination").style.display = "flex";
   document.getElementById("archivedHeader").style.display = "none";
 
-  
+
   const selectedCategory = document.getElementById("filterCategoryAdmin")?.value || "all";
   const list = document.getElementById("list");
-  
+
   document.getElementById("tableHead").innerHTML = `
   <tr>
      <th>QR Code</th>
@@ -142,14 +142,14 @@ function render(){
   list.innerHTML = "";
 
   // ✅ 1. Recherche
-  
+
   const inputDesktop = document.getElementById("searchInput");
   const inputMobile = document.getElementById("searchInputAdmin");
 
   const search = (
-      inputDesktop?.value?.trim() ||
-      inputMobile?.value?.trim() ||
-      "").toLowerCase();
+    inputDesktop?.value?.trim() ||
+    inputMobile?.value?.trim() ||
+    "").toLowerCase();
 
   /*const search = document.getElementById("searchInput")
     .value
@@ -158,70 +158,70 @@ function render(){
 
   // ✅ 2. Filtre
   const filtered = products.filter(p => {
-    
-     // ✅ sécurisation
+
+    // ✅ sécurisation
     const name = (p.name || "").toLowerCase();
     const price = (p.price || 0).toString();
     const stock = (p.stock ?? 0).toString();
     const category = (p.category || "Autre");
     //const promo = Number(p.promo) || 0;
-    
+
     // ✅ recherche (UTILISE les variables sécurisées ✅)
-   const matchSearch =
-    name.includes(search) ||
-    price.includes(search) ||
-    stock.includes(search);
+    const matchSearch =
+      name.includes(search) ||
+      price.includes(search) ||
+      stock.includes(search);
 
-  /*const matchSearch =
-    p.name.toLowerCase().includes(search) ||
-    p.price.toString().includes(search) ||
-    p.stock.toString().includes(search);*/
+    /*const matchSearch =
+      p.name.toLowerCase().includes(search) ||
+      p.price.toString().includes(search) ||
+      p.stock.toString().includes(search);*/
 
-  const matchCategory =
-    selectedCategory === "all" ||
-    (p.category || "Autre") === selectedCategory;
+    const matchCategory =
+      selectedCategory === "all" ||
+      (p.category || "Autre") === selectedCategory;
 
-  return matchSearch && matchCategory && p.active !== false;
-});
+    return matchSearch && matchCategory && p.active !== false;
+  });
 
   // ✅ ✅ TRI PAR PROMO EN HAUT / STOCK FAIBLE
- filtered.sort((a, b) => {
+  filtered.sort((a, b) => {
 
-     const aPromo = (Number(a.promo) || 0) > 0;
-     const bPromo = (Number(b.promo) || 0) > 0;
+    const aPromo = (Number(a.promo) || 0) > 0;
+    const bPromo = (Number(b.promo) || 0) > 0;
 
-     // ✅ 1. Priorité promo
-     if (aPromo !== bPromo) {
-         return bPromo - aPromo;
-     }
+    // ✅ 1. Priorité promo
+    if (aPromo !== bPromo) {
+      return bPromo - aPromo;
+    }
 
-     // ✅ 2. Si promo → trier par % décroissant
-     if (aPromo && bPromo) {
-         return (b.promo || 0) - (a.promo || 0);
-     }
+    // ✅ 2. Si promo → trier par % décroissant
+    if (aPromo && bPromo) {
+      return (b.promo || 0) - (a.promo || 0);
+    }
 
-     const aLow = a.stock <= LOW_STOCK_THRESHOLD;
-     const bLow = b.stock <= LOW_STOCK_THRESHOLD;
+    const aLow = a.stock <= LOW_STOCK_THRESHOLD;
+    const bLow = b.stock <= LOW_STOCK_THRESHOLD;
 
-     // ✅ 3. Priorité stock faible
-     if (aLow !== bLow) {
-         return bLow - aLow;
-     }
+    // ✅ 3. Priorité stock faible
+    if (aLow !== bLow) {
+      return bLow - aLow;
+    }
 
-     // ✅ 4. Stock faible → du plus critique au moins critique
-     if (aLow && bLow) {
-         return a.stock - b.stock;
-     }
+    // ✅ 4. Stock faible → du plus critique au moins critique
+    if (aLow && bLow) {
+      return a.stock - b.stock;
+    }
 
-     // ✅ 5. RESTE → trier par stock croissant ✅ (CORRECTION CLÉ)
-     return a.stock - b.stock;
+    // ✅ 5. RESTE → trier par stock croissant ✅ (CORRECTION CLÉ)
+    return a.stock - b.stock;
 
- });
+  });
 
   // ✅ 3. Pagination
   const totalPages = Math.ceil(filtered.length / itemsPerPage) || 1;
 
-  if(currentPage > totalPages){
+  if (currentPage > totalPages) {
     currentPage = totalPages;
   }
 
@@ -229,38 +229,38 @@ function render(){
   const paginated = filtered.slice(start, start + itemsPerPage);
 
   // ✅ 4. Aucun résultat
-  if(paginated.length === 0){
+  if (paginated.length === 0) {
     list.innerHTML = "<tr><td colspan='8'>Aucun produit trouvé 🔍</td></tr>";
     return;
   }
-  
-    // ✅ switch mobile / desktop
+
+  // ✅ switch mobile / desktop
   //const isMobile = window.innerWidth <= 768 && window.outerWidth === window.innerWidth;
   //const isMobile = window.innerWidth <= 768;
-  const isMobileOrTablet  = window.matchMedia("(max-width: 1024px)").matches;
+  const isMobileOrTablet = window.matchMedia("(max-width: 1024px)").matches;
 
-  if(isMobileOrTablet){
+  if (isMobileOrTablet) {
 
     document.getElementById("tableStock").style.display = "none";   // ✅ cache table
     document.getElementById("mobileList").style.display = "block";  // ✅ affiche cards
 
     renderCards(paginated);
-    
-   renderPagination(filtered.length); 
-   renderStockHistory();             
-   populateCategories();
 
-     return;
- }
- else{
-     document.getElementById("tableStock").style.display = "table";
-     document.getElementById("mobileList").style.display = "none";
- }
+    renderPagination(filtered.length);
+    renderStockHistory();
+    populateCategories();
+
+    return;
+  }
+  else {
+    document.getElementById("tableStock").style.display = "table";
+    document.getElementById("mobileList").style.display = "none";
+  }
 
 
   // ✅ 5. Affichage + QR
-  paginated.forEach((p)=>{
-  
+  paginated.forEach((p) => {
+
     const promo = Number(p.promo) || 0;
     const price = Number(p.price) || 0;
 
@@ -278,13 +278,13 @@ function render(){
 
       <td>
         ${p.name}
-        ${promo > 0 
-          ? `<span style="color:red;font-size:12px;"> (-${promo}%)</span>`
-          : ""
-        }
+        ${promo > 0
+        ? `<span style="color:red;font-size:12px;"> (-${promo}%)</span>`
+        : ""
+      }
       </td>
       <td>
-        ${promo > 0 
+        ${promo > 0
         ? `
           <span class="price-old">
             ${formatPrice(price)} GNF
@@ -294,19 +294,19 @@ function render(){
           </span>
         `
         : `${formatPrice(price)} GNF`
-        }
+      }
       </td>
 	  <td>
-        ${promo > 0 
-          ? `<span style="color:#e74c3c;font-weight:bold;">-${promo}%</span>`
-          : `—`
-        }
+        ${promo > 0
+        ? `<span style="color:#e74c3c;font-weight:bold;">-${promo}%</span>`
+        : `—`
+      }
       </td>
       <td> ${p.stock} 
-           ${p.stock <= LOW_STOCK_THRESHOLD 
-          ? '<span style="background:red;color:white;padding:2px 6px;border-radius:5px;margin-left:5px;">Faible</span>' 
-           : ''
-           }
+           ${p.stock <= LOW_STOCK_THRESHOLD
+        ? '<span style="background:red;color:white;padding:2px 6px;border-radius:5px;margin-left:5px;">Faible</span>'
+        : ''
+      }
       </td>
 
 	  <td>${p.initialStock || p.stock}</td>
@@ -332,23 +332,23 @@ function render(){
   </div>
 
     </td>`;
-	
-	// ✅ STOCK FAIBLE → couleur
-   if(p.stock <= LOW_STOCK_THRESHOLD){
-     //row.style.background = "#f8d7da";   // rouge clair
-     row.style.fontWeight = "bold";
-   }
+
+    // ✅ STOCK FAIBLE → couleur
+    if (p.stock <= LOW_STOCK_THRESHOLD) {
+      //row.style.background = "#f8d7da";   // rouge clair
+      row.style.fontWeight = "bold";
+    }
 
 
     list.appendChild(row);
 
-   new QRCode(document.getElementById(qrId), {
-   text: encodeURIComponent(
-    p.name + "|" + parseFloat(formatPrice(p.price)) + "GNF"
-   ),
-   width: 60,
-   height: 60
-  });
+    new QRCode(document.getElementById(qrId), {
+      text: encodeURIComponent(
+        p.name + "|" + parseFloat(formatPrice(p.price)) + "GNF"
+      ),
+      width: 60,
+      height: 60
+    });
 
   });
 
@@ -360,16 +360,13 @@ function render(){
 }
 
 
-/*LISTE USERS*/
-
-function renderUsers(){
+function displayUsers(users) {
 
   const container = document.getElementById("usersList");
-  const users = JSON.parse(localStorage.getItem("users") || "[]");
 
   container.innerHTML = "";
 
-  users.forEach((user, index) => {
+  users.forEach(user => {
 
     const div = document.createElement("div");
     div.className = "user-item";
@@ -381,15 +378,13 @@ function renderUsers(){
       </div>
 
       <div class="actions">
-
-        <button onclick="toggleUser(${index})">
-          ${user.active !== false ? "✅" : "⛔"}
+        <button onclick="toggleUser('${user.id}')">
+          ${user.active ? "✅" : "⛔"}
         </button>
 
-        <button onclick="deleteUser(${index})">
+        <button onclick="deleteUser('${user.id}')">
           🗑
         </button>
-
       </div>
     `;
 
@@ -397,55 +392,199 @@ function renderUsers(){
   });
 }
 
+/*LISTE USERS*/
+
+async function renderUsers() {
+
+  const container = document.getElementById("usersList");
+
+  container.innerHTML = "";
+
+  // ✅ ONLINE → Supabase
+  if (navigator.onLine) {
+
+    const { data: users, error } = await supabaseClient
+      .from("profiles")
+      .select("*");
+
+    if (error) {
+      console.error(error);
+      return;
+    }
+
+    // ✅ mettre à jour localStorage (sync)
+    localStorage.setItem("users", JSON.stringify(users));
+
+    displayUsers(users);
+
+  } else {
+
+    // ✅ OFFLINE → fallback local
+    const users = JSON.parse(localStorage.getItem("users") || "[]");
+
+    displayUsers(users);
+  }
+}
+
+
 /*ACTIVER/DESACTIVER USER*/
-function toggleUser(index){
+async function toggleUser(userId) {
+
+  console.log("✅ toggleUser appelé avec:", userId);
+
+
+  const { data: profile, error: fetchError } = await supabaseClient
+    .from("profiles")
+    .select("active")
+    .eq("id", userId)
+    .single();
+
+  if (fetchError) {
+    console.error("❌ fetch error:", fetchError);
+    return;
+  }
+
+  if (!profile) {
+    console.error("❌ profile introuvable pour id:", userId);
+    return;
+  }
+
+  const newStatus = !profile.active;
+
+  console.log("🔄 Nouveau statut:", newStatus);
+
+  const { error } = await supabaseClient
+    .from("profiles")
+    .update({ active: newStatus })
+    .eq("id", userId);
+
+
+  if (error) {
+    console.error("❌ update error:", error);
+    return;
+  }
+
+  console.log("✅ Supabase updated");
 
   let users = JSON.parse(localStorage.getItem("users") || "[]");
 
-  users[index].active = !users[index].active;
+  users = users.map(u => {
+    if (u.id === userId) {
+      u.active = newStatus;
+    }
+    return u;
+  });
 
   localStorage.setItem("users", JSON.stringify(users));
+
 
   renderUsers();
 }
 
 /*SUPPRIMER UN USER*/
-function deleteUser(index){
+/*async function deleteUser(userId){
 
-  let users = JSON.parse(localStorage.getItem("users") || "[]");
+  if(!confirm("Supprimer cet utilisateur ?")) return;
 
-  if (!confirm("Supprimer cet utilisateur ?"))
+  console.log("🗑 Suppression user:", userId);
+
+  try {
+
+    // ✅ 1. DELETE côté Supabase (profiles)
+    const { error } = await supabaseClient
+      .from("profiles")
+      .delete()
+      .eq("id", userId);
+
+    if(error){
+      console.error("❌ Supabase delete error:", error);
+      alert("❌ Erreur suppression");
       return;
+    }
 
-  const admins = users.filter(u => u.role === "admin");
+    console.log("✅ Supabase supprimé");
 
-  if (admins.length === 1 && users[index].role === "admin") {
-      alert("Impossible de supprimer le dernier admin");
-      return;
+    // ✅ 2. OPTIONAL (si tu gardes localStorage pour l’instant)
+    let users = JSON.parse(localStorage.getItem("users") || "[]");
+
+    users = users.filter(u => u.id !== userId);
+
+    localStorage.setItem("users", JSON.stringify(users));
+
+    // ✅ 3. refresh UI
+    renderUsers();
+
+  } catch(err){
+    console.error(err);
+    alert("❌ Erreur réseau");
+  }
+}*/
+
+async function deleteUser(userId) {
+
+  console.log("🗑 Suppression userId:", userId);
+
+  // ✅ sécurité id
+  if (!userId || userId === "undefined") {
+    console.warn("⚠️ ID invalide, suppression ignorée");
+    alert("Utilisateur déjà supprimé ou invalide");
+    return;
   }
 
-  users.splice(index, 1);
+  if (!confirm("Supprimer cet utilisateur ?")) return;
 
-  localStorage.setItem("users", JSON.stringify(users));
+  try {
 
-  renderUsers();
+    const { data, error } = await supabaseClient
+      .from("profiles")
+      .delete()
+      .eq("id", userId)
+      .select(); // ✅ important pour voir résultat réel
+
+    if (error) {
+      console.error("❌ Supabase delete error:", error);
+      alert("❌ Erreur suppression");
+      return;
+    }
+
+    // ✅ cas où rien n’est supprimé
+    if (!data || data.length === 0) {
+      console.warn("⚠️ Aucun user supprimé (déjà supprimé)");
+    } else {
+      console.log("✅ Supabase supprimé:", data);
+    }
+
+    let users = JSON.parse(localStorage.getItem("users") || "[]");
+
+    users = users.filter(u => u.id !== userId);
+
+    localStorage.setItem("users", JSON.stringify(users));
+
+    // ✅ sync UI
+    renderUsers();
+
+  } catch (err) {
+    console.error("❌ ERROR:", err);
+    alert("❌ Erreur réseau");
+  }
 }
 
 
+
 /*SECTION USERS*/
-function showUsers(){
+function showUsers() {
   hideAllSectionsUser();
   document.getElementById("usersSection").classList.remove("hidden");
 
   renderUsers(); // ✅ recharge la liste
 }
 
-function hideUsers(){
+function hideUsers() {
   document.getElementById("usersSection").classList.add("hidden");
 }
 
 
-function hideAllSectionsUser(){
+function hideAllSectionsUser() {
 
   document.getElementById("registerForm")?.classList.add("hidden");
   document.getElementById("usersSection")?.classList.add("hidden");
