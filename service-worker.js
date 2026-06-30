@@ -6,10 +6,10 @@ const CACHE_NAME = "pos-cache-v3";
 // ✅ liste adaptée à TON arbo
 const ASSETS = [
   "/",
-  "/index",
-  "/admin",
-  "/home",
-  "/login",
+  "/index.html",
+  "/admin.html",
+  "/home.html",
+  "/login.html",
 
   /* CSS */
   "/css/admin.css",
