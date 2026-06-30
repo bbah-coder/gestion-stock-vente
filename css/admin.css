@@ -1,0 +1,1114 @@
+/*.app-container {
+  width: 100%;
+  max-width: 1200px;
+  margin: auto;
+}*/
+
+.header {
+   display:flex; 
+   align-items:center; 
+   justify-content:space-between;
+}
+.session-msg {
+   display:none;
+   background: #f39c12;
+   color: white;
+   padding: 10px;
+   border-radius: 6px;
+   margin-bottom: 10px;
+   text-align: center;
+} 
+
+.small-text {
+   font-size:12px; 
+   color:#666;
+}
+
+.warning {
+	font-size:15px; 
+    background: #f39c12;
+    color: white;
+}
+
+.search-box {
+	position:relative;
+}
+
+.clear-btn {
+	  position:absolute;
+    right:10px;
+    top:50%;
+    transform:translateY(-50%);
+    cursor:pointer;
+    font-weight:bold;
+}
+
+.archived-header {
+	  display:none;
+    margin-bottom:12px;
+    padding:10px;
+    background:#f4f6f7;
+    border-radius:8px;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+}
+
+.btn-retour {
+	background:#7f8c8d;
+    padding:6px 12px;
+    border-radius:20px;
+    font-size:13px;
+
+}
+
+.history-filters {
+	margin-bottom:10px; 
+	display:flex; 
+	gap:10px;
+}
+
+.btn-delete {
+	background:#e74c3c;
+}
+
+
+body {
+  font-family: Arial, sans-serif;
+  background: linear-gradient(135deg, #3f87a6, #ebf8e1);
+  padding: 20px;
+  max-width: 1200px;
+  margin: auto;
+  overflow-x: hidden;
+  padding-bottom: 120px; /* ✅ espace pour footer */
+  
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+
+}
+
+#app {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding-bottom: 120px;
+
+}
+
+
+tbody tr:nth-child(even) {
+  background: #f9f9f9;
+}
+
+
+tbody tr:hover {
+  background: #eaf2ff;
+}
+
+
+
+.card {
+  background: white;
+  padding: 15px;
+  border-radius: 12px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+  margin-bottom: 20px;
+}
+
+.clear-btn {
+	position:absolute;
+    right:10px;
+    top:50%;
+    transform:translateY(-50%);
+    cursor:pointer;
+    font-weight:bold;
+}
+.search-box {
+	position:relative;
+}
+
+.btn-retour {
+	background:#7f8c8d;
+    padding:6px 12px;
+    border-radius:20px;
+    font-size:13px;
+
+}
+
+
+input {
+  display: block;
+  margin: 8px 0;
+  padding: 8px;
+  width: 100%;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+}
+
+button {
+  padding: 6px 10px;
+  border: none;
+  border-radius: 8px;
+  background: #3498db;
+  color: white;
+  cursor: pointer;
+}
+
+button:hover {
+  background: #2980b9;
+}
+
+.btn-delete {
+  background: #e74c3c;
+}
+
+.btn-edit {
+  background: #f39c12;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;   /* ✅ IMPORTANT */
+}
+
+th, td {
+  border: 1px solid #ddd;
+  padding: 10px;
+  text-align: center;
+  vertical-align: middle; /* ✅ alignement */
+}
+
+th {
+  background: #f1f1f1;
+}
+
+
+/* ✅ COLONNES FIXES */
+th:nth-child(1), td:nth-child(1) {
+  width: 80px; /* QR */
+}
+
+th:nth-child(2), td:nth-child(2) {
+  width: 80px; /* IMAGE */
+}
+
+/* ✅ colonne image fixe */
+td:first-child, th:first-child {
+  width: 80px;
+  text-align: center;
+}
+
+
+td:nth-child(2) {
+  text-align: center;
+  vertical-align: middle;
+}
+
+
+th:nth-child(2), td:nth-child(2) {
+  width: 80px; /* IMAGE */
+}
+
+
+/* ✅ images uniformes */
+
+
+.img-container {
+  width: 75px;
+  height: 75px;
+  background: white;
+  border-radius: 6px;
+  border: 1px solid #eee;
+  border: none;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: auto;
+
+  overflow: hidden; /* ✅ important pour zoom propre */
+}
+
+.img-container img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+
+  transition: transform 0.3s ease; /* ✅ animation fluide */
+}
+
+
+.img-container:hover img {
+  transform: scale(1.6); /* ✅ zoom augmenté */
+}
+
+
+.pagination-container {
+  text-align: center;   /* ✅ centre horizontal */
+  margin-top: 20px;     /* ✅ espace avec tableau */
+}
+
+.pagination-container button {
+  margin: 3px;
+  padding: 6px 10px;
+  border-radius: 6px;
+  border: none;
+  background: #3498db;
+  color: white;
+  cursor: pointer;
+}
+
+.pagination-container button:hover {
+  background: #2980b9;
+}
+
+.pagination-container button:disabled {
+  background: #ccc;
+  cursor: not-allowed;
+}
+
+
+.pagination-container {
+  display: flex;
+  justify-content: center; /* ✅ centrage parfait */
+  margin-top: 20px;
+}
+
+/* ✅ CONTAINER GLOBAL */
+.search-container {
+  width: 100%;
+  max-width: 100%;
+  margin-bottom: 15px;
+}
+
+/* ✅ BOX */
+.search-box {
+  position: relative;
+  width: 100%;
+}
+
+/* ✅ INPUT */
+#searchInput {
+  width: 100%;
+  padding: 12px 40px 12px 12px; /* ✅ espace pour le X */
+  font-size: 14px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  box-sizing: border-box;
+}
+
+/* ✅ BOUTON CLEAR */
+.clear-btn {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  cursor: pointer;
+  font-size: 16px;
+  color: #999;
+}
+
+.clear-btn:hover {
+  color: #e74c3c;
+}
+
+#searchInput:focus {
+  border-color: #3498db;
+  box-shadow: 0 0 5px rgba(52,152,219,0.4);
+}
+
+.card button {
+  padding: 8px 12px;
+  font-weight: bold;
+}
+
+#formTitle {
+  font-weight: bold;
+}
+
+.tooltip {
+  position: relative;
+}
+
+.tooltip .tooltiptext {
+  visibility: hidden;
+  background: #333;
+  color: #fff;
+  text-align: center;
+  padding: 6px 8px;
+  border-radius: 6px;
+
+  position: absolute;
+  bottom: 120%;
+  left: 50%;
+  transform: translateX(-50%);
+
+  white-space: nowrap;
+  font-size: 12px;
+
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.tooltip:hover .tooltiptext {
+  visibility: visible;
+  opacity: 1;
+}
+
+.tooltip {
+  position: relative;
+}
+
+.tooltip .tooltiptext {
+  visibility: hidden;
+  background: #333;
+  color: #fff;
+  padding: 5px 8px;
+  border-radius: 6px;
+  font-size: 12px;
+
+  position: absolute;
+  bottom: 120%;
+  left: 50%;
+  transform: translateX(-50%);
+
+  white-space: nowrap;
+
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.tooltip:hover .tooltiptext {
+  visibility: visible;
+  opacity: 1;
+}
+
+.tooltip {
+  position: relative;
+}
+
+.tooltip .tooltiptext {
+  visibility: hidden;
+  background: #333;
+  color: #fff;
+  padding: 6px 8px;
+  border-radius: 6px;
+  font-size: 12px;
+
+  position: absolute;
+  bottom: 120%;
+  left: 50%;
+  transform: translateX(-50%);
+
+  white-space: nowrap;
+
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.tooltip:hover .tooltiptext {
+  visibility: visible;
+  opacity: 1;
+}
+
+.tooltip {
+  position: relative;
+  margin: 0 3px;
+}
+
+.tooltip .tooltiptext {
+  visibility: hidden;
+  background: #2c3e50;
+  color: #fff;
+  padding: 6px 10px;
+  border-radius: 6px;
+  font-size: 12px;
+
+  position: absolute;
+  bottom: 130%;
+  left: 50%;
+  transform: translateX(-50%);
+
+  white-space: nowrap;
+
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.tooltip:hover .tooltiptext {
+  visibility: visible;
+  opacity: 1;
+}
+
+.btn-edit {
+  background: #f39c12;
+}
+
+.btn-add {
+  background: #2ecc71;
+}
+
+.btn-delete {
+  background: #e74c3c;
+}
+
+td button {
+  border: none;
+  border-radius: 6px;
+  padding: 6px 8px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+td button:hover {
+  transform: scale(1.1);
+  transition: 0.2s;
+}
+
+#stockHistoryTable th {
+  background: #2c3e50;
+  color: white;
+}
+
+#stockHistoryTable td {
+  font-size: 14px;
+}
+
+#tableStock th {
+  background: #2c3e50;
+  color: white;
+}
+
+#filterType {
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  font-weight: bold;
+  background: white;
+  cursor: pointer;
+  
+  appearance: none;            /* ✅ enlève style par défaut */
+  -webkit-appearance: none;
+  -moz-appearance: none;
+
+  padding-right: 30px;         /* pour espace flèche */
+}
+
+/* ✅ flèche personnalisée */
+#filterType {
+  background-image: url("data:image/svg+xml;utf8,<svg fill='%2334495e' height='20' viewBox='0 0 20 20' width='20'><path d='M5 7l5 5 5-5z'/></svg>");
+  background-repeat: no-repeat;
+  background-position: right 8px center;
+}
+
+.menu-btn::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  bottom: -35px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #2c3e50;
+  color: white;
+  padding: 5px 8px;
+  font-size: 12px;
+  border-radius: 6px;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition: 0.2s;
+}
+
+.menu-btn:hover::after {
+  opacity: 1;
+}
+
+/* ✅ cellule action */
+td:last-child {
+  text-align: center;
+}
+
+/* ✅ contenir les boutons */
+td:last-child button {
+  width: 32px;
+  height: 32px;
+  margin: 2px;
+  padding: 0;
+  border-radius: 6px;
+
+  display: inline-flex;  /* ✅ clé */
+  align-items: center;   /* ✅ centre vertical */
+  justify-content: center; /* ✅ centre horizontal */
+}
+
+/* ✅ alignement global */
+td:last-child {
+  display: table-cell;
+  vertical-align: middle;
+}
+.btn-edit {
+  background: #f39c12;
+}
+
+.btn-add {
+  background: #2ecc71;
+}
+
+.btn-delete {
+  background: #e74c3c;
+}
+
+.btn-form {
+  background: #3498db;
+}
+
+.btn-import {
+  background: #2980b9;
+}
+
+.btn-shop {
+  background: #2ecc71;
+}
+
+.btn-pdf {
+  background: #27ae60;
+}
+
+.btn-logout {
+  background: #e74c3c;
+}
+/* ✅ container boutons menu */
+.header-actions {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+/* ✅ style bouton global menu */
+.header-actions button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+
+  padding: 8px 14px;
+  border-radius: 20px; /* ✅ effet pill premium */
+  font-size: 14px;
+  font-weight: 500;
+
+  transition: all 0.2s ease;
+}
+
+/* ✅ hover premium */
+.header-actions button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+}
+
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+
+.page-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 26px;
+  color: #2c3e50;
+}
+
+.page-title {
+  border-bottom: 2px solid #eee;
+  padding-bottom: 5px;
+  margin-bottom: 15px;
+}
+
+.search-footer {
+  display: flex;
+  justify-content: flex-end;  /* ✅ pousse à droite */
+  margin-top: 8px;
+}
+
+/*.date-container {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+  margin-right: 75px; /* ✅ décale vers la gauche 
+}
+
+.date-container span {
+  font-size: 13px;
+  color: #555;
+}
+
+#pdfDate {
+  padding: 6px 10px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+}*/
+
+
+#settingsCard button {
+  border-radius: 20px;
+}
+
+.file-upload {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px
+}
+
+.btn-file {
+  background: #f1f1f1;
+  border: 1px solid #ccc;
+  padding: 4px 8px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 13px;
+
+}
+
+.btn-file:hover {
+  background: #e5e5e5;
+}
+
+#fileName {
+  font-size: 13px;
+  color: #333;
+}
+
+#image {
+  display: none;
+}
+
+.promo-input {
+  width: 60px;
+  padding: 4px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  text-align: center;
+}
+
+/* prix barré */
+.price-old {
+  text-decoration: line-through;
+  color: #999;
+  font-size: 13px;
+}
+
+/* prix promo */
+.price-new {
+  color: #27ae60;
+  font-weight: bold;
+  font-size: 15px;
+}
+
+.modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.5);
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.modal-content {
+  background: white;
+  padding: 20px;
+  border-radius: 10px;
+  width: 300px;
+  text-align: center;
+}
+
+.price-old {
+  text-decoration: line-through;
+  color: #999;
+  font-size: 13px;
+}
+
+.price-new {
+  color: #27ae60;
+  font-weight: bold;
+  font-size: 15px;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* USER BAR */
+#userBar {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+#userInfo {
+  font-weight: bold;
+  padding: 6px 10px;
+  border-radius: 12px;
+  background: rgba(255,255,255,0.7);
+}
+
+/* BOUTONS */
+.btn-settings {
+  background: #2980b9;
+  border-radius: 20px;
+}
+
+.btn-switch {
+  background: #f39c12;
+  border-radius: 20px;
+}
+
+.btn-logout {
+  background: #e74c3c;
+  border-radius: 20px;
+}
+
+/* HOVER PREMIUM */
+.btn-settings:hover {
+  background: #2471a3;
+}
+
+.btn-switch:hover {
+  background: #d68910;
+}
+
+.btn-logout:hover {
+  background: #c0392b;
+}
+
+#backupInput {
+  display: none;
+}
+
+/* ✅ ACTION DESKTOP */
+.action-buttons {
+  display: flex;
+  gap: 4px;
+  justify-content: center;
+}
+
+.action-buttons button {
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  font-size: 14px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+ /* CSS Footer */
+ 
+ .app-footer {
+  margin-top: auto;
+  padding: 15px 20px;
+  border-radius: 12px;
+  background: linear-gradient(135deg,#ecf0f1,#dfe6e9);
+  /*background: rgba(255,255,255,0.7);*/
+  backdrop-filter: blur(6px);
+  box-shadow: 0 3px 10px rgba(0,0,0,0.05);
+}
+
+.footer-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  font-size: 13px;
+  color: #2c3e50;
+}
+
+.footer-left {
+  font-weight: bold;
+}
+
+.footer-center {
+  text-align: center;
+  flex: 1;
+}
+
+.footer-right {
+  text-align: right;
+  font-size: 12px;
+  color: #777;
+}
+
+
+/*CSS BLOCK DATE PDF */
+.date-container{
+  display:inline-flex;            
+
+  background:#e5e7eb;
+  padding:3px 8px;      
+  border-radius:14px;
+  padding-left:50px;
+
+  margin:5px auto; 
+}
+
+.date-container span{
+  display:flex;          
+  align-items:center;
+
+  white-space:nowrap;
+  flex-shrink:0;
+
+  margin:0;             
+  padding:0;            
+  
+  transform: translateX(-6px);
+}
+
+#pdfDate{
+  padding:6px 8px;
+  border-radius:8px;
+  border:1px solid #ccc;
+
+  height:20px;          /* 🔥 harmonise hauteur */
+  display:flex;
+  align-items:center;
+}
+
+/*CSS REGISTRE FORM CREATION COMPTE*/
+/* ✅ SECTION */
+#formRegister {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
+
+/* ✅ CARD FORM */
+
+.auth-box {
+  width: 100%;
+  max-width: 420px;
+
+  box-sizing: border-box; /* ✅ TRÈS IMPORTANT */
+
+  background: #ffffff;
+  padding: 16px; /* ✅ FIX ICI */
+
+  border-radius: 16px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+
+/* ✅ INPUT + SELECT */
+.auth-box input,
+.auth-box select {
+  width: 100%;
+  padding: 5px;
+  font-size: 16px; /* ✅ évite zoom iPhone */
+
+  border-radius: 12px;
+  border: 1px solid #d1d5db;
+
+  background: #f9fafb;
+  color: #111827;
+
+  transition: all 0.2s ease;
+}
+
+/* ✅ FOCUS UX */
+.auth-box input:focus,
+.auth-box select:focus {
+  border-color: #22c55e;
+  background: #ffffff;
+
+  box-shadow: 0 0 0 2px rgba(34,197,94,0.2);
+  outline: none;
+}
+
+/* ✅ PLACEHOLDER */
+.auth-box input::placeholder {
+  color: #9ca3af;
+}
+
+/* ✅ SELECT STYLE */
+.auth-box select {
+  cursor: pointer;
+}
+
+/* ✅ BOUTON */
+.auth-box .btn {
+  width: 100%;
+  padding: 14px;
+
+  border-radius: 12px;
+  border: none;
+
+  font-size: 16px;
+  font-weight: 500;
+
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+/* ✅ BOUTON PRIMARY */
+.auth-box .btn.primary {
+  background: #22c55e;
+  color: white;
+}
+
+/* ✅ HOVER */
+.auth-box .btn.primary:hover {
+  transform: scale(1.02);
+}
+
+/* ✅ MOBILE */
+@media (max-width: 768px) {
+  #formRegister {
+    padding: 10px;
+  }
+
+  .auth-box {
+    padding: 16px;
+    gap: 16px;
+  }
+
+  .auth-box input,
+  .auth-box select {
+    padding: 5px;
+  }
+}
+
+/* ✅ DESKTOP */
+@media (min-width: 1024px) {
+  .auth-box {
+    max-width: 500px;
+  }
+}
+
+.hidden {
+  display: none;
+}
+
+/*CSS USER*/
+/*.user-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  padding: 5px;
+  border-bottom: 1px solid #eee;
+}*/
+
+.user-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  padding: 14px 16px;
+  margin-bottom: 10px;
+
+  border-radius: 14px;
+  background: #f8fafc;
+
+  /* ✅ plus de border-bottom */
+  border: 1px solid #e5e7eb;
+
+  transition: all 0.2s ease;
+}
+
+
+.user-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.btn.small {
+  padding: 6px 10px;
+  font-size: 12px;
+}
+
+.btn.danger {
+  background: #ef4444;
+  color: white;
+}
+
+/* ✅ NOM UTILISATEUR */
+.user-item strong {
+  font-size: 15px;
+  color: #111827;
+}
+
+.user-item small {
+  color: #6b7280;
+  font-size: 13px;
+  /*margin-left: 6px;*/
+}
+
+/* ✅ ACTIONS */
+.actions {
+  display: flex;
+  gap: 10px;
+}
+
+/* ✅ BOUTONS */
+.actions button {
+  width: 40px;
+  height: 40px;
+
+  border: none;
+  border-radius: 10px;
+
+  font-size: 16px;
+  cursor: pointer;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ✅ ACTIF */
+.actions button:first-child {
+  background: #22c55e;
+  color: white;
+}
+
+/* ✅ SUPPRIMER */
+.actions .danger {
+  background: #ef4444;
+  color: white;
+}
+
+/* ✅ HOVER / TOUCH */
+.actions button:active {
+  transform: scale(0.95);
+}
+
+
+
+
+

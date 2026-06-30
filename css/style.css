@@ -1,0 +1,322 @@
+/* Desktop */
+.desktop-view {
+  display: block;
+}
+
+.mobile-view {
+  display: none;
+}
+
+/* Mobile + tel en paysage*/
+@media (max-width: 1200px){
+
+  .desktop-view {
+    display: none;   /* ✅ cache table */
+  }
+  
+  .mobile-view {
+    display: block;  /* ✅ affiche cards */
+  }
+
+}
+
+.mobile-view {
+  display: grid;
+  
+  grid-template-columns: 1fr;
+  gap: 12px;
+}
+
+/* ✅ tablette */
+@media (min-width: 712px) and (max-width: 1200px){
+  .mobile-view {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 14px;
+  }
+
+}
+@media (min-width: 712px) and (max-width: 1200px){
+
+  .mobile-header {
+    display: flex; /* ✅ visible uniquement mobile */
+    align-items: center;
+    justify-content: space-between;
+
+    padding: 12px 15px;
+    margin-bottom: 10px;
+
+    background: white;
+    border-radius: 12px;
+
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    
+    position: relative;
+    z-index: 5;
+
+  }
+
+  .header {
+    display: none; /* ✅ cache desktop */
+  }
+  
+ 
+  .header-left,
+  .header-right {
+    display: none;  /* ✅ cache seulement les boutons */
+
+  }
+    .header-center {
+    display: block !important;  /* ✅ rendre visible */
+    width: 100%;
+    padding: 10px 15px;
+  }
+}
+
+
+
+@media (min-width: 712px) {
+  .mobile-view {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* ✅ CARD */
+.mobile-view > div {
+  display: flex;
+  align-items: center;
+
+  padding: 10px;
+  background: white;
+  border-radius: 15px;
+
+  box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+
+  gap: 10px;
+}
+
+/* ✅ IMAGE */
+.mobile-view img {
+  width: 50px;
+  height: 50px;
+  object-fit: contain;
+
+  flex-shrink: 0;
+}
+
+/* ✅ TEXTE (TOUT CE QUI N’EST PAS IMAGE OU ACTION) */
+.mobile-view > div > :not(img):not(.action-qty) {
+  flex: 1;
+
+  display: block;
+  font-size: 13px;
+}
+
+/* ✅ ACTION (BOUTONS) */
+.mobile-view .action-qty {
+  display: flex;
+  align-items: center;
+
+  margin-left: auto;   /* ✅ toujours à droite */
+}
+
+/* ✅ STRUCTURE INTERNE DES BOUTONS */
+.mobile-view .qty-control {
+  display: flex;
+  flex-direction: row !important;
+  align-items: center;
+  gap: 6px;
+}
+
+/* ✅ STYLE BOUTONS */
+.mobile-view .qty-control button {
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+}
+
+/* ✅ INPUT */
+.mobile-view .qty-control input {
+  width: 35px;
+  text-align: center;
+}
+/* ✅ STOCK NORMAL */
+.mobile-view .product-stock {
+  font-size: 13px;
+  color: #000;
+}
+
+/* ✅ STOCK FAIBLE */
+.mobile-view .product-stock.stock-low {
+  color: #e74c3c !important;   /* ✅ IMPORTANT */
+  font-weight: 600;
+}
+
+.mobile-view .product-price {
+    color: #3498db;
+    font-size: 13px;
+}
+
+.mobile-view .product-name {
+    font-weight: bold;
+    font-size: 13px;
+  }
+
+
+/* ✅ PAR DÉFAUT → MOBILE */
+.mobile-menu-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+}
+
+.menu {
+  display: none;
+}
+
+@media (min-width: 712px) and (max-width: 1200px) {
+
+  .mobile-menu-grid {
+    display: grid !important;
+    
+    grid-template-columns: repeat(3, 1fr); /* ✅ mieux tablette */
+    gap: 12px;
+  }
+
+  .menu {
+    display: none !important;
+  }
+
+}
+
+@media (min-width: 1200px) {
+
+  .menu {
+    display: none;
+  }
+
+  .mobile-menu-grid {
+    display: none;
+  }
+
+}
+
+/* ✅ PAR DÉFAUT : cacher */
+#btnAddCartMenu {
+  display: none;
+}
+
+/* ✅ TABLETTE UNIQUEMENT */
+@media (min-width: 712px) and (max-width: 1200px) {
+
+  #btnAddCartMenu {
+    display: block; ✅
+  }
+
+}
+
+/* ✅ PAR DÉFAUT → caché */
+.floating-add-cart {
+  display: none;
+}
+
+/* ✅ MOBILE UNIQUEMENT */
+@media (max-width: 712px) {
+
+.floating-add-cart {
+  display: flex;
+
+  position: fixed;
+  bottom: 15px;
+  left: 50%;
+  transform: translateX(-50%);
+
+  background: #2ecc71;
+  color: white;
+
+  padding: 14px 20px;
+  border-radius: 30px;
+
+  font-weight: bold;
+  z-index: 999999;
+
+  width: 90%;
+
+  /* ✅ alignement parfait */
+  justify-content: center;
+  align-items: center;
+
+  text-align: center;     /* ✅ important */
+  line-height: 1;         /* ✅ évite décalage vertical */
+}
+
+}
+/* ✅ cacher dans le grid par défaut */
+.mobile-menu-grid #cartBtnMobile {
+  display: none;
+}
+
+/* ✅ afficher uniquement tablette */
+@media (min-width: 712px) and (max-width: 1200px) {
+
+  .mobile-menu-grid #cartBtnMobile {
+    display: flex;
+  }
+
+}
+#cartBtnMobile {
+  background: #34495e;
+  color: white;
+
+  border-radius: 12px;
+  padding: 12px;
+
+  font-size: 14px;
+  font-weight: 500;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  height: 100%;
+
+  position: relative; /* ✅ FIX IMPORTANT */
+}
+
+/* ✅ actif */
+#cartBtnMobile.active {
+  background: #2ecc71;
+}
+
+/* ✅ BADGE */
+#cartBadge {
+  position: absolute;
+  top: 6px;
+  right: 8px;
+
+  background: red;
+  color: white;
+
+  border-radius: 50%;
+  padding: 3px 7px;
+
+  font-size: 12px;
+  font-weight: bold;
+
+  display: none;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

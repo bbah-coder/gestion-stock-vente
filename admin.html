@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!--SERVICE PROGRESSIVE WEB APP (PWA)-->
+  <meta name="theme-color" content="#22c55e">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="icon" href="/image/icon-192.png">
+
+  
+  <title>Admin Produits</title>
+  
+ <!-- LIBS -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.23/jspdf.plugin.autotable.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+ <!-- CSS -->
+  <link rel="stylesheet" href="css/admin.css">
+  <link rel="stylesheet" href="css/mobile.css">
+  <link rel="stylesheet" href="css/mobileAdmin.css">
+  
+</head>
+
+<body>
+ <!--<div class="app-container">-->
+      <!-- ✅ MOBILE HEADER -->
+   <div class="mobile-header">
+     <div class="mobile-left">📦 Admin Produits</div>
+
+    <div class="mobile-icons">
+     <span onclick="openSearch()">🔍</span>
+     <span onclick="toggleMenu()">☰</span>
+   </div>
+
+ </div> 
+ 
+  <!-- 🔍 MOBILE SEARCH DROPDOWN  -->
+ <div class="mobile-search-bar" id="searchBar">
+
+  <div class="search-wrapper-admin">
+    <input id="searchInputAdmin"
+           placeholder="Rechercher produit..."
+           oninput="currentPage=1; render(); toggleClearBtn()">
+
+    <span class="clear-btn-mobile-admin" onclick="clearSearchMobile()">✕</span>
+  </div>
+
+</div>
+
+
+ <!-- ✅ MENU BURGER -->
+  <div class="mobile-menu" id="mobileMenu">
+    <button id="btnSettings" onclick="showSettings(); closeMobileMenu()" class="btn-settings">⚙️ Paramètres</button>
+    <button id="btnSettings" onclick="showRegister(); closeMobileMenu()" class="btn secondary">🆕 Créer un compte </button>
+     <button onclick="showUsers(); closeMobileMenu()">👤 Utilisateurs</button>
+    <button onclick="switchUser()">🔁 Changer de compte</button>
+    <button onclick="logout()" class="logout">🔌 Déconnexion</button>
+ </div>  
+<!-- ================ DESKTOP HEADER ==================== -->
+<header class="header">
+  <div class="header-left">
+    <h1 class="page-title">📦 Admin Produits</h1>
+  </div>
+  <div class="header-right">
+   <button id="btnSettings" onclick="showSettings()" class="btn-settings">⚙️ Paramètres</button>
+   <button id="btnSettings" onclick="showRegister(); closeMobileMenu()" class="btn secondary">🆕 Créer un compte </button>
+   <div id="userBar">
+      <span id="userInfo"></span>
+      <button onclick="switchUser()" class="btn-switch">🔁 Changer de compte</button>
+      <button onclick="logout()" class="btn-logout">🔌 Déconnexion</button>
+   </div>
+ </div>
+</header>
+
+<!--
+<main id="app" style="display:none">
+-->
+<main id="app">
+
+   <!-- ==========PAAMETRES ================ -->
+ <section id="settingsCard" class="card settings-card" style="display:none">
+   <div class="card-header">
+    <h2>⚙️ Paramètres</h2>
+    <button onclick="render()" class="btn-back">⬅️ Retour</button>
+  </div>
+
+  <!--<p class="warning">⚠️ Ces actions sont irréversibles</p>-->
+
+  <!-- ✅ ACTIONS -->
+  <div class="settings-grid">
+   <div class="settings-label">
+    ⚠️ Actions d'initialisation (remettent les données à zéro)
+  </div>
+    <button onclick="resetSalesOnly()" class="btn-action blue">
+      🧾 Reset ventes
+    </button>
+
+    <button onclick="resetStockOnly()" class="btn-action orange">
+      📦 Reset stock
+    </button>
+
+    <button onclick="resetAll()" class="btn-action red">
+      🔄 Reset complet
+    </button>
+
+    <button onclick="resetProducts()" class="btn-action green">
+      🔄 Reset produits
+    </button>
+
+  </div>
+
+  <!-- ✅ BACKUP -->
+  <div class="settings-group">
+   <div class="settings-label safe">
+    💾 Sauvegarde & restauration (sécurisé)
+  </div>
+
+    <button onclick="downloadBackup()" class="btn-action purple">
+      💾 Export sauvegarde
+    </button>
+
+    <input type="file" id="backupInput" hidden onchange="handleRestore(event)">
+
+    <button onclick="document.getElementById('backupInput').click()" class="btn-action dark">
+      📂 Restaurer
+    </button>
+  </div>
+  
+</section>
+
+ <section id="formRegister" class="hidden">
+          <!-- ✅ REGISTER FORM (caché au début) -->
+   <div id="registerForm" class="auth-box hidden">
+
+     <!--<h3>🆕 Créer un compte</h3>-->
+
+      <input id="newUsername" placeholder="Nom utilisateur">
+      <input id="newPassword" type="password" placeholder="Mot de passe">
+     
+           <!--ROLE-->
+     <select id="role">
+       <option value="vendeur">Vendeur</option>
+      <option value="admin">Admin</option>
+     </select>
+
+     <button onclick="createAccount()" class="btn primary">Créer</button>
+     
+     <button onclick="hideRegister()" class="btn secondary">
+      ⬅ Retour
+    </button>
+
+   </div>
+ </section>
+ 
+  <section id="usersSection" class="hidden">
+
+  <div class="auth-box">
+
+    <h3>👤 Utilisateurs</h3>
+
+    <div id="usersList"></div>
+
+    <button onclick="hideUsers()" class="btn secondary">
+      ⬅ Retour
+    </button>
+
+  </div>
+
+</section>
+
+
+  <!-- ========= FORMULAIRE ========= -->
+ <section id="formSection" class="card" style="display:none">
+    <h2 id="formTitle">➕ Ajouter un produit</h2>
+
+    <input id="category" placeholder="Catégorie (ex: Aliment de base, Boisson)">
+    <input id="name" placeholder="Nom">
+    <input id="price" type="number" placeholder="Prix">
+    <input id="stock" type="number" placeholder="Stock">
+    <div class="file-upload">
+    <!-- ✅ input caché -->
+    <input type="file" id="image" accept="image/*" hidden>
+    <!-- ✅ bouton personnalisé -->
+    <label for="image" class="btn-file">📷 Choisir une image</label>
+    <!-- ✅ nom fichier -->
+    <span id="fileName">Aucune image sélectionnée</span>
+   </div>
+   <button id="saveBtn" onclick="saveProduct()">Enregistrer</button>
+   <button onclick="cancelEdit()" style="background:#95a5a6">Annuler</button>
+ </section>
+
+
+ <section id="importSection" class="card import-card" style="display:none">
+
+  <h2>📥 Import produits</h2>
+
+  <!-- ✅ Input caché -->
+  <input type="file" id="fileInput" accept=".csv" hidden>
+
+  <!-- ✅ Bouton propre -->
+  <button class="btn-upload"
+          onclick="document.getElementById('fileInput').click()">
+    📂 Choisir un fichier
+  </button>
+
+  <!-- ✅ Nom du fichier -->
+  <div id="fileName" class="file-name">
+    Aucun fichier sélectionné
+  </div>
+
+  <!-- ✅ bouton import -->
+  <button class="btn-primary" onclick="importCSV()">
+    ✅ Importer les produits
+  </button>
+
+  <!-- ✅ info -->
+  <p class="import-info">
+    Format : nom, prix, stock, image (optionnelle), catégorie
+  </p>
+
+</section>
+
+  <!-- ========= SEARCH ========= -->
+  <section class="search-container" id="searchContainer">
+    <div class="search-box">
+      <input id="searchInput"
+             placeholder="🔍 Rechercher produit par : Nom, prix ou stock..."
+             oninput="currentPage=1; render()">
+
+      <span class="clear-btn" onclick="clearSearch()">✕</span>
+    </div>
+  </section>
+  
+  <!-- ========= DATE PDF ========= -->
+  <section id="pdfContainer" class="search-footer">
+    <div class="date-container">
+	 <!-- ✅ Section pour restaurer les données 
+    <input type="file" id="backupInput" hidden onchange="handleRestore(event)">
+    <button onclick="document.getElementById('backupInput').click()" class="btn-import">📂 Restaurer</button> -->
+    <span>📊 Synthèse des ventes :</span>
+    <input type="date" id="pdfDate">
+    </div>
+  </section>
+
+  <!-- ======== TABLE PRODUITS ==== -->
+  <section id="tableCard" class="card">
+
+    <div class="card-header">
+      
+      <h2>Produits</h2>
+
+      <div class="header-actions">
+	  
+
+        <!-- MENU -->
+        <button onclick="showAdminSection('form')" class="tooltip btn-form">
+          ➕ Ajouter ou modifier des produits
+		  <!--<span class="tooltiptext">Ajouter ou modifier un produit</span> -->
+        </button>
+
+        <button onclick="showAdminSection('import')" class="tooltip btn-import">
+          📥 Importer des produits
+		  <!--<span class="tooltiptext">Importer des produits via un fichier Excel/CSV</span> -->
+        </button>
+
+        <!-- ACTIONS -->
+        <button onclick="goToShop()" class="tooltip btn-shop">
+		  🛍️ Aller à la boutique
+		  <!--<span class="tooltiptext">Voir la boutique</span>-->
+		</button>
+		 
+        <button onclick="ExportProduitPDF()" class="tooltip btn-pdf">
+          📄 Rapport journalier des ventes
+		  <!--<span class="tooltiptext">Exporter le rapport PDF des produits</span> -->
+        </button>
+
+        <button onclick="showInactiveProducts()">⚠️ Produits Inactifs</button>
+
+        <button onclick="showArchived()">🗂️ Produits Archivés</button>
+
+        <!-- ✅ Export 
+        <button onclick="downloadBackup()" class="btn-pdf">💾 Export sauvegarde</button>-->
+       </div>
+     </div>
+
+	 <!-- FILTRE -->
+    <select id="filterCategoryAdmin" onchange="render()">
+      <option value="all">Toutes catégories</option>
+    </select>
+   
+	
+	<!-- HEADER ARCHIVE -->
+    <div id="archivedHeader" class="archived-header" style="display:none">
+      <strong style="font-size:16px;">
+	   🗂️ Produits archivés</strong>
+      <button onclick="render()" class="btn-retour">⬅️ Retour</button>
+    </div>
+	
+   <!-- ✅ DESKTOP TABLE -->
+   
+	<!-- TABLE -->
+    <table id="tableStock">
+      <thead id="tableHead">
+        <tr>
+          <th>QR</th>
+          <th>Image</th>
+          <th>Nom</th>
+          <th>Prix</th>
+          <th>Stock</th>
+          <th>Stock initial</th>
+          <th>Vendu</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+
+      <tbody id="list"></tbody>
+    </table>
+    <!--Affichage MOBILE -->
+    <div id="mobileList" class="mobile-list"></div>
+
+    <div id="pagination" class="pagination-container"></div>
+
+  </section>
+  
+    <!-- ========= HISTORIQUE ========= -->
+  <section id="historyCard" class="card">
+
+    <h2>📜 Historique des mouvements</h2>
+
+    <div class="history-filters">
+
+      <select id="filterType" onchange="renderStockHistory()">
+        <option value="ALL">Tous</option>
+        <option value="VENTE">Ventes</option>
+        <option value="AJOUT">Ajouts</option>
+      </select>
+
+      <input id="searchHistory"
+             placeholder="🔍 Rechercher..."
+             oninput="renderStockHistory()">
+
+      <button onclick="clearHistory()" class="btn-delete">
+        🗑️ Vider
+      </button>
+
+    </div>
+
+    <table id="stockHistoryTable">
+      <thead>
+        <tr>
+          <th>Produit</th>
+          <th>Type</th>
+          <th>Quantité</th>
+          <th>Date</th>
+        </tr>
+      </thead>
+
+      <tbody id="stockHistory"></tbody>
+    </table>
+
+    <div id="paginationHistoryStock" class="pagination-container"></div>
+
+  </section>
+
+  <!-- ========= PROMOTION ========= -->
+  <section id="promoModal" class="modal" style="display:none;">
+    <div class="modal-content">
+     <h3>🔥 Appliquer une promotion</h3>
+     <p id="promoProductName"></p>
+     <input type="number" id="promoInput" min="0" max="100">
+    <div style="margin-top:10px;">
+      <button onclick="confirmPromo()">✅ Confirmer</button>
+      <button onclick="closePromoPopup()" style="background:#95a5a6;">Annuler</button>
+    </div>
+   </div>
+ </section>
+ 
+   <!--====== FOOTER ===== -->
+  <footer class="app-footer">
+   <div class="footer-content">
+    <div class="footer-left">💼 <strong>Admin Manager</strong> v1.0</div>
+      <div class="footer-center">
+        👤 <span id="footerUser">Admin</span> · 
+        📅 <span id="footerDate"></span>
+      </div>
+       <div class="footer-right">
+      © <span id="year"></span> Bachir BAH
+    </div>
+  </div>
+  </footer>
+
+</main>
+<!--</div>-->
+<script src="js/home.js"></script>
+<script src="js/utils.js"></script>
+<script src="js/admin/auth.js"></script>
+<script src="js/config.js"></script>
+<script src="js/admin/backup.js"></script>
+<script src="js/admin/products.js"></script>
+<script src="js/admin/stock.js"></script>
+<script src="js/admin/ui.js"></script>
+<script src="js/admin/pdf.js"></script>
+<script src="js/admin/app.js"></script>
+<script src="js/admin/mobileAdmin.js"></script>
+
+
+</body>
+</html>

@@ -1,0 +1,684 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!--SERVICE PROGRESSIVE WEB APP (PWA)-->
+  <meta name="theme-color" content="#22c55e">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="icon" href="/image/icon-192.png">
+  
+  <title>Boutique</title>
+  
+ <!-- LIBS -->
+ <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+ <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+ <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+ <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.23/jspdf.plugin.autotable.min.js"></script>
+
+
+  <!-- CSS -->
+ <link rel="stylesheet" href="css/index.css">
+ <link rel="stylesheet" href="css/mobile.css">
+ <link rel="stylesheet" href="css/style.css">
+
+</head>
+
+<body>
+ <!--<div class="app-container">-->
+    <!-- ✅ MOBILE HEADER -->
+   <div class="mobile-header">
+     <div class="mobile-left">🛍️ Boutique</div>
+
+    <div class="mobile-icons">
+     <span onclick="openSearch()">🔍</span>
+     <span onclick="toggleMenu()">☰</span>
+   </div>
+
+ </div>
+ 
+  <!-- 🔍 MOBILE SEARCH DROPDOWN  -->
+<div class="mobile-search-bar" id="searchBar">
+
+  <div class="search-wrapper-boutique">
+    <input id="searchInputMobile"
+           placeholder="Rechercher produit..."
+           oninput="currentPage=1; globalSearch(); toggleClearBtn()">
+
+    <span class="clear-btn-mobile-boutique" onclick="clearSearchMobile()">✕</span>
+  </div>
+
+</div>
+
+
+ <!-- ✅ MENU BURGER -->
+  <div class="mobile-menu" id="mobileMenu">
+    <button class="btnAdmin" onclick="goToAdmin()">⬅️ Retour admin</button>
+    <button onclick="switchUser()">🔁 Changer de compte</button>
+    <button onclick="logout()" class="logout">🔌 Déconnexion</button>
+ </div>
+
+  
+<!-- ================ DESKTOP HEADER ==================== -->
+<header class="header">
+  <!-- ✅ gauche -->
+  <div class="header-left">
+    <h1 class="page-title">🛍️ Boutique</h1>
+  </div>
+
+  <!-- ✅ centre (SEARCH) -->
+  <div class="header-center">
+    <div class="search-box">
+      <input id="searchInput"
+             placeholder="🔍 Rechercher produit..."
+             oninput="currentPage=1; globalSearch()">
+
+      <span class="clear-btn" onclick="clearSearch()">✕</span>
+    </div>
+  </div>
+
+  <!-- ✅ droite -->
+  <div class="header-right" id="userBar">
+    <span id="userInfo"></span>
+    <button class="btnAdmin" onclick="goToAdmin()">⬅️ Retour admin</button>
+    <button onclick="switchUser()" class="btn-switch">🔁 Changer de compte </button>
+    <button onclick="logout()" class="btn-logout">🔌 Déconnexion</button>
+  </div>
+
+</header>
+
+<main id="app">
+
+  <!-- ========= MENU ========= -->
+   <!-- ✅ MENU DSKTOP -->
+  <section class="menu">
+    <button data-section="products" onclick="showSection('products')">Produits</button>
+    <button data-section="cart" id="cartBtn" onclick="showSection('cart')">Panier 🛒 (0)</button>
+    <button data-section="today"  onclick="showSection('today')">Ventes du jour</button>
+    <button class="btnHistory" data-section="history" onclick="showSection('history')">Historique des ventes</button>
+    <button class="btnStats" data-section="charts" onclick="showSection('charts')">Statistique des ventes</button>
+    <button data-section="lowStock" onclick="showSection('lowStock')">Stock faible ⚠️</button>
+    <button data-section="products" onclick="showPromo()">🔥 Promo</button>
+	  <button data-section="credit" onclick="showSection('credit')">📋 Crédit clients</button>
+    <button data-section="tickets" onclick="showSection('tickets')">🎟️ Tickets</button>
+
+  <!--<button onclick="fixSales()">Corriger CA ⚙️</button>-->
+  </section>
+  
+  <!-- ✅ MENU MOBILE GRID -->
+ <section class="mobile-menu-grid">
+
+  <button data-section="products"
+    onclick="showSection('products'); setActiveMobileMenu('products')">
+    📦<br>Produits
+  </button>
+
+  <button data-section="today"
+    onclick="showSection('today'); setActiveMobileMenu('today')">
+    💰<br>Ventes
+  </button>
+
+  <!-- ✅ AJOUT ICI 🔥 -->
+  <button class="btnHistory" data-section="history"
+    onclick="showSection('history'); setActiveMobileMenu('history')">
+    📋<br>Historique
+  </button>
+
+  <button class="btnStats" data-section="charts"
+    onclick="showSection('charts'); setActiveMobileMenu('charts')">
+    📊<br>Stats
+  </button>
+
+  <button data-section="lowStock"
+    onclick="showSection('lowStock'); setActiveMobileMenu('lowStock')">
+    ⚠️<br>Stock
+  </button>
+
+  <button data-section="promo"
+    onclick="showPromo(); setActiveMobileMenu('promo')">
+    🔥<br>Promo
+  </button>
+
+  <button data-section="credit"
+    onclick="showSection('credit'); setActiveMobileMenu('credit')">
+    📋<br>Crédit
+  </button>
+  
+  <button data-section="tickets"
+    onclick="showSection('tickets'); setActiveMobileMenu('tickets')">
+   🎟️<br>Tickets
+  </button>
+ <button id="cartBtnMobile" onclick="showSection('cart')">
+  🛒 Panier
+  <span id="cartBadge">0</span>
+ </button>
+ 
+</section>
+
+  <div id="messageBox" style="
+    display:none;
+    padding:10px;
+    margin-bottom:10px;
+    border-radius:6px;
+    text-align:center;
+ "></div>
+
+<!-- ✅ FLOATING BTN (HORS SECTION ✅) -->
+<div class="floating-add-cart" onclick="addAllToCart()">
+  Ajouter au panier
+</div>
+<!--====== PRODUITS ===== -->
+<section id="productsSection" class="card-outer">
+
+  <div class="card-inner">
+
+    <h2>Produits</h2>
+
+    <!-- ✅ WRAPPER GLOBAL -->
+    <div class="products-container">
+
+      <!-- ✅ DESKTOP TABLE -->
+      <div class="desktop-view">
+
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>QR Code</th>
+                <th>Image</th>
+                <th>Nom</th>
+                <th>Prix</th>
+                <th>Promo(%)</th>
+                <th>Stock</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+
+            <tbody id="productList"></tbody>
+
+          </table>
+        </div>
+
+      </div>
+
+
+      <!-- ✅ MOBILE LIST -->
+      <div id="mobileProductList" class="mobile-view"></div>
+
+    </div>
+
+    <!-- ✅ PAGINATION -->
+    <div id="pagination" class="pagination-container"></div>
+
+  </div>
+
+</section>
+
+
+<!-- ✅ FLOATING BTN (HORS SECTION ✅) -->
+<!--<div class="floating-add-cart" onclick="addAllToCart()">
+  Ajouter au panier
+</div>-->
+
+  <!--====== PANIER ===== -->
+  <section id="cartSection" class="card-outer" style="display:none">
+     <div class="card-inner">
+      <h2>Panier</h2>
+	<!-- TABLE -->
+	<div class="table-wrapper">
+     <table>
+         <thead>
+           <tr>
+             <th>Image </th>
+             <th>Produit</th>
+             <th>Prix</th>
+             <th>Quantité</th>
+             <th>Remise</th>
+             <th>Total</th>
+             <th>Action</th>
+           </tr>
+         </thead>
+		 
+         <tbody id="cartList"></tbody>
+     </table>
+     <!-- MOBILE RENDER CART (PANIER) -->
+     <!-- ✅ container mobile -->
+    <div id="cartMobileList" class="cart-mobile-list"></div>
+	 </div>
+	 
+	 <!-- TOTAL PANIER -->
+    <div id="total"></div>
+	 <!-- LABEL PAIEMENT -->
+     <label>Mode de paiement :</label>
+   
+     <div class="payment-mode">
+      <label class="payment-option"><input type="radio" name="paymentMethod" value="cash" checked onchange="onPaymentChange()">💵 Paiement comptant</label>
+      <label class="payment-option"><input type="radio" name="paymentMethod" value="credit" onchange="onPaymentChange()">📋 Paiement crédit / partiel</label>
+      <label class="payment-option"><input type="radio" name="paymentMethod" value="mobile" onchange="onPaymentChange()">📱 Mobile Money</label> 
+      <input type="text" id="ticketPhone" placeholder="📞 Téléphone client (optionnel)"><br>
+     </div>
+
+    <!-- ✅ POPUP CREDIT -->
+<div id="creditModal" class="modal" style="display:none;">
+
+  <div class="modal-box">
+
+    <div class="modal-header">
+      📋 <span>Paiement crédit</span>
+    </div>
+
+    <div class="modal-body">
+
+      <div class="form-group">
+        <label>💰 Montant payé</label>
+        <input type="number" id="paidNow" placeholder="Ex: 50 000">
+      </div>
+
+      <div class="form-group">
+        <label>📋 Montant restant</label>
+        <input type="number" id="remaining" placeholder="Auto calculé">
+      </div>
+
+      <div class="form-group">
+        <label>📅 Date limite</label>
+        <input type="date" id="dueDate">
+      </div>
+
+      <div class="form-group">
+        <label>👤 Nom client</label>
+        <input type="text" id="clientName" placeholder="Ex: Amadou Diallo">
+      </div>
+
+      <div class="form-group">
+        <label>📞 Téléphone</label>
+        <input type="tel" id="clientPhone" placeholder="Ex: 621 XX XX XX">
+      </div>
+
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn-confirm" onclick="confirmCredit()">✅ Valider</button>
+      <button class="btn-cancel" onclick="closeCreditModal()">Annuler</button>
+    </div>
+
+    </div>
+  </div>
+     <br><br>
+     <button onclick="validerPanier()">Valider vente</button>
+    </div>
+  </section>
+  <!--====== LES VENTES DU JOUR ===== -->
+  <section id="todaySection" class="card-outer">
+     <div class="card-inner">
+       <h2>Ventes du jour</h2>
+     <p>Date :              <strong id="todayDate"></strong></p>
+     <p>💰 CA brut :        <strong id="caBrut">0</strong> GNF</p> 
+     <p>💸 Remise :         <strong id="totalRemise">0</strong> GNF</p>
+	   <p>📊 CA net :         <strong id="caNet">0</strong> GNF</p>  
+     <p>✅ CA encaissé :    <strong id="caEncaisse">0</strong> GNF</p>
+	   <p>🟠 Encours crédit : <strong id="encours">0</strong> GNF</p>
+     <p>🎟️ Tickets :        <strong id="todayTickets">0</strong></p>
+     <p  class="separator-bottom">📦 Articles : <strong id="todayItems">0</strong></p>
+   <!-- TABLE -->
+    <div class="table-wrapper">
+     <table>
+         <thead>
+           <tr>
+             <th>Date</th>
+             <th>Articles</th>
+             <th>Total</th>
+             <th>Encaissé</th>
+             <th>Crédit</th>
+             <th>Action</th>
+           </tr>
+          </thead>
+       <!-- <thead>
+           <tr>
+	           <th>Image </th>
+             <th>Produit</th>
+             <th>Quantité</th>
+             <th>Prix unitaire</th>
+             <th>Remise</th>
+             <th>CA net</th>
+		         <th>Stock restant</th>
+           </tr>
+        </thead>-->
+		
+        <tbody id="salesList"></tbody>
+      </table>
+     <!--MOBILE AFFICHAGE-->
+      <div id="salesListMobile" class="mobile-sales-list"></div>
+	  <div class="table-wrapper">
+	 
+      <div id="paginationToday" class="pagination-container"></div>
+     </div>
+  </section>
+
+
+  <!--====== HISTORIQUE DES VENTES ===== -->
+  
+    <!--TABLEAU DES VENTES PAR JOUR -->
+  <section id="historySection" class="card-outer" style="display:none">  
+     <div class="card-inner">
+      <!-- ✅ filtre -->
+        <input id="filterDate" onchange="onChangeHistoryDate()"> 
+	    <h2>Historique CA par jour</h2>
+     <!-- TABLE -->
+	 <div class="table-wrapper">
+     <table id="historyTable">
+        <thead>
+           <tr>
+             <th>Date</th>
+             <th>CA brut</th>
+             <th>Remise</th>
+             <th>CA net</th>
+		         <th>Action</th>
+           </tr>
+        </thead>
+        <tbody id="salesByDay"></tbody>
+      </table>
+      <!--MOBILE AFFICHAGE -->
+      <div id="historyMobileList" class="history-mobile"></div>
+      <!--HISTORY LOADMORE-->
+      <button id="historyLoadMore">Afficher plus</button>
+	  </div>
+	  
+	   <div id="paginationHistory" class="pagination-container"></div>
+     </div>
+
+  <!-- ✅ DETAIL DES VENTES PAR DATE -->
+   <div id="detailSection" class="card-outer" style="display:none;">
+     <div class="card-inner">
+         <h2>Détail des ventes du jour</h2>
+	     <p>Date : <strong id="detailDate">-</strong></p>
+	 <div id="historyKPI" style="margin:10px 0;"></div>
+	 <div id="topProductsHistory" style="margin-bottom:15px;"></div>
+	<!--<select id="filterCategoryHistory" onchange="filterSalesByDate()"><option value="all">Toutes catégories</option></select>-->
+	 <div id="detailProducts">
+	    <h2>Produits</h2> 
+	  <!-- TABLE -->
+	  <div class="table-wrapper">
+      <table>
+        <thead>
+           <tr>
+		         <th>Image </th>
+             <th>Produit</th>
+             <th>Quantité</th>
+             <th>Total</th>
+           </tr>
+        </thead>
+        <tbody id="salesDetail"></tbody>
+      </table>
+	  </div>
+	  
+	   <div id="paginationDetail" class="pagination-container"></div>
+	   
+	  </div>
+	 </div>
+   
+  </section>
+
+  <!--====== STATISTIQUE DES VENTES===== -->
+
+  <section id="chartsSection"  class="card-outer" style="display:none">
+     <div class="card-inner">
+        <h2 id="statsTitle">📊 Analyse des ventes</h2>
+        <h3><span id="globalTotal">0</span></h3>
+		
+     <select id="filterTypeStats" onchange="renderStatsTables()">
+        <option value="year">Année</option>
+        <option value="month">Mois</option>
+     </select>
+
+     <input type="month" id="filterMonthStats" onchange="renderStatsTables()">
+
+   <!--Bloc comparaison même mois année précédente -->
+    <div id="kpiMonthYearComparison"></div>
+   <!--Bloc comparaison Mois en cours et mois précedent -->
+   <div id="kpiMonthComparison"></div>
+    <!-- ✅ MOIS -->
+    <div id="kpiMonthSummary"></div>
+   <div id="blockMonth">
+        <h3>CA mois</h3>
+	 <!-- TABLE -->
+	 <div class="table-wrapper">
+     <table>
+         <thead>
+           <tr>
+             <th>Mois</th>
+             <th>CA brut</th>
+             <th>Remise</th>
+             <th>CA net</th>
+		         <th>Nb tickets</th>
+		         <th>Nb jours ouvrés</th>
+           </tr>
+         </thead>
+         <tbody id="tableMonth"></tbody>
+     </table>
+	 </div>
+   </div>
+
+   <!--Bloc comparaison N-1 vs N -->
+   <div id="kpiYearComparison"></div>
+    <!-- ✅ ANNÉE -->
+   <div id="blockYear">
+        <h3>CA année</h3>
+	 <!-- TABLE -->
+	 <div class="table-wrapper">
+      <table>
+          <thead>
+            <tr>
+              <th>Année</th>
+              <th>CA brut</th>
+              <th>Remise</th>
+              <th>CA net</th>
+		          <th>Nb tickets</th>
+		          <th>Nb jours ouvrés</th>
+            </tr>
+          </thead>
+          <tbody id="tableYear"></tbody>
+      </table>
+	  </div>
+    </div>
+	
+	<!-- CATEGORIE MOIS -->
+    <div id="blockCategoryMonth">
+         <h3 id="categoryMonthTitle">💰 CA par catégorie (mois)</h3>
+	  <!-- TABLE -->
+	  <div class="table-wrapper">
+      <table>
+          <thead>
+             <tr>
+               <th>Catégorie</th>
+               <th>CA brut</th>
+               <th>Remise</th>
+               <th>CA net</th>
+	             <th>% CA</th>
+             </tr>
+         </thead>
+         <tbody id="tableCategoryMonth"></tbody>
+      </table>
+	  </div>
+    </div>
+
+    <!-- CATEGORIE ANNEE -->
+   <div id="blockCategoryYear">
+        <h3 id="categoryYearTitle">💰 CA par catégorie (année)</h3>
+	 <!-- TABLE -->
+	 <div class="table-wrapper">
+     <table>
+         <thead>
+            <tr>
+               <th>Catégorie</th>
+               <th>CA brut</th>
+               <th>Remise</th>
+               <th>CA net</th>
+	             <th>% CA</th>
+            </tr>
+         </thead>
+         <tbody id="tableCategoryYear"></tbody>
+     </table>
+	 </div>
+    </div>
+	
+    <!-- TOP PRODUIT -->
+     <div id="topProducts"></div>
+    </div>
+  </section>
+
+  <!--====== STOCK FAIBLE ===== -->
+
+ <section id="lowStockSection" class="card-outer" style="display:none">
+    <div class="card-inner">
+       <h2>⚠️ Produits en stock faible</h2>
+     <!-- ✅ seuil -->
+       <label>Seuil :</label>
+       <!--<input type="number" id="stockThreshold" value="5" onchange="renderLowStockResponsive()"> -->
+       <div class="threshold-control">
+         <button onclick="changeThreshold(-1)">−</button>
+         <input type="number" id="stockThreshold" value="5">
+         <button onclick="changeThreshold(1)">+</button>
+      </div>
+	   
+     <!-- TABLE -->
+	 <div class="table-wrapper">
+    <table>
+        <thead>
+            <tr>
+              <th>Image</th>
+              <th>Produit</th>
+              <th>Prix</th>
+		          <th>Promo(%)</th>
+              <th>Stock Restant</th>
+            </tr>
+        </thead>
+        <tbody id="lowStockList"></tbody>
+    </table>
+    <!--MOBILE PRODUCT Low stock --->
+     <div id="lowStockMobileList" class="low-stock-mobile"></div>
+	</div>
+   </div>
+  </section>
+   <!--====== CREDIT CLIENTS ===== -->
+   <section id="creditSection" class="card-outer" style="display:none">
+     <div class="card-inner">
+      <h2>📋 Crédit clients</h2>
+      <p id="totalCredit">💰 Encours total : 0 GNF</p>
+	  <!-- TABLE -->
+      <div class="table-wrapper">
+	     <div class="table-header">
+           <div class="actions">
+            <button onclick="exportGlobalCreditPDF()" class="btn-pdf">
+             📄 Export global PDF
+           </button>
+          <div class="search-containerCredit">
+             <input type="text" id="searchCredit"  placeholder="🔎 Par nom ou téléphone client" />
+            <span id="clearSearchCredit" class="clear-btnCredit">✕</span>
+          </div>
+
+        </div>
+      </div>
+      <table>
+         <thead>
+           <tr>
+             <th>Client</th>
+             <th>Téléphone</th>
+             <th>Montant restant</th>
+			       <th>Date souscription</th>
+             <th>Date échéance</th>
+             <th>Date paiement</th>
+             <th>Statut</th>
+             <th>Action</th>
+           </tr>
+         </thead>
+        <tbody id="creditList"></tbody>
+      </table>
+      <!-- MOBILE AFFICHAGE CREDITS CLIENTS-->
+      <div id="creditMobileList" class="credit-mobile-list"></div>
+       <!-- ✅ LOAD MORE -->
+      <button id="creditLoadMore">Afficher plus</button>
+    </div>
+   </div>
+  </section>
+  
+   <!--====== TICKET CLIENTS ===== -->
+   
+  <section id="ticketsSection" class="card-outer"  style="display:none">
+  <div class="card-inner">
+  <h2>🎟️ Tickets</h2>
+
+  <!-- ✅ FILTRES -->
+  <div class="ticket-filters">
+     <!--Barre de recherche ticket-->
+   <div class="search-wrapper">
+     <input type="text" id="searchPhoneTicket" placeholder="🔎 Rechercher par téléphone">
+    <span id="clearSearch">✖</span>
+   </div>
+   
+    <input type="date" id="ticketDate">
+      <select id="ticketPayment">
+        <option value="all">Tous</option>
+        <option value="cash">💵 Comptant</option>
+        <option value="credit">📋 Crédit</option>
+        <option value="mobile">📱 Mobile</option>
+    </select>
+   
+  </div>
+
+  <!-- ✅ LISTE -->
+  <div id="ticketList"></div>
+
+  <!-- ✅ LOAD MORE -->
+  <button id="ticketLoadMore">Afficher plus</button>
+ </div>
+
+</section>
+
+  <!--====== FOOTER ===== -->
+  <footer class="app-footer">
+   <div class="footer-content">
+    <div class="footer-left">💼 <strong>Boutique Manager</strong> v1.0</div>
+      <div class="footer-center">
+        👤 <span id="footerUser">Vendeur</span> · 
+        📅 <span id="footerDate"></span>
+      </div>
+       <div class="footer-right">
+      © <span id="year"></span> Bachir BAH
+    </div>
+  </div>
+  </footer>
+  
+
+</main>
+
+    <!-- ✅ PANIER FLOTTANT -->
+     <div id="floatingCart" class="floating-cart" onclick="showSection('cart')">
+        🛒 <span id="floatingCartCount">0</span>
+     </div>
+
+<script src="js/utils.js"></script>
+<script src="js/config.js"></script>
+<script src="js/store/articles.js"></script>
+<script src="js/store/lowStock.js"></script>
+<script src="js/store/sales.js"></script>
+<!----PAGE HISTORIQUE DES VENTES-->
+<script src="js/store/services/history/service.js"></script>
+<script src="js/store/ui/history/view.js"></script>
+<script src="js/store/controllers/history/controller.js"></script>
+<!----PAGE STATISTIQUE DES VENTES-->
+<script src="js/store/repository/stats/salesRepository.js"></script>
+<script src="js/store/services/stats/service.js"></script>
+<script src="js/store/ui/stats/view.js"></script>
+<script src="js/store/controllers/stats/context.js"></script>
+<script src="js/store/controllers/stats/controller.js"></script> 
+<script src="js/store/controllers/stats/statsController.js"></script> 
+
+<!--<script src="js/stats.js"></script>-->
+<script src="js/store/exportCreditPDF.js"></script>
+<script src="js/store/index.js"></script>
+<script src="js/store/mobile.js"></script>
+<script src="js/store/ticket.js"></script>
+
+
+</body>
+</html>
