@@ -45,7 +45,6 @@ function showRegister(){
 function hideRegister(){
   document.getElementById("registerForm").classList.add("hidden");
   document.getElementById("formRegister").classList.add("hidden");
-  
 }
 
 

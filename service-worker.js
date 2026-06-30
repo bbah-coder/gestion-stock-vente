@@ -1,15 +1,14 @@
 /************************************************************
  * Service-worker
  ************************************************************/
-const CACHE_NAME = "pos-cache-v3";
+const CACHE_NAME = "pos-cache-v5";
 
 // ✅ liste adaptée à TON arbo
 const ASSETS = [
   "/",
-  "/index.html",
-  "/admin.html",
-  "/home.html",
-  "/login.html",
+  "/admin",
+  "/home",
+  "/login",
 
   /* CSS */
   "/css/admin.css",
@@ -115,14 +114,13 @@ self.addEventListener("fetch", event => {
         .catch(() => {
           // ✅ fallback uniquement HTML
           if (event.request.headers.get("accept").includes("text/html")) {
-            return caches.match("/index");
+            return caches.match("/");
           }
         });
 
     })
   );
 });
-
 
 
 

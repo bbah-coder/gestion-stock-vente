@@ -451,5 +451,4 @@ function hideAllSectionsUser(){
   document.getElementById("usersSection")?.classList.add("hidden");
   document.getElementById("settingsSection")?.classList.add("hidden");
 
-
 }

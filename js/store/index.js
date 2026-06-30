@@ -1,4 +1,3 @@
-
 /************************************************************
  * 🚀 CONTROLLER GLOBAL (UI + NAV)
  ************************************************************/
@@ -34,7 +33,7 @@ function initServiceWorker(){
  ***********************************************************/
  
  function goToAdmin(){
-  window.location.href = "admin.html";
+  window.location.href = "admin";
 }
 
 
@@ -217,7 +216,7 @@ function logout(){
   localStorage.removeItem("isLoggedIn");
 
   //window.location.href = "login.html";
-   window.location.href = "home.html";
+   window.location.href = "home";
 }
 
 function updateUserInfo(){
@@ -243,7 +242,7 @@ function switchUser(){
   localStorage.removeItem("userRole");
   localStorage.removeItem("lastActivity");
 
-  window.location.href = "login.html";
+  window.location.href = "login";
 }
 
 function updateUserUI(){

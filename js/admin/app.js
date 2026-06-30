@@ -53,7 +53,7 @@ let shopWindow = null; // ✅ référence fenêtre boutique
 ************************************************************/
 
 function goToShop(){
-  window.location.href = "index.html";
+  window.location.href = "/";
 }
 
 /*function goToShop(){

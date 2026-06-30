@@ -53,7 +53,7 @@ function login(){
 
   // ✅ redirection
   if(user.role === "admin"){
-    window.location.href = "admin.html";
+    window.location.href = "admin";
   }else{
     window.location.href = "index.html";
   }
