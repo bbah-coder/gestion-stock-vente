@@ -11,7 +11,7 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 
-function initApp(){
+function initApp() {
   showSection("products");
 
 }
@@ -19,32 +19,63 @@ function initApp(){
 /************************************************************
  * INIT SERVICE WORKER
  ***********************************************************/
-function initServiceWorker(){
-  if ("serviceWorker" in navigator) {
-    navigator.serviceWorker
-      .register("/service-worker.js")
-      .then(() => console.log("✅ SW OK"))
-      .catch(err => console.error("❌ SW ERROR", err));
+function initServiceWorker() {
+
+  if (!("serviceWorker" in navigator)) {
+    console.warn("❌ Service Worker non supporté");
+    return;
   }
+
+  window.addEventListener("load", () => {
+
+    navigator.serviceWorker.register("/service-worker.js")
+      .then(reg => {
+
+        console.log("✅ SW enregistré");
+
+        // ✅ détection nouvelle version
+        if (reg.waiting) {
+          console.log("♻️ Nouvelle version disponible");
+          reg.waiting.postMessage({ type: "SKIP_WAITING" });
+        }
+
+        // ✅ nouveau SW installé
+        reg.addEventListener("updatefound", () => {
+          console.log("🔄 Mise à jour SW détectée");
+        });
+
+      })
+      .catch(err => {
+        console.error("❌ SW ERROR", err);
+      });
+
+    // ✅ reload automatique quand SW change
+    navigator.serviceWorker.addEventListener("controllerchange", () => {
+      console.log("✅ Nouveau SW actif");
+    });
+
+  });
+
 }
+
 
 /************************************************************
  * 🎮 NAVIGATION
  ***********************************************************/
- 
- function goToAdmin(){
+
+function goToAdmin() {
   window.location.href = "admin";
 }
 
 
-function showSection(section, options = {}){
+function showSection(section, options = {}) {
 
   // ✅ 1. RESET + ACTIVE FIX
   document.querySelectorAll(".menu button")
-  .forEach(btn => btn.classList.remove("active"));
+    .forEach(btn => btn.classList.remove("active"));
 
   document.querySelectorAll("#cartBtnMobile").forEach(btn => {
-      btn.classList.remove("active");
+    btn.classList.remove("active");
   });
 
 
@@ -52,7 +83,7 @@ function showSection(section, options = {}){
     `.menu button[data-section="${section}"]`
   );
 
-  if(activeBtn){
+  if (activeBtn) {
     activeBtn.classList.add("active");
   }
 
@@ -70,12 +101,12 @@ function showSection(section, options = {}){
 
   sections.forEach(id => {
     const el = document.getElementById(id);
-    if(el) el.style.display = "none";
+    if (el) el.style.display = "none";
   });
 
   // ✅ 3. LOGIQUE METIER
 
-  if(section === "products"){
+  if (section === "products") {
 
     promoMode = false;
     showPromoOnly = options.promo || false;
@@ -86,22 +117,22 @@ function showSection(section, options = {}){
     renderProducts();
   }
 
-  if(section === "cart"){
+  if (section === "cart") {
     document.getElementById("cartSection").style.display = "block";
-    
+
     const btn = document.getElementById("cartBtnMobile");
     if (btn) btn.classList.add("active");
 
   }
 
-  if(section === "today"){
+  if (section === "today") {
     document.getElementById("todaySection").style.display = "block";
 
     currentPageToday = 1;
     renderDashboard();
   }
 
-  if(section === "history"){
+  if (section === "history") {
 
     document.getElementById("historySection").style.display = "block";
 
@@ -120,50 +151,50 @@ function showSection(section, options = {}){
     document.getElementById("detailSection").style.display = "none";
   }
 
-  if(section === "charts"){
+  if (section === "charts") {
     document.getElementById("chartsSection").style.display = "block";
 
     initStatsFilter();
     renderStatsTables();
   }
 
-  if(section === "lowStock"){
+  if (section === "lowStock") {
     document.getElementById("lowStockSection").style.display = "block";
     renderLowStock();
   }
 
-  if(section === "credit"){
+  if (section === "credit") {
     document.getElementById("creditSection").style.display = "block";
     renderCreditDashboard();
   }
-  
-  if(section === "tickets"){
 
-  const el = document.getElementById("ticketsSection");
-  if (el)
+  if (section === "tickets") {
+
+    const el = document.getElementById("ticketsSection");
+    if (el)
       el.style.display = "block";
 
-  // ✅ reset pagination
-  ticketPage = 1;
+    // ✅ reset pagination
+    ticketPage = 1;
 
-  // ✅ render
-  renderTickets();
+    // ✅ render
+    renderTickets();
   }
   setActiveMobileMenu(section);
   // ✅ FIX FINAL PANIER ACTIF
   if (section === "cart") {
-      const btn = document.getElementById("cartBtnMobile");
-      if (btn)
-          btn.classList.add("active");
+    const btn = document.getElementById("cartBtnMobile");
+    if (btn)
+      btn.classList.add("active");
   }
 
 }
 
-function globalSearch(){
+function globalSearch() {
 
   const activeBtn = document.querySelector(".menu button.active");
 
-  if(!activeBtn){
+  if (!activeBtn) {
     renderProducts();
     return;
   }
@@ -171,19 +202,19 @@ function globalSearch(){
   const section = activeBtn.dataset.section;
 
   // ✅ PRODUITS
-  if(section === "products"){
+  if (section === "products") {
     currentPage = 1;
     renderProducts();
   }
 
   // ✅ VENTES JOUR
-  if(section === "today"){
+  if (section === "today") {
     currentPageToday = 1;
     renderDashboard();
   }
 
   // ✅ HISTORIQUE
-  if(section === "history"){
+  if (section === "history") {
     currentPageHistory = 1;
     renderSalesByDay();
 
@@ -191,12 +222,12 @@ function globalSearch(){
   }
 
   // ✅ STOCK FAIBLE
-  if(section === "lowStock"){
+  if (section === "lowStock") {
     renderLowStock();
   }
 
   // ✅ CREDIT (bonus UX)
-  if(section === "credit"){
+  if (section === "credit") {
     renderCreditDashboard();
   }
 }
@@ -207,26 +238,26 @@ function globalSearch(){
  ************************************************************/
 
 
-function logout(){
+function logout() {
 
-  if(!confirm("Voulez-vous vous déconnecter ?")) return;
+  if (!confirm("Voulez-vous vous déconnecter ?")) return;
 
   localStorage.removeItem("userRole");
   localStorage.removeItem("lastActivity");
   localStorage.removeItem("isLoggedIn");
 
   //window.location.href = "login.html";
-   window.location.href = "home";
+  window.location.href = "home";
 }
 
-function updateUserInfo(){
+function updateUserInfo() {
 
   const role = localStorage.getItem("userRole");
   const label = document.getElementById("userInfo");
 
-  if(!label) return;
+  if (!label) return;
 
-  if(role === "admin"){
+  if (role === "admin") {
     label.innerText = "👑 Admin";
     label.style.color = "#2c3e50";
   } else {
@@ -235,9 +266,9 @@ function updateUserInfo(){
   }
 }
 
-function switchUser(){
+function switchUser() {
 
-  if(!confirm("Voulez-vous changer de compte ?")) return;
+  if (!confirm("Voulez-vous changer de compte ?")) return;
 
   localStorage.removeItem("userRole");
   localStorage.removeItem("lastActivity");
@@ -245,7 +276,7 @@ function switchUser(){
   window.location.href = "login";
 }
 
-function updateUserUI(){
+function updateUserUI() {
 
   const username = localStorage.getItem("username");
   const role = localStorage.getItem("userRole");
@@ -253,37 +284,37 @@ function updateUserUI(){
   // ✅ HEADER
   const userEl = document.getElementById("userInfo");
 
- if (userEl) {
+  if (userEl) {
 
     if (role === "admin") {
-        userEl.innerText = "👑 Admin";
+      userEl.innerText = "👑 Admin";
     } else if (role === "vendeur") {
-        userEl.innerText = "🛒 Vendeur";
+      userEl.innerText = "🛒 Vendeur";
     } else if (username) {
-        userEl.innerText = `👤 ${username}`;
+      userEl.innerText = `👤 ${username}`;
     } else {
-        userEl.innerText = "👤 Utilisateur";
+      userEl.innerText = "👤 Utilisateur";
     }
   }
 
   // ✅ FOOTER USER
   const footerUser = document.getElementById("footerUser");
 
-  if(footerUser){
+  if (footerUser) {
     footerUser.innerText = username || "Utilisateur";
   }
 
   // ✅ FOOTER DATE
   const footerDate = document.getElementById("footerDate");
 
-  if(footerDate){
+  if (footerDate) {
     footerDate.innerText = formatDateFR(new Date());
   }
 
   // ✅ FOOTER YEAR
   const yearEl = document.getElementById("year");
 
-  if(yearEl){
+  if (yearEl) {
     yearEl.innerText = new Date().getFullYear();
   }
 }
@@ -326,7 +357,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const role = localStorage.getItem("userRole");
 
-  if(role === "vendeur"){
+  if (role === "vendeur") {
 
     document.querySelectorAll(".btnHistory").forEach(el => {
       el.style.display = "none";
@@ -335,7 +366,7 @@ document.addEventListener("DOMContentLoaded", () => {
     document.querySelectorAll(".btnStats").forEach(el => {
       el.style.display = "none";
     });
-    
+
     document.querySelectorAll(".btnAdmin").forEach(el => {
       el.style.display = "none";
     });

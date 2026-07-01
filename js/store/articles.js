@@ -37,8 +37,8 @@ let promoMode = false;
  * - tri stock faible
  * - pagination
  ************************************************************/
- 
- function renderProducts(){
+
+function renderProducts() {
 
   updateProductTitle();
 
@@ -53,26 +53,26 @@ let promoMode = false;
   const isMobile = window.matchMedia("(max-width: 1200px)").matches;
 
   if (isMobile) {
-      renderMobileProducts(vm);
+    renderMobileProducts(vm);
   } else {
-      renderDesktopProducts(vm);
+    renderDesktopProducts(vm);
   }
 
   renderPagination(sorted.length);
 }
 
-function updateProductTitle(){
+function updateProductTitle() {
 
   const title = document.querySelector("#productsSection h2");
 
-  if(title){
+  if (title) {
     title.innerText = showPromoOnly
-      ? "🔥 Produits en promotion"
+      ? "🔥Produits en promotion"
       : "Produits";
   }
 }
 
-function getFilteredProducts(){
+function getFilteredProducts() {
 
   const selectedCategory =
     document.getElementById("filterCategoryProduct")?.value || "all";
@@ -107,7 +107,7 @@ function getFilteredProducts(){
   });
 }
 
-function sortProducts(filtered){
+function sortProducts(filtered) {
 
   return filtered.sort((a, b) => {
 
@@ -120,25 +120,25 @@ function sortProducts(filtered){
     const lowA = stockA <= LOW_STOCK_THRESHOLD;
     const lowB = stockB <= LOW_STOCK_THRESHOLD;
 
-    if(promoA > 0 && promoB === 0) return -1;
-    if(promoA === 0 && promoB > 0) return 1;
+    if (promoA > 0 && promoB === 0) return -1;
+    if (promoA === 0 && promoB > 0) return 1;
 
-    if(promoA !== promoB) return promoB - promoA;
+    if (promoA !== promoB) return promoB - promoA;
 
-    if(lowA && !lowB) return -1;
-    if(!lowA && lowB) return 1;
+    if (lowA && !lowB) return -1;
+    if (!lowA && lowB) return 1;
 
-    if(stockA !== stockB) return stockA - stockB;
+    if (stockA !== stockB) return stockA - stockB;
 
     return a.name.localeCompare(b.name);
   });
 }
 
-function paginateProducts(data){
+function paginateProducts(data) {
 
   const totalPages = Math.ceil(data.length / itemsPerPage) || 1;
 
-  if(currentPage > totalPages){
+  if (currentPage > totalPages) {
     currentPage = 1;
   }
 
@@ -147,7 +147,7 @@ function paginateProducts(data){
   return data.slice(start, start + itemsPerPage);
 }
 
-function computeProductVM(data){
+function computeProductVM(data) {
 
   return data.map(p => {
 
@@ -171,12 +171,12 @@ function computeProductVM(data){
   });
 }
 
-function renderDesktopProducts(data){
+function renderDesktopProducts(data) {
 
   const container = document.getElementById("productList");
   container.innerHTML = "";
 
-  if(data.length === 0){
+  if (data.length === 0) {
     container.innerHTML = "<tr><td colspan='7'>Aucun produit 🔍</td></tr>";
     return;
   }
@@ -187,7 +187,7 @@ function renderDesktopProducts(data){
 
     const qrId = "qr_" + p.realIndex;
 
-row.innerHTML = `
+    row.innerHTML = `
   <td class="qr-cell">
     <div id="${qrId}"></div>
   </td>
@@ -202,13 +202,13 @@ row.innerHTML = `
   </td>
 
   <td>
-    ${p.promo > 0 
-      ? `
+    ${p.promo > 0
+        ? `
         <span class="price-old">${formatPrice(p.price)} GNF</span><br>
         <span class="price-new">${formatPrice(p.finalPrice)} GNF</span>
       `
-      : `${formatPrice(p.price)} GNF`
-    }
+        : `${formatPrice(p.price)} GNF`
+      }
   </td>
 
   <td>
@@ -217,10 +217,10 @@ row.innerHTML = `
 
   <td>
     ${p.stock}
-    ${p.isLowStock 
-      ? '<span style="background:red;color:white;padding:2px 6px;border-radius:5px;margin-left:5px;">Faible</span>'
-      : ''
-    }
+    ${p.isLowStock
+        ? '<span style="background:red;color:white;padding:2px 6px;border-radius:5px;margin-left:5px;">Faible</span>'
+        : ''
+      }
   </td>
 
   <td>
@@ -248,8 +248,8 @@ row.innerHTML = `
 `;
 
     if (p.isLowStock) {
-        //row.style.background = "#f8d7da";
-        row.style.fontWeight = "bold";
+      //row.style.background = "#f8d7da";
+      row.style.fontWeight = "bold";
     }
 
     container.appendChild(row);
@@ -259,18 +259,18 @@ row.innerHTML = `
 
     if (qrEl) {
 
-        qrEl.innerHTML = "";
+      qrEl.innerHTML = "";
 
-        const qrData = JSON.stringify({
-            name: p.name,
-            price: Number(p.price)
-        });
+      const qrData = JSON.stringify({
+        name: p.name,
+        price: Number(p.price)
+      });
 
-        new QRCode(qrEl, {
-            text: encodeURIComponent(qrData),
-            width: 60,
-            height: 60
-        });
+      new QRCode(qrEl, {
+        text: encodeURIComponent(qrData),
+        width: 60,
+        height: 60
+      });
     }
 
   });
@@ -280,23 +280,23 @@ row.innerHTML = `
 /************************************************************
  * MOBILE Products APP JS
  ************************************************************/
-function renderMobileProducts(products){
+function renderMobileProducts(products) {
 
   const container = document.getElementById("mobileProductList");
   if (!container)
-      return;
+    return;
 
   container.innerHTML = "";
 
   products.forEach(p => {
-    
-     //Les produits en promo
-  const promo = Number(p.promo) || 0;
-  const price = Number(p.price) || 0;
 
-  const finalPrice = promo > 0
-       ? price * (1 - promo / 100)
-       : price;
+    //Les produits en promo
+    const promo = Number(p.promo) || 0;
+    const price = Number(p.price) || 0;
+
+    const finalPrice = promo > 0
+      ? price * (1 - promo / 100)
+      : price;
 
     container.innerHTML += `
       <div class="product-card">
@@ -304,11 +304,11 @@ function renderMobileProducts(products){
         <!-- ✅ IMAGE -->
         <div class="product-img">
           <div class="img-container">
-            ${p.image 
-              ? `<img src="${p.image}" 
+            ${p.image
+        ? `<img src="${p.image}" 
                    onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">`
-              : ""
-            }
+        : ""
+      }
             <div class="default-icon" style="${p.image ? 'display:none' : 'display:flex'}">
               📦
             </div>
@@ -321,20 +321,20 @@ function renderMobileProducts(products){
          <!-- Prise en compte des l'affichage des produits en promo-->
          
           <div class="product-name">${p.name}
-            ${promo > 0 
-             ? `<span class="promo-badge">(-${promo}%)</span>`
-             : ""
-            }
+            ${promo > 0
+        ? `<span class="promo-badge">(-${promo}%)</span>`
+        : ""
+      }
          </div>
 
        <div class="product-price">
-          ${promo > 0 
-          ? `
+          ${promo > 0
+        ? `
         <span class="price-old">${formatPrice(price)} GNF</span>
         <span class="price-new">${formatPrice(finalPrice)} GNF</span>
          `
         : `${formatPrice(price)} GNF`
-       }
+      }
         </div>
 
 
@@ -368,12 +368,12 @@ function renderMobileProducts(products){
  * ----------------------------------------------------------
  * Génère les boutons de pagination produits
  ************************************************************/
-function renderPagination(totalItems){
+function renderPagination(totalItems) {
 
   const totalPages = Math.ceil(totalItems / itemsPerPage) || 1;
   const container = document.getElementById("pagination");
 
-  if(!container) return;
+  if (!container) return;
 
   container.innerHTML = "";
 
@@ -383,11 +383,11 @@ function renderPagination(totalItems){
   prevBtn.onclick = () => changePage(currentPage - 1);
   container.appendChild(prevBtn);
 
-  for(let i = 1; i <= totalPages; i++){
+  for (let i = 1; i <= totalPages; i++) {
     const btn = document.createElement("button");
     btn.innerText = i;
 
-    if(i === currentPage){
+    if (i === currentPage) {
       btn.style.background = "#2ecc71";
     }
 
@@ -408,7 +408,7 @@ function renderPagination(totalItems){
  * ----------------------------------------------------------
  * Met à jour la page courante et recharge les produits
  ************************************************************/
-function changePage(page){
+function changePage(page) {
   currentPage = page;
   renderProducts();
 }
@@ -417,10 +417,10 @@ function changePage(page){
 /************************************************************
  * 🧩 FILTRES CATÉGORIES PRODUITS
  ************************************************************/
-function populateCategories(){
+function populateCategories() {
 
   const select = document.getElementById("filterCategoryProduct");
-  if(!select) return;
+  if (!select) return;
 
   const categories = [...new Set(
     products.map(p => p.category || "Autre")
@@ -437,7 +437,7 @@ function populateCategories(){
     select.appendChild(opt);
   });
 
-  if(current){
+  if (current) {
     select.value = current;
   }
 }
@@ -446,10 +446,10 @@ function populateCategories(){
 /************************************************************
  * 🧩 FILTRES CATÉGORIES HISTORIQUE
  ************************************************************/
-function populateCategoriesHistory(){
+function populateCategoriesHistory() {
 
   const select = document.getElementById("filterCategoryHistory");
-  if(!select) return;
+  if (!select) return;
 
   const categories = [...new Set(
     products.map(p => p.category || "Autre")
@@ -466,7 +466,7 @@ function populateCategoriesHistory(){
     select.appendChild(opt);
   });
 
-  if(current){
+  if (current) {
     select.value = current;
   }
 }
@@ -475,13 +475,13 @@ function populateCategoriesHistory(){
 /************************************************************
  * 🔥 FILTRE PROMO
  ************************************************************/
-function filterPromoOnly(){
+function filterPromoOnly() {
 
   showPromoOnly = !showPromoOnly;
 
   const btn = document.querySelector("button[onclick='filterPromoOnly()']");
 
-  if(showPromoOnly){
+  if (showPromoOnly) {
     btn.classList.add("active");
   } else {
     btn.classList.remove("active");
@@ -495,7 +495,7 @@ function filterPromoOnly(){
 /************************************************************
  * 🔥 AFFICHAGE MODE PROMO
  ************************************************************/
-function showPromo(){
+function showPromo() {
 
   // ✅ passe par showSection avec option
   showSection("products", { promo: true });
@@ -508,7 +508,7 @@ function showPromo(){
     `.menu button[onclick="showPromo()"]`
   );
 
-  if(btn) btn.classList.add("active");
+  if (btn) btn.classList.add("active");
 }
 
 
@@ -516,7 +516,7 @@ function showPromo(){
 /************************************************************
  * 🔍 RESET RECHERCHE
  ************************************************************/
-function clearSearch(){
+function clearSearch() {
 
   const input = document.getElementById("searchInput");
   input.value = "";

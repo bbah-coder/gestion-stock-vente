@@ -9,10 +9,10 @@
    VIEW : KPI GLOBAL
 ========================================================= */
 
-function renderGlobalKPI(stats, context){
-  
-    // ✅ SAFE
-  if(!context || !stats){
+function renderGlobalKPI(stats, context) {
+
+  // ✅ SAFE
+  if (!context || !stats) {
     console.error("❌ context ou stats undefined", context, stats);
     return;
   }
@@ -36,12 +36,12 @@ function renderGlobalKPI(stats, context){
 
   // ✅ reconstitution titre complet (comme avant)
   const title = isMonth
-       ? `📊 Analyse des ventes - ${monthLabel}`
-       : `📊 Analyse des ventes - ${yearLabel}`;
+    ? `📊 Ventes - ${monthLabel}`
+    : `📊 Ventes - ${yearLabel}`;
 
   const header = document.getElementById("statsTitle");
   if (header) {
-      header.innerText = title;
+    header.innerText = title;
   }
 
 
@@ -92,44 +92,44 @@ function renderGlobalKPI(stats, context){
    - Affichage mobile uniquement
    ========================================================= */
 
-function renderStatsMobile(stats, context){
-  
-   if(!context || !stats){
+function renderStatsMobile(stats, context) {
+
+  if (!context || !stats) {
     console.error("❌ context ou stats undefined", context, stats);
     return;
   }
 
- const {
-     total,
-     totalBrut,
-     totalRemise,
-     encoursCurrent,
-     currentTickets,
-     prevTotalCA,
-     lastYearTotalCA,
-     productStatsMonth,
-     productStatsYear,
-     caNet
- } = stats;
+  const {
+    total,
+    totalBrut,
+    totalRemise,
+    encoursCurrent,
+    currentTickets,
+    prevTotalCA,
+    lastYearTotalCA,
+    productStatsMonth,
+    productStatsYear,
+    caNet
+  } = stats;
 
- const {
-     isMonth,
-     monthLabel,
-     yearLabel,
-     prevMonthValue,
-     prevYearValue
- } = context;
+  const {
+    isMonth,
+    monthLabel,
+    yearLabel,
+    prevMonthValue,
+    prevYearValue
+  } = context;
 
- const sourceProducts = isMonth
-      ? stats.productStatsMonth
-     : stats.productStatsYear;
+  const sourceProducts = isMonth
+    ? stats.productStatsMonth
+    : stats.productStatsYear;
 
   const top3 = Object.entries(sourceProducts || {})
-    .sort((a,b) => b[1].encaisse - a[1].encaisse)
-    .slice(0,3);
+    .sort((a, b) => b[1].encaisse - a[1].encaisse)
+    .slice(0, 3);
 
-  const topHTML = top3.map((p,i) =>
-    `<div>${i+1}. ${p[0]} — ${formatPrice(p[1].encaisse)} GNF</div>`
+  const topHTML = top3.map((p, i) =>
+    `<div>${i + 1}. ${p[0]} — ${formatPrice(p[1].encaisse)} GNF</div>`
   ).join("");
 
 
@@ -164,16 +164,15 @@ function renderStatsMobile(stats, context){
         📊 Vs ${labelCompare} :
 
         <div>
-          ${formatPrice(total)} GNF vs ${
-            isMonth ? formatPrice(prevTotalCA) : formatPrice(lastYearTotalCA)
-          } GNF
+          ${formatPrice(total)} GNF vs ${isMonth ? formatPrice(prevTotalCA) : formatPrice(lastYearTotalCA)
+    } GNF
         </div>
 
         <strong>
           ${getEvolution(
-            total,
-            isMonth ? prevTotalCA : lastYearTotalCA
-          )}
+      total,
+      isMonth ? prevTotalCA : lastYearTotalCA
+    )}
         </strong>
       </div>
 
@@ -196,9 +195,9 @@ function renderStatsMobile(stats, context){
 /* =========================================================
    VIEW : COMPARAISON MEME MOIS ANNEE PRECEDENTE
 ========================================================= */
-function renderStatsComparisonTable(stats, context){
+function renderStatsComparisonTable(stats, context) {
 
-  if(!context || !stats){
+  if (!context || !stats) {
     console.error("❌ context ou stats undefined", context, stats);
     return;
   }
@@ -233,7 +232,7 @@ function renderStatsComparisonTable(stats, context){
     : (Number(context.yearLabel) - 1).toString();
 
   const container = document.getElementById("kpiMonthYearComparison");
-  if(!container) return;
+  if (!container) return;
 
   container.innerHTML = `
     <h3>📊 Comparaison ${currentLabel} vs ${prevLabel}</h3>
@@ -260,13 +259,12 @@ function renderStatsComparisonTable(stats, context){
 
           <td>
             ✅ <strong>${formatPrice(total)} GNF encaissé</strong>
-           ${
-              encoursCurrent > 0
-              ? `<div style="color:orange; font-size:12px;">
+           ${encoursCurrent > 0
+      ? `<div style="color:orange; font-size:12px;">
                    🟠 ${formatPrice(encoursCurrent)} crédit
                  </div>`
-              : ""
-            }
+      : ""
+    }
           </td>
 
           <td>${evolutionCA}</td>
@@ -299,13 +297,12 @@ function renderStatsComparisonTable(stats, context){
           <td>
             ✅ <strong>${formatPrice(perDayCurrent)} GNF</strong>
 
-           ${
-              encoursCurrent > 0
-              ? `<div style="color:orange; font-size:12px;">
+           ${encoursCurrent > 0
+      ? `<div style="color:orange; font-size:12px;">
                    🟠 ${formatPrice(encoursCurrent / (nbDays || 1))} crédit
                  </div>`
-              : ""
-            }
+      : ""
+    }
           </td>
 
           <td>${evolutionPerDay}</td>
@@ -320,9 +317,9 @@ function renderStatsComparisonTable(stats, context){
 /*=========================================================
    VIEW : COMPARAISON KPI MOIS EN COURS ET MOIS PRECEDENT
 ========================================================= */
-function renderComparisonMonthTable(stats, context){
+function renderComparisonMonthTable(stats, context) {
 
-  if(!stats || !context){
+  if (!stats || !context) {
     console.error("❌ stats ou context undefined");
     return;
   }
@@ -342,8 +339,8 @@ function renderComparisonMonthTable(stats, context){
   const prevMonthValue = getPreviousMonth(monthValue);
   const prevLabel = formatMonthLabel(prevMonthValue);
 
-  function calcDiff(current, prev){
-    if(!prev) return "0%";
+  function calcDiff(current, prev) {
+    if (!prev) return "0%";
     return ((current - prev) / prev * 100).toFixed(1) + "%";
   }
 
@@ -354,7 +351,7 @@ function renderComparisonMonthTable(stats, context){
   const perDayPrev = prevDays ? encaissePrev / prevDays : 0;
 
   const container = document.getElementById("kpiMonthComparison");
-  if(!container) return;
+  if (!container) return;
 
   container.innerHTML = `
     <h3>📊 Comparaison ${monthLabel} vs ${prevLabel}</h3>
@@ -415,9 +412,9 @@ function renderComparisonMonthTable(stats, context){
 /*=========================================================
    VIEW : KPI MOIS / ANNEE
 ========================================================= */
-function renderSummaryTable(stats, context){
+function renderSummaryTable(stats, context) {
 
-  if(!stats || !context) return;
+  if (!stats || !context) return;
 
   const {
     total,
@@ -433,7 +430,7 @@ function renderSummaryTable(stats, context){
   const value = isMonth ? context.monthValue : context.yearLabel;
 
   const container = document.getElementById("kpiMonthSummary");
-  if(!container) return;
+  if (!container) return;
 
   const title = isMonth
     ? `CA mois de - ${label}`
@@ -464,13 +461,12 @@ function renderSummaryTable(stats, context){
           </td>
           <td>
             ✅ <strong>${formatPrice(total)} GNF encaissé</strong>
-            ${
-              encoursCurrent > 0
-              ? `<div style="color:orange;font-size:12px;">
+            ${encoursCurrent > 0
+      ? `<div style="color:orange;font-size:12px;">
                    🟠 ${formatPrice(encoursCurrent)} crédit
                  </div>`
-              : ""
-            }
+      : ""
+    }
           </td>
           <td>${currentTickets}</td>
           <td>${nbDays}</td>
@@ -486,7 +482,7 @@ function renderSummaryTable(stats, context){
    VIEW : CATÉGORIES MOIS / ANNEE
 ========================================================= */
 
-function renderCategoryTable(stats, context){
+function renderCategoryTable(stats, context) {
 
   const isMonth = context.isMonth;
 
@@ -501,16 +497,16 @@ function renderCategoryTable(stats, context){
     isMonth ? "categoryMonthTitle" : "categoryYearTitle"
   );
 
-  if(!container) return;
+  if (!container) return;
 
-  if(title){
+  if (title) {
     title.innerText = `💰 CA par catégorie - ${label}`;
   }
 
   container.innerHTML = "";
 
   const sorted = Object.entries(data || {})
-    .sort((a,b) => b[1].encaisse - a[1].encaisse);
+    .sort((a, b) => b[1].encaisse - a[1].encaisse);
 
   sorted.forEach(([cat, value], index) => {
 
@@ -524,13 +520,12 @@ function renderCategoryTable(stats, context){
       </td>
       <td>
         ✅ <strong>${formatPrice(value.encaisse)} GNF encaissé</strong>
-        ${
-          value.credit > 0
-          ? `<div style="color:orange;font-size:12px;">
+        ${value.credit > 0
+        ? `<div style="color:orange;font-size:12px;">
                🟠 ${formatPrice(value.credit)} crédit
              </div>`
-          : ""
-        }
+        : ""
+      }
       </td>
       <td style="color:${value.color};font-weight:bold;">
         ${value.percent}%
@@ -545,15 +540,15 @@ function renderCategoryTable(stats, context){
    VIEW : TOP PRODUIT EN CA et QTE
 ========================================================= */
 
-function renderTopProducts(stats, context){
+function renderTopProducts(stats, context) {
 
-  if(!stats || !context) return;
+  if (!stats || !context) return;
 
   const isMonth = context.isMonth;
   const label = isMonth ? context.monthLabel : context.yearLabel;
 
   const container = document.getElementById("topProducts");
-  if(!container) return;
+  if (!container) return;
 
   const data = isMonth
     ? stats.productStatsMonth
@@ -561,7 +556,7 @@ function renderTopProducts(stats, context){
 
   const entries = Object.entries(data || {});
 
-  if(entries.length === 0){
+  if (entries.length === 0) {
     container.innerHTML = "";
     return;
   }
@@ -577,15 +572,15 @@ function renderTopProducts(stats, context){
 
   // ✅ TOP QUANTITÉ
   const topQty = [...entries]
-    .sort((a,b) => b[1].quantity - a[1].quantity)
-    .slice(0,10);
+    .sort((a, b) => b[1].quantity - a[1].quantity)
+    .slice(0, 10);
 
   // ✅ TOP CA
   const topCA = [...entries]
-    .sort((a,b) => b[1].encaisse - a[1].encaisse)
-    .slice(0,10);
+    .sort((a, b) => b[1].encaisse - a[1].encaisse)
+    .slice(0, 10);
 
-  const totalCA = entries.reduce((sum,[,v]) => sum + v.encaisse, 0);
+  const totalCA = entries.reduce((sum, [, v]) => sum + v.encaisse, 0);
 
   container.innerHTML = `
     <h3 style="margin-top:30px;">${topTitle}</h3> 
@@ -602,18 +597,18 @@ function renderTopProducts(stats, context){
         </tr>
       </thead>
       <tbody>
-        ${topQty.map(([name,v],i)=>{
+        ${topQty.map(([name, v], i) => {
 
-          const product = products.find(p => p.name === name);
-          const stock = product?.stock ?? "-";
+    const product = products.find(p => p.name === name);
+    const stock = product?.stock ?? "-";
 
-          return `
+    return `
           <tr>
-            <td>${i<3 ? ["🥇","🥈","🥉"][i] : (i+1)+". "} ${name}</td>
+            <td>${i < 3 ? ["🥇", "🥈", "🥉"][i] : (i + 1) + ". "} ${name}</td>
             <td><strong>${v.quantity}</strong></td>
             <td>${stock}</td>
           </tr>`;
-        }).join("")}
+  }).join("")}
       </tbody>
     </table>
 
@@ -632,25 +627,25 @@ function renderTopProducts(stats, context){
         </tr>
       </thead>
       <tbody>
-        ${topCA.map(([name,v],i)=>{
+        ${topCA.map(([name, v], i) => {
 
-          const percent = totalCA
-            ? ((v.encaisse / totalCA) * 100).toFixed(1)
-            : 0;
+    const percent = totalCA
+      ? ((v.encaisse / totalCA) * 100).toFixed(1)
+      : 0;
 
-          const product = products.find(p => p.name === name);
-          const stock = product?.stock ?? "-";
+    const product = products.find(p => p.name === name);
+    const stock = product?.stock ?? "-";
 
-          return `
+    return `
           <tr>
-            <td>${i<3 ? ["🥇","🥈","🥉"][i] : (i+1)+". "} ${name}</td>
+            <td>${i < 3 ? ["🥇", "🥈", "🥉"][i] : (i + 1) + ". "} ${name}</td>
 
             <td><strong>${formatPrice(v.brut)} GNF</strong></td>
 
-            <td style="color:red;">${v.remise > 0 
-              ? `- ${formatPrice(v.remise)} GNF`
-               : "-"
-            }
+            <td style="color:red;">${v.remise > 0
+        ? `- ${formatPrice(v.remise)} GNF`
+        : "-"
+      }
             </td>
             
             <td>
@@ -664,7 +659,7 @@ function renderTopProducts(stats, context){
             <td style="color:${getPercentColor(percent)};">${percent}%</td>
             <td>${stock}</td>
           </tr>`;
-        }).join("")}
+  }).join("")}
       </tbody>
     </table>
   `;

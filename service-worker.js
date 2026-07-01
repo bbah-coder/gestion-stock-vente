@@ -1,14 +1,15 @@
 /************************************************************
- * Service-worker
+ * Service-worker (POS OFFLINE READY)
  ************************************************************/
-const CACHE_NAME = "pos-cache-v5";
+//const CACHE_NAME = "pos-cache-v5";
+const CACHE_STATIC = "pos-static";   // assets statiques
+const CACHE_DYNAMIC = "pos-dynamic"; // runtime cache
 
 // ✅ liste adaptée à TON arbo
 const ASSETS = [
+  /*manifest*/
   "/",
-  "/admin",
-  "/home",
-  "/login",
+  "/manifest.json",
 
   /* CSS */
   "/css/admin.css",
@@ -56,70 +57,146 @@ const ASSETS = [
   "/js/store/ticket.js"
 ];
 
-
-// ✅ INSTALL
+// ✅ INSTALL → cache initial
 self.addEventListener("install", event => {
   event.waitUntil(
-    caches.open(CACHE_NAME)
-      .then(cache => {
-        console.log("✅ Cache ready");
-        return cache.addAll(ASSETS);
-      })
+    caches.open(CACHE_STATIC).then(async cache => {
+
+      for (const url of ASSETS) {
+        try {
+          const res = await fetch(url);
+          if (res.ok) await cache.put(url, res);
+        } catch (e) {
+          console.warn("❌ Skip cache:", url);
+        }
+      }
+
+    })
   );
+
   self.skipWaiting();
 });
 
-// ✅ ACTIVATE
+// ✅ ACTIVATE → nettoyage cache
 self.addEventListener("activate", event => {
   event.waitUntil(
-    caches.keys().then(keys =>
-      Promise.all(
-        keys.map(key => {
-          if (key !== CACHE_NAME) {
-            return caches.delete(key);
-          }
-        })
-      )
-    )
+    caches.keys().then(keys => {
+      return Promise.all(
+        keys
+          .filter(key => ![CACHE_STATIC, CACHE_DYNAMIC].includes(key))
+          .map(key => caches.delete(key))
+      );
+    })
   );
   self.clients.claim();
 });
 
-// ✅ FETCH (offline + cache images automatique)
+
 self.addEventListener("fetch", event => {
 
-  // ✅ ignorer requêtes non GET (sécurité)
   if (event.request.method !== "GET") return;
 
-  event.respondWith(
-    caches.match(event.request).then(response => {
+  const url = new URL(event.request.url);
 
-      // ✅ si en cache → servir
-      if (response) return response;
+  const isHTML = event.request.headers.get("accept")?.includes("text/html");
+  const isJS = url.pathname.endsWith(".js");
+  const isCSS = url.pathname.endsWith(".css");
+  const isImage = event.request.destination === "image";
 
-      // ✅ sinon → requête réseau
-      return fetch(event.request)
-        .then(fetchRes => {
+  // ✅ HTML + JS + CSS → NETWORK FIRST
+  if (isHTML || isJS || isCSS) {
 
-          // ✅ cache images automatiquement
-          if (event.request.url.includes("/image/")) {
-            const copy = fetchRes.clone();
-            caches.open(CACHE_NAME).then(cache => {
-              cache.put(event.request, copy);
-            });
-          }
+    event.respondWith(
+      fetch(event.request)
+        .then(response => {
 
-          return fetchRes;
+          const clone = response.clone();
+
+          caches.open(CACHE_DYNAMIC).then(cache => {
+            cache.put(event.request, clone);
+
+            // ✅ 🔥 limiter le cache
+            limitCache(CACHE_DYNAMIC, 50);
+          });
+
+          return response;
+
         })
         .catch(() => {
-          // ✅ fallback uniquement HTML
-          if (event.request.headers.get("accept").includes("text/html")) {
-            return caches.match("/");
-          }
-        });
+          return caches.match(event.request)
+            .then(cached => {
+              if (cached) return cached;
+              return caches.match("/") || new Response("Offline");
+            });
+        })
+    );
 
+    return;
+  }
+
+  // ✅ IMAGES → CACHE FIRST
+  if (isImage) {
+
+    event.respondWith(
+      caches.match(event.request)
+        .then(cached => {
+
+          if (cached) return cached;
+
+          return fetch(event.request)
+            .then(response => {
+
+              const clone = response.clone();
+
+              caches.open(CACHE_DYNAMIC).then(cache => {
+                cache.put(event.request, clone);
+
+                // ✅ 🔥 limiter le cache
+                limitCache(CACHE_DYNAMIC, 100);
+              });
+
+              return response;
+
+            })
+            .catch(() => {
+              return new Response("", {
+                status: 404,
+                statusText: "Image offline"
+              });
+            });
+
+        })
+    );
+
+    return;
+  }
+
+  // ✅ DEFAULT
+  event.respondWith(
+    fetch(event.request).catch(() => {
+      return new Response("Offline", {
+        status: 503,
+        statusText: "Offline"
+      });
     })
   );
+
+});
+
+function limitCache(cacheName, maxItems) {
+  caches.open(cacheName).then(cache => {
+    cache.keys().then(keys => {
+      if (keys.length > maxItems) {
+        cache.delete(keys[0]).then(() => limitCache(cacheName, maxItems));
+      }
+    });
+  });
+}
+
+self.addEventListener("message", event => {
+  if (event.data?.type === "SKIP_WAITING") {
+    self.skipWaiting();
+  }
 });
 
 

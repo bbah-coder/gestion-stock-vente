@@ -482,43 +482,6 @@ async function toggleUser(userId) {
 }
 
 /*SUPPRIMER UN USER*/
-/*async function deleteUser(userId){
-
-  if(!confirm("Supprimer cet utilisateur ?")) return;
-
-  console.log("🗑 Suppression user:", userId);
-
-  try {
-
-    // ✅ 1. DELETE côté Supabase (profiles)
-    const { error } = await supabaseClient
-      .from("profiles")
-      .delete()
-      .eq("id", userId);
-
-    if(error){
-      console.error("❌ Supabase delete error:", error);
-      alert("❌ Erreur suppression");
-      return;
-    }
-
-    console.log("✅ Supabase supprimé");
-
-    // ✅ 2. OPTIONAL (si tu gardes localStorage pour l’instant)
-    let users = JSON.parse(localStorage.getItem("users") || "[]");
-
-    users = users.filter(u => u.id !== userId);
-
-    localStorage.setItem("users", JSON.stringify(users));
-
-    // ✅ 3. refresh UI
-    renderUsers();
-
-  } catch(err){
-    console.error(err);
-    alert("❌ Erreur réseau");
-  }
-}*/
 
 async function deleteUser(userId) {
 
@@ -590,4 +553,93 @@ function hideAllSectionsUser() {
   document.getElementById("usersSection")?.classList.add("hidden");
   document.getElementById("settingsSection")?.classList.add("hidden");
 
+}
+
+/************************************************************
+ * INFO MAGASIN POUT HEADER TICKET DE CAISSE
+ ***********************************************************/
+
+function showStoreInfo() {
+  // ✅ cacher les autres sections si besoin
+  //hideAllSections();
+
+  // ✅ afficher la section magasin
+  document.getElementById("infoShop").style.display = "block";
+}
+
+
+function saveStoreInfo() {
+
+  const name = document.getElementById("storeName").value.trim();
+  const phone = document.getElementById("storePhone").value.trim();
+  const address = document.getElementById("storeAddress").value.trim();
+
+  // ✅ compter champs remplis
+  let filledFields = 0;
+
+  if (name) filledFields++;
+  if (phone) filledFields++;
+  if (address) filledFields++;
+
+  // ✅ au moins 2 champs requis
+  if (filledFields < 2) {
+    showToast("⚠️ Minimum 2 champs requis");
+    return;
+  }
+
+  // ✅ sauvegarde
+  const store = { name, phone, address };
+
+  localStorage.setItem("storeInfo", JSON.stringify(store));
+
+  console.log("✅ store sauvegardé:", store);
+
+  showToast("✅ Infos magasin sauvegardées");
+
+  // ✅ reset form
+  document.getElementById("storeName").value = "";
+  document.getElementById("storePhone").value = "";
+  document.getElementById("storeAddress").value = "";
+
+  closeStoreInfo()
+}
+
+
+
+//BOUTON RETOUR
+function closeStoreInfo() {
+  document.getElementById("infoShop").style.display = "none";
+}
+
+
+function showToast(message, type = "info") {
+
+  const toast = document.getElementById("toast");
+
+  if (!toast) return;
+
+  toast.innerText = message;
+
+  // ✅ couleur selon type
+  switch (type) {
+    case "success":
+      toast.style.background = "#28a745";
+      break;
+    case "error":
+      toast.style.background = "#dc3545";
+      break;
+    case "warning":
+      toast.style.background = "#ff9800";
+      break;
+    default:
+      toast.style.background = "#333";
+  }
+
+  // ✅ afficher
+  toast.classList.add("show");
+
+  // ✅ cacher après 2.5s
+  setTimeout(() => {
+    toast.classList.remove("show");
+  }, 2500);
 }

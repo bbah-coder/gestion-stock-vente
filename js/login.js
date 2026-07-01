@@ -2,8 +2,10 @@
 
 // ✅ LOGIN
 
-
 async function login() {
+
+
+  console.log("🚀 login appelé");
 
   const userEl = document.getElementById("username");
   const passEl = document.getElementById("password");
@@ -11,95 +13,110 @@ async function login() {
 
   const username = userEl.value.trim();
   const password = passEl.value;
+  const email = toEmail(username);
 
   errorEl.innerText = "";
 
-  const email = toEmail(username);
+  let onlineSuccess = false;
+  let profile = null;
 
+  // ✅ ✅ ✅ TENTATIVE ONLINE SÉCURISÉE
   try {
 
-    // ✅ ✅ ✅ ONLINE → Supabase
-    if (navigator.onLine) {
+    console.log("🌐 tentative ONLINE...");
 
-      const { data, error } = await supabaseClient.auth.signInWithPassword({
-        email,
-        password
-      });
+    const { data, error } = await supabaseClient.auth.signInWithPassword({
+      email,
+      password
+    });
 
-      if (error || !data.user) {
-        errorEl.innerText = "❌ Identifiants incorrects";
-        return;
-      }
+    if (!error && data?.user) {
 
-      const user = data.user;
+      console.log("✅ LOGIN ONLINE OK");
 
-      console.log("✅ Supabase connecté");
-
-      // ✅ récupérer profil
-      const { data: profile } = await supabaseClient
+      const { data: prof } = await supabaseClient
         .from("profiles")
-        .select("role, username, active")
-        .eq("id", user.id)
+        .select("username, role, active")
+        .eq("id", data.user.id)
         .single();
 
-      // ✅ sécurité
-      if (!profile) {
-        errorEl.innerText = "❌ Profil introuvable";
-        return;
-      }
-
-      // ✅ 🔥 bloquer si désactivé
-      if (profile.active === false) {
-        await supabaseClient.auth.signOut();
-        errorEl.innerText = "⛔ Compte désactivé";
-        return;
-      }
-
-      // ✅ session
-      localStorage.setItem("isLoggedIn", "true");
-      localStorage.setItem("userId", user.id);
-      localStorage.setItem("email", user.email);
-      localStorage.setItem("username", profile.username);
-      localStorage.setItem("userRole", profile.role);
-
-      window.location.href = profile.role === "admin" ? "admin" : "index";
-      return;
+      profile = prof;
+      onlineSuccess = true;
     }
 
-    // ✅ ✅ ✅ OFFLINE → fallback local
-    console.log("📴 Mode offline → fallback");
+  } catch (err) {
 
-    const users = JSON.parse(localStorage.getItem("users") || "[]");
+    console.warn("⚠️ OFFLINE détecté (fetch failed)");
+  }
 
-    const user = users.find(u =>
-      u.username === username &&
-      u.password === btoa(password)
-    );
+  // ✅ ✅ ✅ SI ONLINE OK
+  if (onlineSuccess && profile) {
 
-    if (!user) {
-      errorEl.innerText = "❌ Identifiants incorrects";
-      return;
-    }
-
-    // ✅ vérifier actif
-    if (user.active === false) {
+    if (profile.active === false) {
       errorEl.innerText = "⛔ Compte désactivé";
       return;
     }
 
-    // ✅ session offline
+    // ✅ stock OFFLINE
+    localStorage.setItem("offlineUser", JSON.stringify({
+      username: profile.username,
+      password: btoa(password.trim()),
+      role: profile.role,
+      active: profile.active
+    }));
+
+    console.log("💾 offlineUser sauvegardé");
+
     localStorage.setItem("isLoggedIn", "true");
-    localStorage.setItem("username", user.username);
-    localStorage.setItem("userRole", user.role);
+    localStorage.setItem("username", profile.username);
+    localStorage.setItem("userRole", profile.role);
 
-    window.location.href = user.role === "admin" ? "admin" : "index";
+    window.location.href = profile.role === "admin" ? "admin" : "index";
 
-  } catch (err) {
-
-    console.error("❌ ERROR:", err);
-    errorEl.innerText = "❌ Erreur réseau";
-
+    return;
   }
+
+  // ✅ ✅ ✅ FALLBACK OFFLINE
+  console.log("📴 MODE OFFLINE");
+
+  const offlineUser = JSON.parse(localStorage.getItem("offlineUser"));
+
+  console.log("👤 offlineUser:", offlineUser);
+
+  if (!offlineUser) {
+    errorEl.innerText = "❌ Aucun utilisateur offline";
+    return;
+  }
+
+  const inputUsername = username.toLowerCase().trim();
+  const inputPassword = btoa(password.trim());
+
+  const storedUsername = offlineUser.username.toLowerCase().trim();
+  const storedPassword = offlineUser.password;
+
+  console.log("🔍 INPUT:", inputUsername, inputPassword);
+  console.log("🔍 STORED:", storedUsername, storedPassword);
+
+  if (
+    inputUsername !== storedUsername ||
+    inputPassword !== storedPassword
+  ) {
+    errorEl.innerText = "❌ Identifiants incorrects";
+    return;
+  }
+
+  if (offlineUser.active === false) {
+    errorEl.innerText = "⛔ Compte désactivé";
+    return;
+  }
+
+  console.log("✅ LOGIN OFFLINE OK");
+
+  localStorage.setItem("isLoggedIn", "true");
+  localStorage.setItem("username", offlineUser.username);
+  localStorage.setItem("userRole", offlineUser.role);
+
+  window.location.href = offlineUser.role === "admin" ? "admin" : "index";
 }
 
 
@@ -114,20 +131,19 @@ document.getElementById("password")?.addEventListener("input", () => {
 
 
 // ✅ LIAISON BOUTON (ULTRA FIABLE)
-document.addEventListener("DOMContentLoaded", function () {
+document.addEventListener("DOMContentLoaded", () => {
 
-  const btn = document.getElementById("loginBtn");
+  const loginBtn = document.getElementById("loginBtn");
 
-  if (btn) {
-    btn.addEventListener("click", login);
-  } else {
-    alert("Bouton login introuvable ❌");
+  if (loginBtn) {
+    loginBtn.addEventListener("click", login);
   }
 
-});
+  // ✅ touche ENTER
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") {
+      login();
+    }
+  });
 
-document.getElementById("password").addEventListener("keypress", function (e) {
-  if (e.key === "Enter") {
-    document.getElementById("loginBtn").click();
-  }
 });

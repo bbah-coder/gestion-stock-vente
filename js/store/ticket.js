@@ -9,17 +9,17 @@ let showAllTickets = false;
 const input = document.getElementById("searchPhoneTicket");
 const clearBtn = document.getElementById("clearSearch");
 
-if(input && !input.dataset.bound){
+if (input && !input.dataset.bound) {
   input.addEventListener("input", renderTickets);
   input.dataset.bound = "true"; // ✅ évite doublons
 }
 
-if(input && clearBtn){
+if (input && clearBtn) {
 
   // ✅ affichage croix
   input.addEventListener("input", () => {
 
-    if(input.value){
+    if (input.value) {
       clearBtn.parentElement.classList.add("active");
     } else {
       clearBtn.parentElement.classList.remove("active");
@@ -41,7 +41,7 @@ if(input && clearBtn){
 
 /*NORMALISATION TICKETS*/
 
-function getTickets(){
+function getTickets() {
 
   const sales = JSON.parse(localStorage.getItem("sales") || "[]");
 
@@ -63,7 +63,7 @@ function getTickets(){
     credit: s.payment?.remaining || 0,
 
     items: s.items || [],
-    
+
     clientPhone: s.clientPhone || s.payment?.clientPhone || ""
 
   }));
@@ -71,9 +71,9 @@ function getTickets(){
 }
 
 /* ✅ HELPER PAIEMENT */
-function getPaymentLabel(mode){
+function getPaymentLabel(mode) {
 
-  switch(mode){
+  switch (mode) {
     case "cash": return "💵 Comptant";
     case "credit": return "📋 Crédit";
     case "mobile": return "📱 Mobile";
@@ -83,10 +83,10 @@ function getPaymentLabel(mode){
 }
 
 /* ✅ RENDER TICKETS PRO */
-function renderTickets(){
+function renderTickets() {
 
   const tickets = getTickets();
-  
+
 
   const list = document.getElementById("ticketList");
   list.innerHTML = "";
@@ -97,22 +97,22 @@ function renderTickets(){
   // ✅ bouton retour en haut (si mode ALL)
   if (showAllTickets) {
 
-      const topBtn = document.createElement("button");
-      topBtn.id = "ticketBackTop";
-      topBtn.textContent = "🔙 Retour";
+    const topBtn = document.createElement("button");
+    topBtn.id = "ticketBackTop";
+    topBtn.textContent = "🔙 Retour";
 
-      topBtn.className = "ticket-load-btn";
+    topBtn.className = "ticket-load-btn";
 
-      topBtn.onclick = () => {
-          showAllTickets = false;
-          renderTickets();
-          window.scrollTo({
-              top: 0,
-              behavior: "smooth"
-          });
-      };
+    topBtn.onclick = () => {
+      showAllTickets = false;
+      renderTickets();
+      window.scrollTo({
+        top: 0,
+        behavior: "smooth"
+      });
+    };
 
-      list.appendChild(topBtn);
+    list.appendChild(topBtn);
   }
 
 
@@ -127,137 +127,142 @@ function renderTickets(){
   const yesterday = yesterdayDate.toISOString().split("T")[0];
 
   // ✅ FILTRE
-   // ✅ nettoyer les valeurs
-   const clean = (str) =>
-   (str || "").toLowerCase().replace(/\s+/g, "");
+  // ✅ nettoyer les valeurs
+  const clean = (str) =>
+    (str || "").toLowerCase().replace(/\s+/g, "");
 
-   // ✅ valeur recherche
-   const searchPhoneRaw = document
-       .getElementById("searchPhoneTicket")
-       ?.value || "";
+  // ✅ valeur recherche
+  const searchPhoneRaw = document
+    .getElementById("searchPhoneTicket")
+    ?.value || "";
 
-   const searchPhone = clean(searchPhoneRaw);
+  const searchPhone = clean(searchPhoneRaw);
 
-   // ✅ filtre
-   const filtered = tickets.filter(t => {
-     
-       //console.log(t.clientPhone);
+  // ✅ filtre
+  const filtered = tickets.filter(t => {
 
-     const ticketDate = new Date(t.date).toISOString().split("T")[0];
+    //console.log(t.clientPhone);
 
-     const matchDate =
-         !dateFilter ? true : ticketDate === dateFilter;
+    const ticketDate = new Date(t.date).toISOString().split("T")[0];
 
-     const matchPayment =
-         paymentFilter === "all" || t.payment === paymentFilter;
+    const matchDate =
+      !dateFilter ? true : ticketDate === dateFilter;
 
-     // ✅ ✅ NOUVEAU FILTRE TÉLÉPHONE
-     const phone = clean(t.clientPhone);
+    const matchPayment =
+      paymentFilter === "all" || t.payment === paymentFilter;
 
-     const matchPhone =
-         !searchPhone
-          ? true
-         : phone.includes(searchPhone);
+    // ✅ ✅ NOUVEAU FILTRE TÉLÉPHONE
+    const phone = clean(t.clientPhone);
+
+    const matchPhone =
+      !searchPhone
+        ? true
+        : phone.includes(searchPhone);
 
     return matchDate && matchPayment && matchPhone;
-   });
-   
+  });
+
 
   // ✅ TRI (plus récent en haut)
   filtered.sort((a, b) => {
     return new Date(b.date) - new Date(a.date);
 
+  });
+
+  // ✅ PAGINATION
+  let visible;
+
+  if (showAllTickets) {
+    visible = filtered; // ✅ tous les tickets
+  } else {
+    visible = filtered.slice(0, ticketPerPage); // ✅ seulement 4
+  }
+
+  /*GROUPER PAR MOIS*/
+  const grouped = {};
+
+  visible.forEach(t => {
+
+    const dateObj = new Date(t.date);
+
+    const key = dateObj.getFullYear() + "-" + (dateObj.getMonth() + 1);
+
+    const label = dateObj.toLocaleString("fr-FR", {
+      month: "long",
+      year: "numeric"
     });
 
-    // ✅ PAGINATION
-    let visible;
-
-    if (showAllTickets) {
-        visible = filtered; // ✅ tous les tickets
-    } else {
-        visible = filtered.slice(0, ticketPerPage); // ✅ seulement 4
+    if (!grouped[key]) {
+      grouped[key] = {
+        label,
+        tickets: []
+      };
     }
-    
-   /*GROUPER PAR MOIS*/
-    const grouped = {};
 
-    visible.forEach(t => {
-
-        const dateObj = new Date(t.date);
-
-        const key = dateObj.getFullYear() + "-" + (dateObj.getMonth() + 1);
-
-        const label = dateObj.toLocaleString("fr-FR", {
-            month: "long",
-            year: "numeric"
-        });
-
-        if (!grouped[key]) {
-            grouped[key] = {
-                label,
-                tickets: []
-            };
-        }
-
-        grouped[key].tickets.push(t);
-    });
+    grouped[key].tickets.push(t);
+  });
 
   // ✅ AFFICHAGE VIDE
   if (visible.length === 0) {
 
-      const empty = document.createElement("div");
-      empty.className = "ticket-empty";
+    const empty = document.createElement("div");
+    empty.className = "ticket-empty";
 
-      if (dateFilter) {
-          empty.innerHTML = `
+    if (dateFilter) {
+      empty.innerHTML = `
       📭 Aucun ticket pour cette date<br>
       <small>Essayez une autre date ou changez le filtre</small>
     `;
-      } else {
-          empty.innerHTML = `
+    } else {
+      empty.innerHTML = `
       📭 Aucun ticket trouvé<br>
       <small>Vérifiez vos filtres</small>
     `;
-      }
-
-      list.appendChild(empty);
-
-      // ✅ cacher bouton
-      const btn = document.getElementById("ticketLoadMore");
-      btn.style.display = "none";
-
-      return;
     }
 
-      Object.values(grouped)
-      .sort((a, b) => new Date(b.tickets[0].date) - new Date(a.tickets[0].date))
-      .forEach(group => {
+    list.appendChild(empty);
 
-          const header = document.createElement("div");
-          header.className = "ticket-month";
-          header.textContent = group.label.toUpperCase();
+    // ✅ cacher bouton
+    const btn = document.getElementById("ticketLoadMore");
+    btn.style.display = "none";
 
-          list.appendChild(header);
+    return;
+  }
 
-          group.tickets.forEach(t => {
+  Object.values(grouped)
+    .sort((a, b) => new Date(b.tickets[0].date) - new Date(a.tickets[0].date))
+    .forEach(group => {
 
-              const card = document.createElement("div");
-              card.className = "ticket-card";
+      const header = document.createElement("div");
+      header.className = "ticket-month";
+      header.textContent = group.label.toUpperCase();
 
-              const dateObj = new Date(t.date);
-              const time = dateObj.toLocaleTimeString([], {
-                  hour: '2-digit',
-                  minute: '2-digit'
-              });
+      list.appendChild(header);
 
-              card.innerHTML = `
-      <div class="ticket-header">🧾 Ticket</div>
+      group.tickets.forEach(t => {
 
-      <div class="ticket-date">
-        ${dateObj.toLocaleDateString()} • ${time}
+        const card = document.createElement("div");
+        card.className = "ticket-card";
+
+        const dateObj = new Date(t.date);
+        const time = dateObj.toLocaleTimeString([], {
+          hour: '2-digit',
+          minute: '2-digit'
+        });
+
+        card.innerHTML = `
+      <div class="ticket-header">
+            <span class="ticket-title">📄 Ticket</span>
+            <span class="ticket-date-right">
+           ${dateObj.toLocaleDateString('fr-FR', { day: '2-digit', month: 'long' })}
+           </span>
       </div>
 
-      <div class="ticket-payment">
+     <div class="ticket-time">
+       ${dateObj.toLocaleDateString()} • ${time}
+     </div>
+
+     <div class="ticket-payment">
         Paiement : ${getPaymentLabel(t.payment)}
       </div>
 
@@ -271,25 +276,25 @@ function renderTickets(){
       </div>
     `;
 
-            list.appendChild(card);
-          });
-
+        list.appendChild(card);
       });
 
+    });
+
   // ✅ BOUTON LOAD MORE
-   const btn = document.getElementById("ticketLoadMore");
+  const btn = document.getElementById("ticketLoadMore");
 
-   // ✅ TOUJOURS AFFICHER LE BOUTON
-   btn.style.display = "block";
+  // ✅ TOUJOURS AFFICHER LE BOUTON
+  btn.style.display = "block";
 
-   btn.textContent = showAllTickets
-        ? "🔙 Retour"
-       : "Afficher plus";
-  }
-  
+  btn.textContent = showAllTickets
+    ? "🔙 Retour"
+    : "Afficher plus";
+}
+
 
 /* DETAIL TICKET */
-function showTicketDetail(id){
+function showTicketDetail(id) {
 
   const tickets = getTickets();
 
@@ -297,7 +302,7 @@ function showTicketDetail(id){
 
   console.log("DETAIL TICKET:", t);
 
-  if(!t){
+  if (!t) {
     alert("❌ Ticket introuvable");
     return;
   }
@@ -309,22 +314,22 @@ function showTicketDetail(id){
   let totalBrut = 0;
 
   if (!t.items || t.items.length === 0) {
-      text += "Aucun produit ❌\n";
+    text += "Aucun produit ❌\n";
   } else {
 
-      t.items.forEach(item => {
+    t.items.forEach(item => {
 
-          const qty = item.quantity || item.qty || 0;
-          const price = item.price || 0;
-          const subtotal = qty * price;
+      const qty = item.quantity || item.qty || 0;
+      const price = item.price || 0;
+      const subtotal = qty * price;
 
-          totalBrut += subtotal;
+      totalBrut += subtotal;
 
-          // ✅ NOUVEAU FORMAT PRO
-          text += `${item.name} x ${qty}\n`;
-          text += `${qty} x ${formatPrice(price)} GNF = ${formatPrice(subtotal)} GNF\n\n`;
+      // ✅ NOUVEAU FORMAT PRO
+      text += `${item.name} x ${qty}\n`;
+      text += `${qty} x ${formatPrice(price)} GNF = ${formatPrice(subtotal)} GNF\n\n`;
 
-      });
+    });
   }
 
   const remise = t.remise || 0;
@@ -336,23 +341,23 @@ function showTicketDetail(id){
   text += `Total brut : ${formatPrice(totalBrut)}\n`;
 
   if (remise > 0) {
-      text += `Remise : -${formatPrice(remise)}\n`;
+    text += `Remise : -${formatPrice(remise)}\n`;
   }
 
   if (t.payment === "credit") {
 
-      const remaining = t.credit || 0;
-      const total = t.total || totalBrut;
+    const remaining = t.credit || 0;
+    const total = t.total || totalBrut;
 
-      const encaisse = total - remaining;
+    const encaisse = total - remaining;
 
-      if (encaisse > 0) {
-          text += `✅ Payé : ${formatPrice(encaisse)} GNF\n`;
-      }
+    if (encaisse > 0) {
+      text += `✅ Payé : ${formatPrice(encaisse)} GNF\n`;
+    }
 
-      if (remaining > 0) {
-          text += `🟠 Reste à payer : ${formatPrice(remaining)} GNF\n`;
-      }
+    if (remaining > 0) {
+      text += `🟠 Reste à payer : ${formatPrice(remaining)} GNF\n`;
+    }
   }
 
   text += `\n✅ Total net : ${formatPrice(totalNet)} GNF`;
@@ -362,8 +367,8 @@ function showTicketDetail(id){
 
 /*PDF LABEL */
 
-function getPaymentLabelPDF(mode){
-  switch(mode){
+function getPaymentLabelPDF(mode) {
+  switch (mode) {
     case "cash": return "COMPTANT";
     case "credit": return "CREDIT";
     case "mobile": return "MOBILE";
@@ -371,21 +376,21 @@ function getPaymentLabelPDF(mode){
   }
 }
 
-function cleanText(text){
+function cleanText(text) {
   return String(text)
     .replace(/[^\x00-\x7F]/g, "") // ✅ supprime caractères corrompus
     .replace(/\s+/g, " ")         // ✅ nettoie espaces
     .trim();
 }
 
-function formatPricePDFTicket(value){
+function formatPricePDFTicket(value) {
   return Number(value || 0)
     .toFixed(0)       // ✅ pas de décimales inutiles
     .replace(/,/g, ""); // ✅ évite les séparateurs exotiques
 }
 
 /* EXPORT PDF */
-function exportTicketPDF(id){
+function exportTicketPDF(id) {
 
   const { jsPDF } = window.jspdf;
 
@@ -397,7 +402,9 @@ function exportTicketPDF(id){
   const tickets = getTickets();
   const t = tickets.find(x => String(x.id) === String(id));
 
-  if(!t){
+  const store = getStoreInfo();
+
+  if (!t) {
     alert("❌ Ticket introuvable");
     return;
   }
@@ -407,14 +414,35 @@ function exportTicketPDF(id){
   const date = new Date(t.date);
 
   // ✅ HEADER
-  doc.setFont("helvetica", "normal");
-
+  // ✅ NOM MAGASIN
+  // ✅ NOM MAGASIN
+  doc.setFont("helvetica", "bold");
   doc.setFontSize(12);
-  doc.text("MON SHOP", 40, y, { align: "center" });
+  doc.text(store.name || "MON SHOP", 40, y, { align: "center" });
+
+  y += 5;
+
+  // ✅ TELEPHONE
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(9);
+  if (store.phone) {
+    doc.text(`Tel: ${store.phone}`, 40, y, { align: "center" });
+    y += 4;
+  }
+
+  // ✅ ADRESSE
+  if (store.address) {
+    doc.text(store.address, 40, y, { align: "center" });
+    y += 4;
+  }
+
+  // ✅ séparation visuelle
+  y += 2;
+  doc.text("------------------------------", 40, y, { align: "center" });
 
   y += 6;
-  doc.setFontSize(10);
 
+  doc.setFontSize(10);
   doc.text(cleanText(`Ticket #${t.id}`), 40, y, { align: "center" });
 
   y += 5;
@@ -430,7 +458,7 @@ function exportTicketPDF(id){
 
   // ✅ LIGNE
   y += 5;
-  doc.text("------------------------------", 5, y);
+  doc.text("----------------------------------------------------------", 5, y);
 
   // ✅ PRODUITS
   y += 6;
@@ -461,7 +489,7 @@ function exportTicketPDF(id){
 
   // ✅ LIGNE
   y += 2;
-  doc.text("------------------------------", 5, y);
+  doc.text("----------------------------------------------------------", 5, y);
 
   // ✅ TOTAUX
   y += 6;
@@ -474,32 +502,32 @@ function exportTicketPDF(id){
   y += 5;
 
   if (remise > 0) {
-      doc.text(cleanText(`Remise : -${formatPrice(remise)} GNF`), 5, y);
-      y += 5;
+    doc.text(cleanText(`Remise : -${formatPrice(remise)} GNF`), 5, y);
+    y += 5;
   }
 
   if (t.payment === "credit") {
 
-      const remaining = t.credit || 0;
-      const total = t.total || totalBrut;
+    const remaining = t.credit || 0;
+    const total = t.total || totalBrut;
 
-      const encaisse = total - remaining;
+    const encaisse = total - remaining;
 
-      if (encaisse > 0) {
-          doc.text(`Payé : ${formatPricePDF(encaisse)} GNF`, 5, y);
-          y += 5;
-      }
+    if (encaisse > 0) {
+      doc.text(`Payé : ${formatPricePDF(encaisse)} GNF`, 5, y);
+      y += 5;
+    }
 
-      if (remaining > 0) {
-          doc.text(`Reste à payer : ${formatPricePDF(remaining)} GNF`, 5, y);
-          y += 5;
-      }
+    if (remaining > 0) {
+      doc.text(`Reste à payer : ${formatPricePDF(remaining)} GNF`, 5, y);
+      y += 5;
+    }
 
-      // ✅ bonus (si tout payé)
-      if (remaining <= 0) {
-          doc.text("Credit solde", 5, y);
-          y += 5;
-      }
+    // ✅ bonus (si tout payé)
+    if (remaining <= 0) {
+      doc.text("Credit solde", 5, y);
+      y += 5;
+    }
   }
 
 
@@ -529,12 +557,12 @@ document.getElementById("ticketLoadMore").onclick = () => {
 
 
 /* FILTRES */
-document.getElementById("ticketDate").onchange = () =>{
+document.getElementById("ticketDate").onchange = () => {
   ticketPage = 1;
   renderTickets();
 };
 
-document.getElementById("ticketPayment").onchange = () =>{
+document.getElementById("ticketPayment").onchange = () => {
   ticketPage = 1;
   renderTickets();
 };

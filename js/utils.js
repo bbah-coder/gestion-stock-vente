@@ -27,22 +27,35 @@
  *
  ************************************************************/
 
- const supabaseClient = supabase.createClient(
+const supabaseClient = supabase.createClient(
   "https://amtlfqzhuqwrudaachvy.supabase.co",
   "sb_publishable_fc5s-5QrMhO9Daiw-ADDcQ_OA6HRPpD"
 );
 
+
+//INFO MAGASIN 
+
+function getStoreInfo() {
+
+  const store = JSON.parse(localStorage.getItem("storeInfo"));
+
+  return store || {
+    name: "MON SHOP",
+    phone: "",
+    address: ""
+  };
+}
 // ✅ transforme username → email technique
-function toEmail(username){
+function toEmail(username) {
   return username.trim().toLowerCase() + "@posapp.com";
 }
- function getPaymentSplit(sale){
+function getPaymentSplit(sale) {
 
   const saleTotal = sale.payment?.total || sale.total || 0;
 
   let totalPaid = 0;
 
-  if(sale.payment?.type === "credit"){
+  if (sale.payment?.type === "credit") {
     const payments = sale.payment.payments || [];
     totalPaid = payments.reduce((sum, p) => sum + (p.amount || 0), 0);
   } else {
@@ -54,15 +67,15 @@ function toEmail(username){
     credit: saleTotal - totalPaid
   };
 }
- 
- /************************************************************
- * 💰 FORMAT PRIX (UI)
- * ----------------------------------------------------------
- * - format français
- * - 2 décimales
- * - remplace virgule par point
- ************************************************************/
-function formatPrice(value){
+
+/************************************************************
+* 💰 FORMAT PRIX (UI)
+* ----------------------------------------------------------
+* - format français
+* - 2 décimales
+* - remplace virgule par point
+************************************************************/
+function formatPrice(value) {
   return Number(value)
     .toLocaleString("fr-FR", {
       minimumFractionDigits: 2,
@@ -77,7 +90,7 @@ function formatPrice(value){
  * - arrondi
  * - séparateur milliers espace
  ************************************************************/
-function formatPricePDF(value){
+function formatPricePDF(value) {
   return Math.round(value)
     .toString()
     .replace(/\B(?=(\d{3})+(?!\d))/g, " ");
@@ -88,12 +101,12 @@ function formatPricePDF(value){
  * ----------------------------------------------------------
  * - convertit en format FR lisible
  ************************************************************/
-function formatDate(date){
+function formatDate(date) {
 
   return new Date(date).toLocaleDateString("fr-FR");
 }
 
-function formatDateFR(date){
+function formatDateFR(date) {
   const d = new Date(date);
 
   return d.toLocaleDateString("fr-FR", {
@@ -110,24 +123,24 @@ function formatDateFR(date){
  * - orange : >= 20%
  * - rouge : < 5%
  ************************************************************/
-function getPercentColor(percent){
+function getPercentColor(percent) {
 
   percent = Number(percent);
 
-  if(percent >= 40) return "#27ae60"; // ✅ fort (vert)
-  if(percent >= 20) return "#f39c12"; // ✅ moyen (orange)
-  if(percent < 5) return "#e74c3c";   // ✅ faible (rouge)
+  if (percent >= 40) return "#27ae60"; // ✅ fort (vert)
+  if (percent >= 20) return "#f39c12"; // ✅ moyen (orange)
+  if (percent < 5) return "#e74c3c";   // ✅ faible (rouge)
 
   return "black"; // ✅ normal
-} 
+}
 
 /************************************************************
  * 📅 FORMAT MOIS LISIBLE
  * ----------------------------------------------------------
  * Exemple : "2026-06" → "juin 2026"
  ************************************************************/
-function formatMonthLabel(monthValue){
-  if(!monthValue) return "";
+function formatMonthLabel(monthValue) {
+  if (!monthValue) return "";
 
   const [year, month] = monthValue.split("-");
 
@@ -144,14 +157,14 @@ function formatMonthLabel(monthValue){
  * ----------------------------------------------------------
  * Exemple : "2026-06" → "2026-05"
  ************************************************************/
-function getPreviousMonth(monthValue){
+function getPreviousMonth(monthValue) {
   const [year, month] = monthValue.split("-").map(Number);
 
   const date = new Date(year, month - 1);
   date.setMonth(date.getMonth() - 1);
 
   const y = date.getFullYear();
-  const m = (date.getMonth() + 1).toString().padStart(2,"0");
+  const m = (date.getMonth() + 1).toString().padStart(2, "0");
 
   return `${y}-${m}`;
 }
@@ -161,8 +174,8 @@ function getPreviousMonth(monthValue){
  * ----------------------------------------------------------
  * - retourne variation entre deux valeurs
 ************************************************************/
-function getEvolution(current, prev){
-  if(!prev) return "0%";
+function getEvolution(current, prev) {
+  if (!prev) return "0%";
 
   const diff = ((current - prev) / prev) * 100;
   return diff.toFixed(1) + "%";
@@ -174,7 +187,7 @@ function getEvolution(current, prev){
  * ----------------------------------------------------------
  * Exemple : "2026-06" → "2025-06"
  ************************************************************/
-function getSameMonthLastYear(monthValue){
+function getSameMonthLastYear(monthValue) {
   const [year, month] = monthValue.split("-");
   return `${Number(year) - 1}-${month}`;
 }
@@ -185,28 +198,28 @@ function getSameMonthLastYear(monthValue){
  * - retourne top N produits
  * - inclut égalités sur dernière position
 ************************************************************/
-function getTopProductsWithTie(stats, limit = 3){
+function getTopProductsWithTie(stats, limit = 3) {
 
   const sorted = Object.entries(stats)
-    .sort((a,b) => b[1] - a[1]);
+    .sort((a, b) => b[1] - a[1]);
 
-  if(sorted.length === 0) return [];
+  if (sorted.length === 0) return [];
 
   const result = [];
   let rankValue = null;
 
-  for(let i = 0; i < sorted.length; i++){
+  for (let i = 0; i < sorted.length; i++) {
 
     const [name, qty] = sorted[i];
 
-    if(i < limit){
+    if (i < limit) {
       result.push([name, qty]);
       rankValue = qty;
-    } 
-    else if(qty === rankValue){
+    }
+    else if (qty === rankValue) {
       // ✅ inclure égalité
       result.push([name, qty]);
-    } 
+    }
     else {
       break;
     }
@@ -215,18 +228,18 @@ function getTopProductsWithTie(stats, limit = 3){
   return result;
 }
 
-function formatDateISO(date){
+function formatDateISO(date) {
 
-  if(!date) return "-";
+  if (!date) return "-";
 
   const d = new Date(date);
 
-  if(isNaN(d)) return "-";
+  if (isNaN(d)) return "-";
 
   return d.toISOString().split("T")[0]; // ✅ YYYY-MM-DD
 }
 
-function calcDiff(current, previous){
+function calcDiff(current, previous) {
 
   if (!previous || previous === 0) {
     return "—";
@@ -236,13 +249,13 @@ function calcDiff(current, previous){
 
   const formatted = diff.toFixed(1);
 
-  return diff > 0 
-    ? `+${formatted}%` 
+  return diff > 0
+    ? `+${formatted}%`
     : `${formatted}%`;
 }
 
 
-function colorDiff(value){
+function colorDiff(value) {
 
   if (value === "—") return "gray";
 

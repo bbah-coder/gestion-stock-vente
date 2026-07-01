@@ -36,13 +36,13 @@
  * - fixSales()                 → recalcul CA historique
  *
  ************************************************************/
- 
+
 const today = new Date().toISOString().split("T")[0];
- document.getElementById("filterDate").value = today;
- 
+document.getElementById("filterDate").value = today;
+
 //EVENT FILTRE CREDIT
- document.getElementById("searchCredit").addEventListener("input", renderCreditDashboard);
- 
+document.getElementById("searchCredit").addEventListener("input", renderCreditDashboard);
+
 const inputCredit = document.getElementById("searchCredit");
 const clearBtnCredit = document.getElementById("clearSearchCredit");
 
@@ -58,7 +58,7 @@ clearBtnCredit.addEventListener("click", () => {
   renderCreditDashboard(); // recharge ta liste
 });
 
- 
+
 /************************************************************
  * 🛒 AJOUT PRODUIT AU PANIER
  * ----------------------------------------------------------
@@ -133,14 +133,14 @@ clearBtnCredit.addEventListener("click", () => {
 }*/
 
 /*Nouvelle version compatible Mobile*/
-function vendreWithQty(index, btn){
+function vendreWithQty(index, btn) {
 
   // ✅ support desktop + mobile
   let input =
     document.getElementById(`qty-${index}`) ||
     document.getElementById(`qty-mobile-${index}`);
 
-  if(!input){
+  if (!input) {
     console.warn("Input non trouvé", index);
     return;
   }
@@ -149,7 +149,7 @@ function vendreWithQty(index, btn){
 
   const produit = products[index];
 
-  if(produit.stock <= 0){
+  if (produit.stock <= 0) {
     alert("❌ Stock épuisé");
     return;
   }
@@ -163,9 +163,9 @@ function vendreWithQty(index, btn){
 
   const exist = cart.find(i => i.index === index);
 
-  if(exist){
+  if (exist) {
 
-    if(exist.quantity + q > produit.stock){
+    if (exist.quantity + q > produit.stock) {
       alert(`❌ Stock insuffisant\nDisponible : ${produit.stock}`);
       return;
     }
@@ -174,7 +174,7 @@ function vendreWithQty(index, btn){
 
   } else {
 
-    if(q > produit.stock){
+    if (q > produit.stock) {
       alert(`❌ Stock insuffisant\nDisponible : ${produit.stock}`);
       return;
     }
@@ -188,7 +188,7 @@ function vendreWithQty(index, btn){
   }
 
   // ✅ feedback visuel (sécurisé 🔥)
-  if(btn && btn.style){
+  if (btn && btn.style) {
     btn.innerText = "✅";
     btn.style.background = "#2ecc71";
 
@@ -199,7 +199,7 @@ function vendreWithQty(index, btn){
   }
 
   // ✅ reset quantité
-  if(input.tagName === "INPUT"){
+  if (input.tagName === "INPUT") {
     input.value = 1;
   } else {
     input.innerText = 1;
@@ -212,22 +212,22 @@ function vendreWithQty(index, btn){
 }
 
 
-function changeQty(index, delta){
+function changeQty(index, delta) {
 
   let el = document.getElementById(`qty-mobile-${index}`);
 
-  if(!el){
+  if (!el) {
     el = document.getElementById(`qty-${index}`);
   }
 
-  if(!el){
+  if (!el) {
     console.warn("❌ qty introuvable:", index);
     return;
   }
 
   let value;
 
-  if(el.tagName === "INPUT"){
+  if (el.tagName === "INPUT") {
     value = parseInt(el.value) || 0;
   } else {
     value = parseInt(el.innerText) || 0;
@@ -240,52 +240,52 @@ function changeQty(index, delta){
 
   // ✅ ✅ TABLETTE → PAS DE VALUE MANUEL
   if (!isTablet) {
-      value += delta;
+    value += delta;
 
-      if (value < 0)
-          value = 0;
-      if (value > max)
-          value = max;
+    if (value < 0)
+      value = 0;
+    if (value > max)
+      value = max;
 
-      if (el.tagName === "INPUT") {
-          el.value = value;
-      } else {
-          el.innerText = value;
-      }
+    if (el.tagName === "INPUT") {
+      el.value = value;
+    } else {
+      el.innerText = value;
+    }
   }
-    console.log("✅ qty updated:", index, value);
+  console.log("✅ qty updated:", index, value);
 
-    if (isTablet) {
+  if (isTablet) {
 
-        if (delta > 0) {
-            vendreWithQty(index, null);
-        } else {
-            let existing = cart.find(item => item.id === produit.id);
+    if (delta > 0) {
+      vendreWithQty(index, null);
+    } else {
+      let existing = cart.find(item => item.id === produit.id);
 
-            if (existing) {
-                existing.quantity -= 1;
+      if (existing) {
+        existing.quantity -= 1;
 
-                if (existing.quantity <= 0) {
-                    cart = cart.filter(item => item.id !== produit.id);
-                }
-            }
+        if (existing.quantity <= 0) {
+          cart = cart.filter(item => item.id !== produit.id);
         }
+      }
+    }
 
-        // ✅ ✅ 🔥 SYNCHRO UI AVEC CART
-        const existing = cart.find(item => item.id === produit.id);
-        const realQty = existing ? existing.quantity : 0;
+    // ✅ ✅ 🔥 SYNCHRO UI AVEC CART
+    const existing = cart.find(item => item.id === produit.id);
+    const realQty = existing ? existing.quantity : 0;
 
-        if (el.tagName === "INPUT") {
-            el.value = realQty;
-        } else {
-            el.innerText = realQty;
-        }
-   }
-   
-   // ✅ UI toujours
-   updateAddToCartButton();
-   updateCartMobileBtn();
-   //localStorage.setItem("cart", JSON.stringify(cart));
+    if (el.tagName === "INPUT") {
+      el.value = realQty;
+    } else {
+      el.innerText = realQty;
+    }
+  }
+
+  // ✅ UI toujours
+  updateAddToCartButton();
+  updateCartMobileBtn();
+  //localStorage.setItem("cart", JSON.stringify(cart));
 }
 
 
@@ -298,20 +298,20 @@ function changeQty(index, delta){
  * - quantité modifiable
  * - total ligne
  ************************************************************/
-function renderCart(){
-  
+function renderCart() {
+
   //const isMobile = window.innerWidth <= 768 && window.outerWidth === window.innerWidth;
-  const isMobileOrTablet  = window.matchMedia("(max-width: 1024px)").matches;
+  const isMobileOrTablet = window.matchMedia("(max-width: 1024px)").matches;
 
   const table = document.querySelector("#cartSection table");
   const mobileDiv = document.getElementById("cartMobileList");
 
   if (isMobileOrTablet) {
-      table.style.display = "none";
-      mobileDiv.style.display = "block";
+    table.style.display = "none";
+    mobileDiv.style.display = "block";
 
-      renderCartMobile();
-      return;
+    renderCartMobile();
+    return;
   }
 
   const div = document.getElementById("cartList");
@@ -321,7 +321,7 @@ function renderCart(){
 
   cart.forEach((item, i) => {
 
-    const product = products[item.index]; 
+    const product = products[item.index];
 
     const brut = item.price * item.quantity;
     const remise = Math.min(item.remise || 0, brut);
@@ -331,15 +331,15 @@ function renderCart(){
 
     const row = document.createElement("tr");
 
-row.innerHTML = `
+    row.innerHTML = `
 
   <td>
-    ${product && product.image 
-      ? `<div class="img-container">
+    ${product && product.image
+        ? `<div class="img-container">
            <img src="${product.image}" style="width:40px;height:40px;object-fit:cover;">
          </div>`
-      : `<div style="width:40px;height:40px;background:#eee;text-align:center;line-height:40px;">📦</div>`
-    }
+        : `<div style="width:40px;height:40px;background:#eee;text-align:center;line-height:40px;">📦</div>`
+      }
   </td>
 
   <td>${item.name}</td>
@@ -375,68 +375,68 @@ row.innerHTML = `
     div.appendChild(row);
   });
 
- const totalEl = document.getElementById("total");
-  
-// ✅ sécurité globale
- if (cart.length === 0) {
+  const totalEl = document.getElementById("total");
+
+  // ✅ sécurité globale
+  if (cart.length === 0) {
     creditData = null; // 🔥 reset automatique
-    
-  // ✅ redirection automatique vers produits
-  setTimeout(() => {
-    showSection("products");
-  }, 300);
 
- }
+    // ✅ redirection automatique vers produits
+    setTimeout(() => {
+      showSection("products");
+    }, 300);
+
+  }
 
 
- if (getPaymentMethod() === "credit" && creditData) {
+  if (getPaymentMethod() === "credit" && creditData) {
 
-     // ✅ total NET recalculé (IMPORTANT)
-      const totalNet = cart.reduce((sum, i) => {
+    // ✅ total NET recalculé (IMPORTANT)
+    const totalNet = cart.reduce((sum, i) => {
       const brut = i.price * i.quantity;
       const remise = Math.min(i.remise || 0, brut);
       return sum + (brut - remise);
-  }, 0);
+    }, 0);
 
-     // ✅ payé
+    // ✅ payé
     const paid = (creditData.payments || [])
-    .reduce((sum, p) => sum + p.amount, 0);
+      .reduce((sum, p) => sum + p.amount, 0);
 
-   // ✅ ✅ restant correct
+    // ✅ ✅ restant correct
     const remaining = Math.max(0, totalNet - paid);
 
 
-     totalEl.innerHTML = `
+    totalEl.innerHTML = `
     <div><strong>💰 Total :</strong> ${formatPrice(total)} GNF</div>
     <div style="color:#2ecc71;"><strong>✅ Payé :</strong> ${formatPrice(paid)} GNF</div>
     <div style="color:#e74c3c;"><strong>📋 Restant :</strong> ${formatPrice(remaining)} GNF</div>
   `;
 
- } else {
+  } else {
 
-     totalEl.innerHTML = `
+    totalEl.innerHTML = `
     <div><strong>💰 Total :</strong> ${formatPrice(total)} GNF</div>
   `;
 
- }
+  }
 
   mobileDiv.style.display = "none";
   table.style.display = "table";
 
-  
+
   //document.getElementById("total").innerText = formatPrice(total);
 }
 
 
-function updateRemise(index, value){
+function updateRemise(index, value) {
 
   let remise = parseFloat(value) || 0;
 
   const item = cart[index];
   const brut = item.price * item.quantity;
 
-  if(remise > brut) remise = brut;
-  if(remise < 0) remise = 0;
+  if (remise > brut) remise = brut;
+  if (remise < 0) remise = 0;
 
   cart[index].remise = remise;
 
@@ -451,7 +451,7 @@ function updateRemise(index, value){
 /************************************************************
  * 🔄 MODIFIER QUANTITÉ PANIER
  ************************************************************/
-function updateQty(i, val){
+function updateQty(i, val) {
 
   let newQty = parseInt(val) || 1;
 
@@ -459,10 +459,10 @@ function updateQty(i, val){
   const max = product?.stock || 0;
 
   // ✅ minimum Bloqué à 1
-  if(newQty < 1) newQty = 1;
+  if (newQty < 1) newQty = 1;
 
   // ✅ maximum stock
-  if(newQty > max) newQty = max;
+  if (newQty > max) newQty = max;
 
   cart[i].quantity = newQty;
 
@@ -482,11 +482,11 @@ function updateQty(i, val){
 /************************************************************
  * ❌ SUPPRIMER PRODUIT PANIER
  ************************************************************/
-function removeItem(i){
-  cart.splice(i,1);
-  
-// ✅ reset crédit si panier vide
-  if(cart.length === 0){
+function removeItem(i) {
+  cart.splice(i, 1);
+
+  // ✅ reset crédit si panier vide
+  if (cart.length === 0) {
     creditData = null;
   }
 
@@ -505,40 +505,40 @@ function removeItem(i){
  * - enregistre logs
  * - reset panier
  ************************************************************/
-function validerPanier(){
+function validerPanier() {
 
   let total = 0;
   let totalItems = 0;
-  
+
   let totalBrut = 0;
   let totalRemise = 0;
   let totalNet = 0;
-  
+
   const clientPhone = document.getElementById("ticketPhone")?.value || "";
 
   //const paymentMethod = document.getElementById("paymentMethod").value;
   const paymentMethod = getPaymentMethod();
 
   // ✅ sécurité panier vide
-  if(cart.length === 0){
+  if (cart.length === 0) {
     alert("❌ Panier vide, impossible de valider la vente");
     return;
   }
 
   // ✅ 1. CALCUL + STOCK
- for (const item of cart) {
+  for (const item of cart) {
 
     const product = products[item.index];
 
     if (product.stock < item.quantity) {
-        alert(`❌ Stock insuffisant pour ${product.name}`);
-        return;
+      alert(`❌ Stock insuffisant pour ${product.name}`);
+      return;
     }
 
     product.stock -= item.quantity;
 
     if (product.sold === undefined) {
-        product.sold = 0;
+      product.sold = 0;
     }
 
     product.sold += item.quantity;
@@ -556,15 +556,15 @@ function validerPanier(){
     totalItems += item.quantity;
 
     stockLogs.unshift({
-        product: item.name,
-        type: "VENTE",
-        quantity: item.quantity,
-        date: new Date().toLocaleString()
+      product: item.name,
+      type: "VENTE",
+      quantity: item.quantity,
+      date: new Date().toLocaleString()
     });
-}
+  }
 
   // ✅ sécurité total
-  if(totalNet === 0){
+  if (totalNet === 0) {
     alert("❌ Le montant de la vente est nul");
     return;
   }
@@ -572,15 +572,15 @@ function validerPanier(){
   // ✅ ✅ ✅ GESTION MODE DE PAIEMENT (VERSION PRO)
   let paymentDetails = null;
 
-  if(paymentMethod === "credit"){
+  if (paymentMethod === "credit") {
 
-    if(!creditData){
+    if (!creditData) {
       alert("❌ Veuillez saisir les infos crédit");
       return;
     }
 
     // ✅ 🔥 MISE À NIVEAU (sécurité si ancien modèle)
-    if(!creditData.payments){
+    if (!creditData.payments) {
 
       creditData.payments = creditData.paidNow > 0 ? [{
         amount: creditData.paidNow,
@@ -601,7 +601,7 @@ function validerPanier(){
     paymentDetails = creditData;
   }
 
-  if(paymentMethod === "mobile"){
+  if (paymentMethod === "mobile") {
     paymentDetails = {
       type: "mobile",
       total: totalNet,
@@ -609,7 +609,7 @@ function validerPanier(){
     };
   }
 
-  if(paymentMethod === "cash"){
+  if (paymentMethod === "cash") {
     paymentDetails = {
       type: "cash",
       total: totalNet,
@@ -622,32 +622,32 @@ function validerPanier(){
 
   // ✅ ✅ ✅ ENREGISTREMENT VENTE (PRO)
   sales.push({
-    
-      id: Date.now(),
 
-      items: cart.map(item => ({
-              name: item.name,
-              quantity: item.quantity,
-              price: item.price,
-              remise: item.remise || 0,
-              total: (item.price * item.quantity) - (item.remise || 0)
-          })),
+    id: Date.now(),
 
-      totalBrut,
-      totalRemise,
-      total: totalNet, // ✅ IMPORTANT
-      clientPhone,
+    items: cart.map(item => ({
+      name: item.name,
+      quantity: item.quantity,
+      price: item.price,
+      remise: item.remise || 0,
+      total: (item.price * item.quantity) - (item.remise || 0)
+    })),
 
-      payment: {
-          ...paymentDetails,
-          total: totalNet, // ✅ crédit basé sur net
-          remaining: totalNet - (paymentDetails.payments?.reduce((s,p)=>s+p.amount,0) || 0)
-      },
+    totalBrut,
+    totalRemise,
+    total: totalNet, // ✅ IMPORTANT
+    clientPhone,
 
-      date: new Date()
+    payment: {
+      ...paymentDetails,
+      total: totalNet, // ✅ crédit basé sur net
+      remaining: totalNet - (paymentDetails.payments?.reduce((s, p) => s + p.amount, 0) || 0)
+    },
+
+    date: new Date()
   });
-  
-   //console.log("PAYMENT SAVED:", paymentMethod);
+
+  //console.log("PAYMENT SAVED:", paymentMethod);
 
 
   // ✅ sauvegardes
@@ -662,7 +662,7 @@ function validerPanier(){
   creditData = null;
 
   // ✅ refresh UI
-  renderCart(); 
+  renderCart();
   renderProducts();
   renderDashboard();
   renderSalesByDay();
@@ -673,7 +673,7 @@ function validerPanier(){
   updateCartMobileBtn();
 
   alert("✅ Vente validée avec succès");
-  
+
   document.querySelector('input[name="paymentMethod"][value="cash"]').checked = true;
   document.getElementById("ticketPhone").value = "";
 
@@ -686,7 +686,7 @@ function validerPanier(){
  * Met à jour le nombre d’articles affiché
  ************************************************************/
 
-function updateCartBadge(){
+function updateCartBadge() {
 
   const btn = document.getElementById("cartBtn");
 
@@ -703,7 +703,7 @@ function updateCartBadge(){
    `;
 
   // ✅ actif si panier non vide
-  if(totalItems > 0){
+  if (totalItems > 0) {
 
     // ✅ couleur active
     btn.classList.add("cart-active");
@@ -727,12 +727,12 @@ function updateCartBadge(){
  * - nb articles
  * - top produits
  ************************************************************/
- 
- function renderDashboard(){
-  
+
+function renderDashboard() {
+
   const salesList = document.getElementById("salesList");
   salesList.innerHTML = "";
-  
+
   // ✅ KPI
   let caEncaisse = 0;
   let encours = 0;
@@ -746,15 +746,15 @@ function updateCartBadge(){
   const today = new Date().toDateString();
 
   document.getElementById("todayDate").innerText = formatDateFR(new Date());
-    //formatDate(new Date().toLocaleDateString());
+  //formatDate(new Date().toLocaleDateString());
 
   const summary = {};
 
   // ✅ 1. LOOP VENTES
   sales.forEach(sale => {
 
-    if(new Date(sale.date).toDateString() === today){
-      
+    if (new Date(sale.date).toDateString() === today) {
+
       totalTickets++; // ✅ 1 ticket = 1 vente
 
       const saleTotal = sale.payment?.total || sale.total || 0;
@@ -764,35 +764,35 @@ function updateCartBadge(){
       // ✅ PAIEMENT
       let totalPaid = 0;
 
-     if (sale.payment?.type === "credit") {
+      if (sale.payment?.type === "credit") {
 
-         const payments = sale.payment.payments || [];
+        const payments = sale.payment.payments || [];
 
-         totalPaid = payments.reduce((sum, p) => sum + (p.amount || 0), 0);
+        totalPaid = payments.reduce((sum, p) => sum + (p.amount || 0), 0);
 
-         caEncaisse += totalPaid;
+        caEncaisse += totalPaid;
 
-         // ✅ encours calcul propre
-         const creditRemaining = Math.max(0, saleTotal - totalPaid);
+        // ✅ encours calcul propre
+        const creditRemaining = Math.max(0, saleTotal - totalPaid);
 
-         encours += creditRemaining;
+        encours += creditRemaining;
 
-     } else {
+      } else {
 
-         totalPaid = saleTotal;
-         caEncaisse += saleTotal;
-     }
-      
-       //NOUVEAU CALCUL REMISE (AU NIVEAU VENTE)
+        totalPaid = saleTotal;
+        caEncaisse += saleTotal;
+      }
+
+      //NOUVEAU CALCUL REMISE (AU NIVEAU VENTE)
       const totalRemiseSale = sale.totalRemise ?? sale.items.reduce((sum, item) => {
-      const brut = item.price * item.quantity;
-      const net = item.total || brut;
-      return sum + (brut - net);
-    }, 0);
+        const brut = item.price * item.quantity;
+        const net = item.total || brut;
+        return sum + (brut - net);
+      }, 0);
 
-    totalRemise += totalRemiseSale;
-    //const CaNet = brut - totalRemise;
-    
+      totalRemise += totalRemiseSale;
+      //const CaNet = brut - totalRemise;
+
 
       // ✅ recherche
       const search = document.getElementById("searchInput")
@@ -800,13 +800,13 @@ function updateCartBadge(){
 
       sale.items.forEach(item => {
 
-        if(search && !item.name.toLowerCase().includes(search)){
+        if (search && !item.name.toLowerCase().includes(search)) {
           return;
         }
 
         totalItems += item.quantity;
 
-        if(!summary[item.name]){
+        if (!summary[item.name]) {
           summary[item.name] = {
             quantity: 0,
             total: 0,       // ✅ payé uniquement
@@ -818,7 +818,7 @@ function updateCartBadge(){
         }
 
         // ✅ total brut produit
-        
+
         const brut = item.price * item.quantity;
         caTotalbrut += brut;
         const net = item.total || (brut - (item.remise || 0));
@@ -827,19 +827,19 @@ function updateCartBadge(){
         summary[item.name].rawTotal += brut;
         summary[item.name].remise += item.remise || 0;
 
-       // ✅ répartition encaissé proportionnelle
+        // ✅ répartition encaissé proportionnelle
         //const ratio = saleTotal > 0 ? totalPaid / saleTotal : 0;
 
-       //summary[item.name].total += net * ratio;
-       //summary[item.name].total += net;
-       // ✅ total réel produit
-       summary[item.name].totalNet += net;
+        //summary[item.name].total += net * ratio;
+        //summary[item.name].total += net;
+        // ✅ total réel produit
+        summary[item.name].totalNet += net;
 
-       // ✅ ratio paiement (simple et stable)
-       const ratio = saleTotal > 0 ? totalPaid / saleTotal : 0;
+        // ✅ ratio paiement (simple et stable)
+        const ratio = saleTotal > 0 ? totalPaid / saleTotal : 0;
 
-       // ✅ payé uniquement
-       summary[item.name].total += net * ratio;
+        // ✅ payé uniquement
+        summary[item.name].total += net * ratio;
 
 
       });
@@ -847,12 +847,12 @@ function updateCartBadge(){
     }
 
   });
-  
+
   encours = Math.max(0, caTotal - caEncaisse);
   const CaNet = caTotalbrut - totalRemise;
   // ✅ KPI affichage
-   const remiseEl = document.getElementById("totalRemise");
-   
+  const remiseEl = document.getElementById("totalRemise");
+
   document.getElementById("caEncaisse").innerText = formatPrice(caEncaisse);
   document.getElementById("encours").innerText = formatPrice(encours);
   document.getElementById("caBrut").innerText = formatPrice(caTotalbrut);
@@ -860,22 +860,22 @@ function updateCartBadge(){
   remiseEl.innerHTML = `<span style="color:red;">- ${formatPrice(totalRemise)}</span>`;
   document.getElementById("todayTickets").innerText = totalTickets;
   document.getElementById("todayItems").innerText = totalItems;
-  
- 
+
+
   // ✅ ✅ ✅ MOBILE (PLACÉ AU BON ENDROIT 🔥)
   //const isMobile = window.innerWidth <= 768 && window.outerWidth === window.innerWidth;
   const isMobile = window.innerWidth <= 768;
   //const isMobileOrTablet  = window.matchMedia("(max-width: 1024px)").matches;
 
-  if (isMobile){
+  if (isMobile) {
 
     document.querySelector("#todaySection table").style.display = "none";
 
     const mobileList = document.getElementById("salesListMobile");
-    if(mobileList) mobileList.style.display = "flex";
+    if (mobileList) mobileList.style.display = "flex";
 
     //renderSalesMobile(summary);
-     renderSalesMobile();
+    renderSalesMobile();
 
     return;
   }
@@ -883,26 +883,26 @@ function updateCartBadge(){
   // ✅ DESKTOP
   const mobileList = document.getElementById("salesListMobile");
   if (mobileList)
-      mobileList.style.display = "none";
+    mobileList.style.display = "none";
 
   document.querySelector("#todaySection table").style.display = "table";
 
   // ✅ 2. DATA
   // ✅ LISTE DES VENTES DU JOUR (TICKETS)
   const todaySales = sales
-      .filter(s => new Date(s.date).toDateString() === today)
-      .sort((a, b) => new Date(b.date) - new Date(a.date));
+    .filter(s => new Date(s.date).toDateString() === today)
+    .sort((a, b) => new Date(b.date) - new Date(a.date));
 
   if (todaySales.length === 0) {
-      salesList.innerHTML = "<tr><td colspan='6'>Aucune vente aujourd’hui</td></tr>";
-      return;
+    salesList.innerHTML = "<tr><td colspan='6'>Aucune vente aujourd’hui</td></tr>";
+    return;
   }
 
   // ✅ PAGINATION
   const totalPages = Math.ceil(todaySales.length / itemsPerPageToday) || 1;
 
   if (currentPageToday > totalPages) {
-      currentPageToday = totalPages;
+    currentPageToday = totalPages;
   }
 
   const start = (currentPageToday - 1) * itemsPerPageToday;
@@ -911,28 +911,28 @@ function updateCartBadge(){
   // ✅ AFFICHAGE PAR TICKET
   paginated.forEach((sale, index) => {
 
-      const totalNet = (sale.items || []).reduce((sum, item) => {
-          const brut = item.price * item.quantity;
-          const remise = item.remise || 0;
-          return sum + (brut - remise);
-      }, 0);
+    const totalNet = (sale.items || []).reduce((sum, item) => {
+      const brut = item.price * item.quantity;
+      const remise = item.remise || 0;
+      return sum + (brut - remise);
+    }, 0);
 
-      let totalPaid = 0;
+    let totalPaid = 0;
 
-      if (sale.payment?.type === "credit") {
-          totalPaid = (sale.payment.payments || [])
-          .reduce((sum, p) => sum + Number(p.amount || 0), 0);
-      } else {
-          totalPaid = totalNet;
-      }
+    if (sale.payment?.type === "credit") {
+      totalPaid = (sale.payment.payments || [])
+        .reduce((sum, p) => sum + Number(p.amount || 0), 0);
+    } else {
+      totalPaid = totalNet;
+    }
 
-      const remaining = Math.max(0, totalNet - totalPaid);
+    const remaining = Math.max(0, totalNet - totalPaid);
 
-      const itemsCount = (sale.items || []).length;
+    const itemsCount = (sale.items || []).length;
 
-      const row = document.createElement("tr");
+    const row = document.createElement("tr");
 
-  row.innerHTML = `
+    row.innerHTML = `
     <td>${formatDateFR(sale.date)}</td>
 
     <td>${itemsCount} article${itemsCount > 1 ? "s" : ""}</td>
@@ -958,12 +958,12 @@ function updateCartBadge(){
     </td>
   `;
 
-  salesList.appendChild(row);
+    salesList.appendChild(row);
 
-});
+  });
 
-// ✅ pagination
-renderPaginationToday(todaySales.length);
+  // ✅ pagination
+  renderPaginationToday(todaySales.length);
 }
 
 
@@ -972,7 +972,7 @@ renderPaginationToday(todaySales.length);
  * ----------------------------------------------------------
  * Regroupe les ventes par date
  ************************************************************/
-function renderSalesByDay(){
+function renderSalesByDay() {
 
   const container = document.getElementById("salesByDay");
   container.innerHTML = "";
@@ -986,72 +986,72 @@ function renderSalesByDay(){
     const d = new Date(sale.date);
     const key = d.toISOString().split("T")[0];
 
-    if(!summary[key]){
+    if (!summary[key]) {
       summary[key] = {
         brut: 0,
         remise: 0,
         net: 0,
         encaisse: 0,
         credit: 0
-        };
-      }
+      };
+    }
 
-        const saleTotal = sale.payment?.total || sale.total || 0;
+    const saleTotal = sale.payment?.total || sale.total || 0;
 
-        // ✅ recalcul brut
-        let brutSale = 0;
+    // ✅ recalcul brut
+    let brutSale = 0;
 
-        sale.items.forEach(item => {
-            brutSale += item.price * item.quantity;
-        });
+    sale.items.forEach(item => {
+      brutSale += item.price * item.quantity;
+    });
 
-        const netSale = saleTotal;
-        const remiseSale = brutSale - netSale;
+    const netSale = saleTotal;
+    const remiseSale = brutSale - netSale;
 
-        // ✅ cumul
-        summary[key].brut += brutSale;
-        summary[key].remise += remiseSale;
-        summary[key].net += netSale;
+    // ✅ cumul
+    summary[key].brut += brutSale;
+    summary[key].remise += remiseSale;
+    summary[key].net += netSale;
 
-        // ✅ crédit / encaissé
-        if (sale.payment?.type === "credit") {
-            const payments = sale.payment.payments || [];
+    // ✅ crédit / encaissé
+    if (sale.payment?.type === "credit") {
+      const payments = sale.payment.payments || [];
 
-            const totalPaid = payments.reduce((sum, p) => sum + (p.amount || 0), 0);
+      const totalPaid = payments.reduce((sum, p) => sum + (p.amount || 0), 0);
 
-            summary[key].encaisse += totalPaid;
-            summary[key].credit += (netSale - totalPaid);
+      summary[key].encaisse += totalPaid;
+      summary[key].credit += (netSale - totalPaid);
 
-        } else {
-            summary[key].encaisse += netSale;
-        }
+    } else {
+      summary[key].encaisse += netSale;
+    }
   });
 
   let dates = Object.keys(summary);
-  
+
   // ✅ forcer la date sélectionnée
   const selectedDate = document.getElementById("filterDate").value;
 
   if (selectedDate && !dates.includes(selectedDate)) {
-      dates.unshift(selectedDate);
+    dates.unshift(selectedDate);
 
-      // ✅ créer ligne vide
-      summary[selectedDate] = {
-          brut: 0,
-          remise: 0,
-          net: 0,
-          encaisse: 0,
-          credit: 0
-      };
+    // ✅ créer ligne vide
+    summary[selectedDate] = {
+      brut: 0,
+      remise: 0,
+      net: 0,
+      encaisse: 0,
+      credit: 0
+    };
   }
 
-  if(!dates.includes(today)){
+  if (!dates.includes(today)) {
     dates.unshift(today);
   }
 
-  const sortedDates = dates.sort((a,b) => {
-    if(a === today) return -1;
-    if(b === today) return 1;
+  const sortedDates = dates.sort((a, b) => {
+    if (a === today) return -1;
+    if (b === today) return 1;
     return b.localeCompare(a);
   });
 
@@ -1061,46 +1061,46 @@ function renderSalesByDay(){
   // ✅ RESPONSIVE SWITCH
   const isMobileOrTablet = window.matchMedia("(max-width: 1024px)").matches;
   //const isMobile = window.innerWidth <= 768;
-  
+
 
   const table = document.getElementById("salesByDay").closest("table");
   const mobile = document.getElementById("historyMobileList");
 
   if (isMobileOrTablet) {
-      if (table)
-          table.style.display = "none";
-      if (mobile)
-          mobile.style.display = "flex";
+    if (table)
+      table.style.display = "none";
+    if (mobile)
+      mobile.style.display = "flex";
 
-      // ✅ transformer les données pour mobile
-      /*const mobileData = paginatedDates.map(date => ({
-                  date: formatDateFR(new Date(date)),
-                  caBrut: summary[date].brut,
-                  remise: summary[date].remise,
-                  caNet: summary[date].encaisse,
-                  credit: summary[date].credit
-              }));*/
-       const mobileData = paginatedDates.map(date => ({
-               rawDate: date, // ✅ IMPORTANT
-               date: formatDateFR(new Date(date)),
-               caBrut: summary[date].brut,
-               remise: summary[date].remise,
-               caNet: summary[date].encaisse,
-               credit: summary[date].credit
-            }));
+    // ✅ transformer les données pour mobile
+    /*const mobileData = paginatedDates.map(date => ({
+                date: formatDateFR(new Date(date)),
+                caBrut: summary[date].brut,
+                remise: summary[date].remise,
+                caNet: summary[date].encaisse,
+                credit: summary[date].credit
+            }));*/
+    const mobileData = paginatedDates.map(date => ({
+      rawDate: date, // ✅ IMPORTANT
+      date: formatDateFR(new Date(date)),
+      caBrut: summary[date].brut,
+      remise: summary[date].remise,
+      caNet: summary[date].encaisse,
+      credit: summary[date].credit
+    }));
 
-             renderHistoryMobile(mobileData);
+    renderHistoryMobile(mobileData);
 
-          // ✅ pagination (IDENTIQUE desktop)
-            renderPaginationHistory(sortedDates.length);
+    // ✅ pagination (IDENTIQUE desktop)
+    // renderPaginationHistory(sortedDates.length);
 
 
-      return; // ✅ STOP ici → ne pas rendre le tableau
+    return; // ✅ STOP ici → ne pas rendre le tableau
   } else {
-      if (table)
-          table.style.display = "table";
-      if (mobile)
-          mobile.style.display = "none";
+    if (table)
+      table.style.display = "table";
+    if (mobile)
+      mobile.style.display = "none";
   }
 
   paginatedDates.forEach(date => {
@@ -1121,10 +1121,10 @@ function renderSalesByDay(){
       </td>
 
      <td style="${summary[date].remise > 0 ? 'color:red;' : 'color:#999;'}">
-      ${summary[date].remise > 0 
-      ? `- ${formatPrice(summary[date].remise)} GNF` 
-      : "-"
-     }
+      ${summary[date].remise > 0
+        ? `- ${formatPrice(summary[date].remise)} GNF`
+        : "-"
+      }
     </td>
 
    <td>
@@ -1145,7 +1145,7 @@ function renderSalesByDay(){
 `;
 
     // ✅ mise en évidence aujourd’hui
-    if(date === today){
+    if (date === today) {
       row.style.background = "#d4edda";
       row.style.fontWeight = "bold";
     }
@@ -1164,7 +1164,7 @@ function renderSalesByDay(){
  * - top produits
  * - comparaison jour précédent
  ************************************************************/
-function showDetail(date){
+function showDetail(date) {
 
   document.getElementById("filterDate").value = date;
 
@@ -1185,10 +1185,10 @@ function showDetail(date){
 /************************************************************
  * 📄 PAGINATION VENTES JOUR
  ************************************************************/
-function renderPaginationToday(totalItems){
+function renderPaginationToday(totalItems) {
 
   const container = document.getElementById("paginationToday");
-  if(!container) return;
+  if (!container) return;
 
   container.innerHTML = "";
 
@@ -1201,27 +1201,27 @@ function renderPaginationToday(totalItems){
   prev.onclick = () => {
     currentPageToday--;
     renderDashboard();
-	 // ✅ SCROLL AUTOMATIQUE
-   document.getElementById("salesList").parentElement.scrollIntoView({
-    behavior: "smooth"
-   });
+    // ✅ SCROLL AUTOMATIQUE
+    document.getElementById("salesList").parentElement.scrollIntoView({
+      behavior: "smooth"
+    });
   };
   container.appendChild(prev);
 
-  for(let i = 1; i <= totalPages; i++){
+  for (let i = 1; i <= totalPages; i++) {
     const btn = document.createElement("button");
     btn.innerText = i;
 
-    if(i === currentPageToday){
+    if (i === currentPageToday) {
       btn.style.background = "#2ecc71";
     }
 
     btn.onclick = () => {
       currentPageToday = i;
       renderDashboard();
-	   // ✅ SCROLL AUTOMATIQUE
-   document.getElementById("salesList").parentElement.scrollIntoView({
-    behavior: "smooth"
+      // ✅ SCROLL AUTOMATIQUE
+      document.getElementById("salesList").parentElement.scrollIntoView({
+        behavior: "smooth"
       });
     };
 
@@ -1235,9 +1235,9 @@ function renderPaginationToday(totalItems){
   next.onclick = () => {
     currentPageToday++;
     renderDashboard();
-	 // ✅ SCROLL AUTOMATIQUE
-   document.getElementById("salesList").parentElement.scrollIntoView({
-    behavior: "smooth"
+    // ✅ SCROLL AUTOMATIQUE
+    document.getElementById("salesList").parentElement.scrollIntoView({
+      behavior: "smooth"
     });
   };
   container.appendChild(next);
@@ -1247,10 +1247,10 @@ function renderPaginationToday(totalItems){
 /************************************************************
  * 📄 PAGINATION DÉTAIL
  ************************************************************/
-function renderPaginationDetail(totalItems){
+function renderPaginationDetail(totalItems) {
 
   const container = document.getElementById("paginationDetail");
-  if(!container) return;
+  if (!container) return;
 
   container.innerHTML = "";
 
@@ -1263,30 +1263,30 @@ function renderPaginationDetail(totalItems){
   prev.onclick = () => {
     currentPageDetail--;
     filterSalesByDate();
-	 // ✅ SCROLL AUTOMATIQUE
-   document.getElementById("salesDetail").parentElement.scrollIntoView({
-    behavior: "smooth"
-  });
+    // ✅ SCROLL AUTOMATIQUE
+    document.getElementById("salesDetail").parentElement.scrollIntoView({
+      behavior: "smooth"
+    });
   };
   container.appendChild(prev);
 
-  for(let i = 1; i <= totalPages; i++){
+  for (let i = 1; i <= totalPages; i++) {
     const btn = document.createElement("button");
     btn.innerText = i;
 
-    if(i === currentPageDetail){
+    if (i === currentPageDetail) {
       btn.style.background = "#2ecc71";
     }
 
     btn.onclick = () => {
       currentPageDetail = i;
       filterSalesByDate();
-	  
-  // ✅ SCROLL AUTOMATIQUE
-   document.getElementById("salesDetail").parentElement.scrollIntoView({
-    behavior: "smooth"
-  });
- };
+
+      // ✅ SCROLL AUTOMATIQUE
+      document.getElementById("salesDetail").parentElement.scrollIntoView({
+        behavior: "smooth"
+      });
+    };
 
     container.appendChild(btn);
   }
@@ -1298,10 +1298,10 @@ function renderPaginationDetail(totalItems){
   next.onclick = () => {
     currentPageDetail++;
     filterSalesByDate();
-	 // ✅ SCROLL AUTOMATIQUE
-   document.getElementById("salesDetail").parentElement.scrollIntoView({
-    behavior: "smooth"
-  });
+    // ✅ SCROLL AUTOMATIQUE
+    document.getElementById("salesDetail").parentElement.scrollIntoView({
+      behavior: "smooth"
+    });
   };
   container.appendChild(next);
 }
@@ -1309,10 +1309,10 @@ function renderPaginationDetail(totalItems){
 /************************************************************
  * 📄 PAGINATION HISTORIQUE
  ************************************************************/
-function renderPaginationHistory(totalItems){
+function renderPaginationHistory(totalItems) {
 
   const container = document.getElementById("paginationHistory");
-  if(!container) return;
+  if (!container) return;
 
   container.innerHTML = "";
 
@@ -1325,11 +1325,11 @@ function renderPaginationHistory(totalItems){
   prevBtn.onclick = () => changePageHistory(currentPageHistory - 1);
   container.appendChild(prevBtn);
 
-  for(let i = 1; i <= totalPages; i++){
+  for (let i = 1; i <= totalPages; i++) {
     const btn = document.createElement("button");
     btn.innerText = i;
 
-    if(i === currentPageHistory){
+    if (i === currentPageHistory) {
       btn.style.background = "#2ecc71";
     }
 
@@ -1349,7 +1349,7 @@ function renderPaginationHistory(totalItems){
  * 🔄 CHANGEMENT PAGE HISTORIQUE
  ************************************************************/
 
-function changePageHistory(page){
+function changePageHistory(page) {
   window.fromPagination = true;
   currentPageHistory = page;
   renderSalesByDay();
@@ -1361,7 +1361,7 @@ function changePageHistory(page){
  * 📅 CHANGEMENT DATE HISTORIQUE
  ************************************************************/
 
-function onChangeHistoryDate(){
+function onChangeHistoryDate() {
 
   currentPageHistory = 1;
 
@@ -1377,7 +1377,7 @@ function onChangeHistoryDate(){
  * ----------------------------------------------------------
  * Recalcule le CA des ventes existantes
  ************************************************************/
-function fixSales(){
+function fixSales() {
 
   sales.forEach(sale => {
     sale.total = sale.items.reduce((sum, item) => {
@@ -1398,20 +1398,20 @@ function fixSales(){
  * - mois
  * - année
  ************************************************************/
-function updateHistoryInput(){
+function updateHistoryInput() {
 
   const mode = document.getElementById("historyMode").value;
   const input = document.getElementById("filterDate");
 
-  if(mode === "day"){
+  if (mode === "day") {
     input.type = "date";
   }
 
-  if(mode === "month"){
+  if (mode === "month") {
     input.type = "month";
   }
 
-  if(mode === "year"){
+  if (mode === "year") {
     input.type = "number";
     input.placeholder = "Ex: 2026";
   }
@@ -1420,12 +1420,12 @@ function updateHistoryInput(){
   input.value = "";
 }
 
-function onPaymentChange(){
+function onPaymentChange() {
 
   const mode = getPaymentMethod();
 
   // ✅ ❌ BLOQUER DIRECT SI PANIER VIDE
-  if(mode === "credit" && cart.length === 0){
+  if (mode === "credit" && cart.length === 0) {
     alert("🛒 Ajoutez un produit avant d'utiliser le crédit");
 
     // ✅ revenir sur comptant
@@ -1435,17 +1435,17 @@ function onPaymentChange(){
   }
 
   // ✅ ouvrir modal seulement si OK
-  if(mode === "credit"){
+  if (mode === "credit") {
     openCreditModal();
   }
 
 }
 
 
-function openCreditModal(){
+function openCreditModal() {
 
-  
-// ✅ ✅ ✅ RESET TOTAL CRÉDIT
+
+  // ✅ ✅ ✅ RESET TOTAL CRÉDIT
   creditData = null;
   document.getElementById("clientName").value = "";
   document.getElementById("clientPhone").value = "";
@@ -1455,7 +1455,7 @@ function openCreditModal(){
   const modal = document.getElementById("creditModal");
 
   // ✅ sécurité panier vide (double protection)
-  if(cart.length === 0){
+  if (cart.length === 0) {
     alert("🛒 Le panier est vide");
 
     document.querySelector('input[name="paymentMethod"][value="cash"]').checked = true;
@@ -1487,12 +1487,12 @@ function openCreditModal(){
   remainingInput.value = total;
 
   // ✅ ✅ ✅ EVENT ULTRA IMPORTANT (fix principal)
-  paidInput.oninput = function(){
+  paidInput.oninput = function () {
 
     let paid = Number(this.value) || 0;
 
     // ✅ empêcher dépassement
-    if(paid > total){
+    if (paid > total) {
       paid = total;
       this.value = total;
     }
@@ -1501,26 +1501,26 @@ function openCreditModal(){
 
     // ✅ update UI
     remainingInput.value = remaining;
-    
-    
-  // ✅ ✅ ✅ UPDATE UI EN DIRECT
-  
- // ✅ ✅ ✅ NOUVEL OBJET PROPRE (PAS DE MERGE)
-  creditData = {
+
+
+    // ✅ ✅ ✅ UPDATE UI EN DIRECT
+
+    // ✅ ✅ ✅ NOUVEL OBJET PROPRE (PAS DE MERGE)
+    creditData = {
       type: "credit",
       total: total,
       payments: paid > 0 ? [{
-              amount: paid
-          }
+        amount: paid
+      }
       ] : [],
       remaining: remaining
-  };
+    };
 
 
-  renderCart(); // 🔥 MAJ visuelle instant
+    renderCart(); // 🔥 MAJ visuelle instant
 
     // ✅ BONUS : couleur dynamique
-    if(remaining === 0){
+    if (remaining === 0) {
       remainingInput.style.color = "#2ecc71"; // vert
     } else {
       remainingInput.style.color = "#e74c3c"; // rouge
@@ -1548,7 +1548,7 @@ function openCreditModal(){
   document.getElementById("remaining").value = total;
 }*/
 
-function closeCreditModal(){
+function closeCreditModal() {
 
   document.getElementById("creditModal").style.display = "none";
 
@@ -1556,9 +1556,9 @@ function closeCreditModal(){
   //document.getElementById("paymentMethod").value = "cash";
   //reset vers comptant
   document.querySelector('input[name="paymentMethod"][value="cash"]').checked = true;
-  
-  
-// ✅ ✅ ✅ RESET CREDIT
+
+
+  // ✅ ✅ ✅ RESET CREDIT
   creditData = null;
 
   renderCart(); // 🔥 refresh UI
@@ -1599,7 +1599,7 @@ function closeCreditModal(){
     clientName,
     clientPhone,
     dueDate,
-	createdAt: new Date().toISOString(),
+  createdAt: new Date().toISOString(),
 
     status: (total - paidNow) > 0 ? "EN ATTENTE" : "PAYÉ"
   };
@@ -1607,7 +1607,7 @@ function closeCreditModal(){
   document.getElementById("creditModal").style.display = "none";
 }*/
 
-function confirmCredit(){
+function confirmCredit() {
 
   const paidNow = Number(document.getElementById("paidNow").value) || 0;
 
@@ -1622,13 +1622,13 @@ function confirmCredit(){
   const clientName = document.getElementById("clientName").value.trim();
   const clientPhone = document.getElementById("clientPhone").value.trim();
 
-  if(!clientName){
+  if (!clientName) {
     alert("❌ Nom client obligatoire");
     return;
   }
 
   // ✅ ✅ ✅ SÉCURITÉ MONTANT
-  if(paidNow > total){
+  if (paidNow > total) {
     alert("❌ Le montant payé dépasse le total");
     return;
   }
@@ -1659,7 +1659,7 @@ function confirmCredit(){
   document.getElementById("remaining").value = remaining;
 
   document.getElementById("creditModal").style.display = "none";
-  
+
   renderCart(); // ✅ rafraîchit affichage total crédit
 }
 
@@ -1687,7 +1687,7 @@ function confirmCredit(){
     );
   });
 }*/
-function filterCredits(credits){
+function filterCredits(credits) {
 
   const search = document
     .getElementById("searchCredit")
@@ -1695,11 +1695,11 @@ function filterCredits(credits){
     ?.toLowerCase()
     ?.trim() || "";
 
-  if(!search) return credits;
+  if (!search) return credits;
 
   const clean = s => (s || "")
-      .toLowerCase()
-      .replace(/\s+/g, "");
+    .toLowerCase()
+    .replace(/\s+/g, "");
 
   return credits.filter(c =>
     clean(c.clientName).includes(clean(search)) ||
@@ -1709,7 +1709,7 @@ function filterCredits(credits){
 
 
 
-function renderCreditDashboard(){
+function renderCreditDashboard() {
 
   const container = document.getElementById("creditList");
   const totalDiv = document.getElementById("totalCredit");
@@ -1724,104 +1724,104 @@ function renderCreditDashboard(){
 
   sales.forEach((sale, index) => {
 
-    if(sale.payment && sale.payment.type === "credit"){
+    if (sale.payment && sale.payment.type === "credit") {
 
       //const remaining = sale.payment.remaining || 0;
       // ✅ recalcul total NET depuis les items
       const totalNet = (sale.items || []).reduce((sum, item) => {
-          const brut = item.price * item.quantity;
-          const remise = item.remise || 0;
-          return sum + (brut - remise);
+        const brut = item.price * item.quantity;
+        const remise = item.remise || 0;
+        return sum + (brut - remise);
       }, 0);
 
       // ✅ total payé
       const totalPaid = (sale.payment.payments || [])
-      .reduce((sum, p) => sum + (p.amount || 0), 0);
+        .reduce((sum, p) => sum + (p.amount || 0), 0);
 
       // ✅ ✅ remaining fiable
       const remaining = Math.max(0, totalNet - totalPaid);
 
       // ✅ garder TOUS les crédits
       credits.push({
-          index,
-          ...sale.payment,
-          remaining,
-          total: totalNet, // ✅ AJOUT IMPORTANT
-          payments: sale.payment.payments || []// ✅ sécurité
+        index,
+        ...sale.payment,
+        remaining,
+        total: totalNet, // ✅ AJOUT IMPORTANT
+        payments: sale.payment.payments || []// ✅ sécurité
       });
 
 
       // ✅ total seulement si restant
       if (remaining > 0) {
-          totalCredit += remaining;
+        totalCredit += remaining;
       }
 
     }
 
   });
-  
+
   //FILTRE CREDITS
-  
+
   const filteredCredits = filterCredits(credits);
 
   // ✅ TRI
- //credits.sort((a, b) => {
-   
- filteredCredits.sort((a, b) => {
+  //credits.sort((a, b) => {
 
-  const today = new Date();
+  filteredCredits.sort((a, b) => {
 
-  const dateA = a.dueDate ? new Date(a.dueDate) : new Date("2100-01-01");
-  const dateB = b.dueDate ? new Date(b.dueDate) : new Date("2100-01-01");
+    const today = new Date();
 
-  const aPaid = a.remaining <= 0;
-  const bPaid = b.remaining <= 0;
+    const dateA = a.dueDate ? new Date(a.dueDate) : new Date("2100-01-01");
+    const dateB = b.dueDate ? new Date(b.dueDate) : new Date("2100-01-01");
 
-  const aLate = dateA < today && !aPaid;
-  const bLate = dateB < today && !bPaid;
+    const aPaid = a.remaining <= 0;
+    const bPaid = b.remaining <= 0;
 
-  // ✅ 1. EN RETARD en premier
-  if(aLate && !bLate) return -1;
-  if(!aLate && bLate) return 1;
+    const aLate = dateA < today && !aPaid;
+    const bLate = dateB < today && !bPaid;
 
-  // ✅ 2. ENSUITE crédits actifs (non payés)
-  if(!aPaid && bPaid) return -1;
-  if(aPaid && !bPaid) return 1;
+    // ✅ 1. EN RETARD en premier
+    if (aLate && !bLate) return -1;
+    if (!aLate && bLate) return 1;
 
-  // ✅ 3. TRI PAR DATE
-  return dateA - dateB;
+    // ✅ 2. ENSUITE crédits actifs (non payés)
+    if (!aPaid && bPaid) return -1;
+    if (aPaid && !bPaid) return 1;
 
-});
-    
-    // ✅ RESPONSIVE SWITCH
-    //const isMobile = window.matchMedia("(max-width: 768px)").matches;
-    const isMobileOrTablet  = window.matchMedia("(max-width: 1024px)").matches;
+    // ✅ 3. TRI PAR DATE
+    return dateA - dateB;
 
-    const table = document.getElementById("creditList").closest("table");
-    const mobile = document.getElementById("creditMobileList");
+  });
 
-    if (isMobileOrTablet) {
-        if (table)
-            table.style.display = "none";
-        if (mobile)
-            mobile.style.display = "flex";
+  // ✅ RESPONSIVE SWITCH
+  //const isMobile = window.matchMedia("(max-width: 768px)").matches;
+  const isMobileOrTablet = window.matchMedia("(max-width: 1024px)").matches;
 
-        // ✅ on envoie les données déjà calculées
-        renderCreditMobile(credits, totalCredit);
+  const table = document.getElementById("creditList").closest("table");
+  const mobile = document.getElementById("creditMobileList");
 
-        return; // ✅ STOP -> ne pas exécuter le desktop
-    } else {
-        if (table)
-            table.style.display = "table";
-        if (mobile)
-            mobile.style.display = "none";
-    }
+  if (isMobileOrTablet) {
+    if (table)
+      table.style.display = "none";
+    if (mobile)
+      mobile.style.display = "flex";
 
-   if(filteredCredits.length === 0){
+    // ✅ on envoie les données déjà calculées
+    renderCreditMobile(credits, totalCredit);
+
+    return; // ✅ STOP -> ne pas exécuter le desktop
+  } else {
+    if (table)
+      table.style.display = "table";
+    if (mobile)
+      mobile.style.display = "none";
+  }
+
+  if (filteredCredits.length === 0) {
     container.innerHTML = "<tr><td colspan='6'>✅ Aucun crédit en cours</td></tr>";
     totalDiv.innerText = "💰 Encours total : 0 GNF";
-     return;
-   }
+    return;
+  }
 
   filteredCredits.forEach(c => {
 
@@ -1831,15 +1831,15 @@ function renderCreditDashboard(){
     let statusLabel = "EN ATTENTE";
 
     if (c.remaining <= 0) {
-        statusColor = "green";
-        statusLabel = "PAYÉ";
+      statusColor = "green";
+      statusLabel = "PAYÉ";
     } else if (dueDate && dueDate < today) {
-        statusColor = "red";
-        statusLabel = "EN RETARD";
+      statusColor = "red";
+      statusLabel = "EN RETARD";
     }
 
     const row = document.createElement("tr");
-    
+
     row.innerHTML = `
   <td><strong>${c.clientName}</strong></td>
   <td>${c.clientPhone || "-"}</td>
@@ -1848,20 +1848,19 @@ function renderCreditDashboard(){
 
   <td>
     ${c.createdAt && !isNaN(new Date(c.createdAt))
-         ? formatDateFR(c.createdAt)
-         : "-"
-}
+        ? formatDateFR(c.createdAt)
+        : "-"
+      }
   </td>
 
   <td>${formatDateFR(c.dueDate)}</td>
 
   <!-- ✅ DATE PAIEMENT uniquement si soldé -->
   <td>
-    ${
-        c.remaining <= 0 && c.payments && c.payments.length > 0
-         ? formatDateFR(c.payments[c.payments.length - 1].date)
-         : "-"
-}
+    ${c.remaining <= 0 && c.payments && c.payments.length > 0
+        ? formatDateFR(c.payments[c.payments.length - 1].date)
+        : "-"
+      }
   </td>
 
   <td style="color:${statusColor}; font-weight:bold;">
@@ -1871,14 +1870,13 @@ function renderCreditDashboard(){
   <td>
     <button onclick="exportCreditPDF(${c.index})">📄 PDF</button>
 
-    ${
-        c.remaining > 0
-         ? `<button onclick="addPayment(${c.index})">💰 Payer</button>`
-         : `<span style="color:green; font-weight:bold;">✅ Soldé</span>`
-}
+    ${c.remaining > 0
+        ? `<button onclick="addPayment(${c.index})">💰 Payer</button>`
+        : `<span style="color:green; font-weight:bold;">✅ Soldé</span>`
+      }
   </td>
 `;
-    
+
     if (c.remaining <= 0) {
       row.style.opacity = "0.6";
     }
@@ -1890,11 +1888,11 @@ function renderCreditDashboard(){
 }
 
 
-function addPayment(index){
+function addPayment(index) {
 
   const sale = sales[index];
 
-  if(!sale.payment || sale.payment.type !== "credit") return;
+  if (!sale.payment || sale.payment.type !== "credit") return;
 
   // ✅ calcul réel avant affichage
   const totalPaid = (sale.payment.payments || [])
@@ -1904,7 +1902,7 @@ function addPayment(index){
   const remaining = Math.max(0, total - totalPaid);
 
   // ✅ si déjà payé → block
-  if(remaining <= 0){
+  if (remaining <= 0) {
     alert("✅ Ce crédit est déjà soldé");
     return;
   }
@@ -1916,19 +1914,19 @@ function addPayment(index){
 
   amount = Number(amount);
 
-  if(!amount || amount <= 0){
+  if (!amount || amount <= 0) {
     alert("❌ Montant invalide");
     return;
   }
 
   // ✅ ✅ ✅ BLOQUER SI DÉPASSEMENT
-  if(amount > remaining){
+  if (amount > remaining) {
     alert(`❌ Le montant dépasse la dette (${formatPrice(remaining)} GNF)`);
     return;
   }
 
   // ✅ init si vide
-  if(!sale.payment.payments){
+  if (!sale.payment.payments) {
     sale.payment.payments = [];
   }
 
@@ -2022,12 +2020,12 @@ function addPayment(index){
 }*/
 
 // Mode de paiement Radio
-function getPaymentMethod(){
+function getPaymentMethod() {
   const selected = document.querySelector('input[name="paymentMethod"]:checked');
   return selected ? selected.value : "cash";
 }
 
-document.getElementById("paidNow").addEventListener("input", function(){
+document.getElementById("paidNow").addEventListener("input", function () {
 
   const total = cart.reduce((sum, i) => {
     const brut = i.price * i.quantity;
@@ -2048,7 +2046,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const savedCart = localStorage.getItem("cart");
 
-  if(savedCart){
+  if (savedCart) {
     cart = JSON.parse(savedCart);
   }
 
@@ -2065,13 +2063,13 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const role = localStorage.getItem("userRole");
 
-  if(role === "vendeur"){
+  if (role === "vendeur") {
 
     const btnHistory = document.getElementById("btnHistory");
     const btnStats = document.getElementById("btnStats");
 
-    if(btnHistory) btnHistory.style.display = "none";
-    if(btnStats) btnStats.style.display = "none";
+    if (btnHistory) btnHistory.style.display = "none";
+    if (btnStats) btnStats.style.display = "none";
   }
 
 });

@@ -6,10 +6,10 @@ document.addEventListener("DOMContentLoaded", initApp);
 
 function initApp() {
   console.log("🚀 App démarrée");
-  
+
   // ✅ Sécurité
   if (!initAuth()) return;
-  
+
   initServiceWorker();
 
   // ✅ Init data
@@ -19,7 +19,7 @@ function initApp() {
   updateUserInfo();
   updateLastActivity();
   updateUserUI();
- 
+
   // ✅ Init composants
   initImageInput();
   initPDFDate();
@@ -31,14 +31,45 @@ function initApp() {
 /************************************************************
  * INIT SERVICE WORKER
  ***********************************************************/
-function initServiceWorker(){
-  if ("serviceWorker" in navigator) {
-    navigator.serviceWorker
-      .register("/service-worker.js")
-      .then(() => console.log("✅ SW OK"))
-      .catch(err => console.error("❌ SW ERROR", err));
+function initServiceWorker() {
+
+  if (!("serviceWorker" in navigator)) {
+    console.warn("❌ Service Worker non supporté");
+    return;
   }
+
+  window.addEventListener("load", () => {
+
+    navigator.serviceWorker.register("/service-worker.js")
+      .then(reg => {
+
+        console.log("✅ SW enregistré");
+
+        // ✅ détection nouvelle version
+        if (reg.waiting) {
+          console.log("♻️ Nouvelle version disponible");
+          reg.waiting.postMessage({ type: "SKIP_WAITING" });
+        }
+
+        // ✅ nouveau SW installé
+        reg.addEventListener("updatefound", () => {
+          console.log("🔄 Mise à jour SW détectée");
+        });
+
+      })
+      .catch(err => {
+        console.error("❌ SW ERROR", err);
+      });
+
+    // ✅ reload automatique quand SW change
+    navigator.serviceWorker.addEventListener("controllerchange", () => {
+      console.log("✅ Nouveau SW actif");
+    });
+
+  });
+
 }
+
 
 
 /************************************************************
@@ -52,7 +83,7 @@ let shopWindow = null; // ✅ référence fenêtre boutique
  * 🛒 NAVIGATION
 ************************************************************/
 
-function goToShop(){
+function goToShop() {
   window.location.href = "/";
 }
 
@@ -68,7 +99,7 @@ function goToShop(){
   shopWindow = window.open("index.html", "_blank");
 }*/
 
-function clearSearch(){
+function clearSearch() {
   const input = document.getElementById("searchInput");
   input.value = "";
   render();
@@ -79,14 +110,14 @@ function clearSearch(){
  * 🔐 SESSION
 ************************************************************/
 
-function checkSessionTimeout(){
+/*function checkSessionTimeout() {
 
   const lastActivity = localStorage.getItem("lastActivity");
-  if(!lastActivity) return;
+  if (!lastActivity) return;
 
   const now = Date.now();
 
-  if(now - lastActivity > SESSION_TIMEOUT){
+  if (now - lastActivity > SESSION_TIMEOUT) {
 
     // ✅ afficher message
     const msg = document.getElementById("sessionMessage");
@@ -97,13 +128,13 @@ function checkSessionTimeout(){
       logout();
     }, 1000);
   }
-}
+}*/
 
 /************************************************************
  * 📄 PAGINATION ADMIN
 ************************************************************/
 
-function renderPagination(totalItems){
+function renderPagination(totalItems) {
 
   const totalPages = Math.ceil(totalItems / itemsPerPage) || 1;
   const container = document.getElementById("pagination");
@@ -125,12 +156,12 @@ function renderPagination(totalItems){
   container.appendChild(prevBtn);
 
   // ✅ pages
-  for(let i = 1; i <= totalPages; i++){
+  for (let i = 1; i <= totalPages; i++) {
 
     const btn = document.createElement("button");
     btn.innerText = i;
 
-    if(i === currentPage){
+    if (i === currentPage) {
       btn.style.background = "#2ecc71";
       btn.style.fontWeight = "bold";
     }
@@ -163,7 +194,7 @@ function renderPagination(totalItems){
 }
 
 
-function changePage(page){
+function changePage(page) {
   currentPage = page;
   render();
 }
@@ -173,13 +204,13 @@ function changePage(page){
 /************************************************************
  * 🧩 SECTIONS ADMIN
  ************************************************************/
- 
-function showAdminSection(section){
+
+function showAdminSection(section) {
 
   const form = document.getElementById("formSection");
   const importBox = document.getElementById("importSection");
 
-  if(!form || !importBox){
+  if (!form || !importBox) {
     console.error("❌ Sections non trouvées");
     return;
   }
@@ -189,37 +220,37 @@ function showAdminSection(section){
   importBox.style.display = "none";
 
   // ✅ afficher la bonne section
-  if(section === "form"){
+  if (section === "form") {
     form.style.display = "block";
     document.getElementById("pdfContainer").style.display = "none";
   }
 
- /* if(section === "import"){
+  /* if(section === "import"){
+     importBox.style.display = "block";
+     document.getElementById("pdfContainer").style.display = "none";
+   }*/
+
+  if (section === "import") {
+
     importBox.style.display = "block";
+
+    // ✅ cacher la date PDF
     document.getElementById("pdfContainer").style.display = "none";
-  }*/
-  
-  if(section === "import"){
-  
-  importBox.style.display = "block";
 
-  // ✅ cacher la date PDF
-  document.getElementById("pdfContainer").style.display = "none";
+    // ✅ attacher l'event file input (une seule fois proprement)
+    const input = document.getElementById("fileInput");
 
-  // ✅ attacher l'event file input (une seule fois proprement)
-  const input = document.getElementById("fileInput");
+    if (input && !input.dataset.listenerAttached) {
 
-  if(input && !input.dataset.listenerAttached){
+      input.addEventListener("change", function () {
+        const fileName = this.files[0]?.name || "Aucun fichier sélectionné";
+        document.getElementById("fileName").textContent = fileName;
+      });
 
-    input.addEventListener("change", function(){
-      const fileName = this.files[0]?.name || "Aucun fichier sélectionné";
-      document.getElementById("fileName").textContent = fileName;
-    });
-
-    // ✅ éviter double event (très important)
-    input.dataset.listenerAttached = "true";
+      // ✅ éviter double event (très important)
+      input.dataset.listenerAttached = "true";
+    }
   }
-}
 
   // ✅ gérer bouton actif
   document.querySelectorAll(".menu button")
@@ -229,23 +260,23 @@ function showAdminSection(section){
     `.menu button[onclick="showAdminSection('${section}')"]`
   );
 
-  if(activeBtn){
+  if (activeBtn) {
     activeBtn.classList.add("active");
   }
 }
 
 
-function showSettings(){
+function showSettings() {
 
   // ✅ cacher parties principales
-    hideAllSections();
+  hideAllSections();
 
   // ✅ afficher paramètres
   document.getElementById("settingsCard").style.display = "block";
 
   // ✅ reset header
   document.getElementById("archivedHeader").style.display = "none";
-  
+
 }
 
 function hideAllSections() {
@@ -329,7 +360,7 @@ channel.onmessage = (event) => {
  ************************************************************/
 
 // 🔁 check session
-setInterval(checkSessionTimeout, 5000);
+//setInterval(checkSessionTimeout, 5000);
 
 // 📌 activité utilisateur
 document.addEventListener("click", updateLastActivity);
@@ -376,7 +407,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const role = localStorage.getItem("userRole");
 
-  if(role === "vendeur"){
+  if (role === "vendeur") {
 
     document.querySelectorAll(".btnHistory").forEach(el => {
       el.style.display = "none";
@@ -385,7 +416,7 @@ document.addEventListener("DOMContentLoaded", () => {
     document.querySelectorAll(".btnStats").forEach(el => {
       el.style.display = "none";
     });
-    
+
     document.querySelectorAll(".btnAdmin").forEach(el => {
       el.style.display = "none";
     });
