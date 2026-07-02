@@ -514,7 +514,15 @@ function validerPanier() {
   let totalRemise = 0;
   let totalNet = 0;
 
-  const clientPhone = document.getElementById("ticketPhone")?.value || "";
+  //const clientPhone = document.getElementById("ticketPhone")?.value || "";
+
+  let clientPhone =
+    document.getElementById("ticketPhone")?.value.trim() || "";
+
+  // ✅ Normalisation format WhatsApp Guinée
+  clientPhone = clientPhone
+    ? formatWhatsAppPhone(clientPhone)
+    : "";
 
   //const paymentMethod = document.getElementById("paymentMethod").value;
   const paymentMethod = getPaymentMethod();

@@ -106,6 +106,9 @@ function initPDFDate() {
 
 }
 
+/************************************************************
+ * SECTION RENDER PRODUCT
+ ***********************************************************/
 
 function render() {
 
@@ -359,7 +362,130 @@ function render() {
 
 }
 
+/************************************************************
+ * SECTION USER ET INFO MAGASIN
+ ***********************************************************/
 
+/*AFFICHER LE FORMULAIRE DE CREATION DE USER COMPTE*/
+function showRegister() {
+  //CACHER LES AUTRES SECTIONS
+  hideAllSectionsForms();
+
+  document.getElementById("registerForm").style.display = "block";
+  document.getElementById("formRegister").style.display = "block";
+}
+
+/*CACHE LE FORMULAIRE DE CREATION DE USER COMPTE*/
+function hideRegister() {
+
+  document.getElementById("registerForm").style.display = "none";
+  document.getElementById("formRegister").style.display = "none";
+}
+
+/*CREATION USER*/
+async function createAccount() {
+
+  const usernameEl = document.getElementById("newUsername");
+  const passwordEl = document.getElementById("newPassword");
+  const roleEl = document.getElementById("role");
+
+  const username = usernameEl.value.trim();
+  const password = passwordEl.value;
+  const role = roleEl.value;
+
+  if (!username || !password) {
+    showToast("⚠️ Remplir tous les champs");
+    return;
+  }
+
+  if (username.includes(" ")) {
+    showToast("❌ Nom utilisateur invalide");
+    return;
+  }
+
+  const email = toEmail(username);
+
+  try {
+
+    // ✅ 1. Signup
+    const { error } = await supabaseClient.auth.signUp({
+      email,
+      password
+    });
+
+    if (error) {
+      showToast("❌ " + error.message);
+      return;
+    }
+
+    console.log("✅ User créé Supabase :", email);
+
+    // ✅ 2. RÉCUPÉRER USER CONNECTÉ (SOLUTION FIABLE)
+    const { data: userData } = await supabaseClient.auth.getUser();
+
+    const userId = userData?.user?.id;
+
+    if (!userId) {
+      showToast("❌ Impossible de récupérer userId");
+      return;
+    }
+
+    console.log("✅ USER ID:", userId);
+
+    // ✅ 3. INSERT PROFILE
+    const { data: profileData, error: profileError } = await supabaseClient
+      .from("profiles")
+      .insert([
+        {
+          id: userId,
+          username,
+          role
+        }
+      ])
+      .select();
+
+    console.log("PROFILE INSERT DATA:", profileData);
+    console.log("PROFILE INSERT ERROR:", profileError);
+
+    if (profileError) {
+      console.error(profileError);
+      showToast("❌ Erreur création profil");
+      return;
+    }
+
+    // ✅ 4. fallback local
+    let users = JSON.parse(localStorage.getItem("users") || "[]");
+
+    users.push({
+      id: userId,
+      username,
+      password: btoa(password),
+      role,
+      active: true
+    });
+
+    localStorage.setItem("users", JSON.stringify(users));
+
+    showToast("✅ Compte créé");
+
+    usernameEl.value = "";
+    passwordEl.value = "";
+
+    hideRegister();
+
+    if (typeof renderUsers === "function") {
+      renderUsers();
+    }
+
+  } catch (err) {
+
+    console.error(err);
+    showToast("❌ Erreur réseau");
+
+  }
+}
+
+/*AFFICHER LES USERS*/
 function displayUsers(users) {
 
   const container = document.getElementById("usersList");
@@ -393,7 +519,6 @@ function displayUsers(users) {
 }
 
 /*LISTE USERS*/
-
 async function renderUsers() {
 
   const container = document.getElementById("usersList");
@@ -426,12 +551,10 @@ async function renderUsers() {
   }
 }
 
-
 /*ACTIVER/DESACTIVER USER*/
 async function toggleUser(userId) {
 
   console.log("✅ toggleUser appelé avec:", userId);
-
 
   const { data: profile, error: fetchError } = await supabaseClient
     .from("profiles")
@@ -477,7 +600,6 @@ async function toggleUser(userId) {
 
   localStorage.setItem("users", JSON.stringify(users));
 
-
   renderUsers();
 }
 
@@ -490,7 +612,7 @@ async function deleteUser(userId) {
   // ✅ sécurité id
   if (!userId || userId === "undefined") {
     console.warn("⚠️ ID invalide, suppression ignorée");
-    alert("Utilisateur déjà supprimé ou invalide");
+    showToast("Utilisateur déjà supprimé ou invalide");
     return;
   }
 
@@ -506,7 +628,7 @@ async function deleteUser(userId) {
 
     if (error) {
       console.error("❌ Supabase delete error:", error);
-      alert("❌ Erreur suppression");
+      showToast("❌ Erreur suppression");
       return;
     }
 
@@ -528,46 +650,47 @@ async function deleteUser(userId) {
 
   } catch (err) {
     console.error("❌ ERROR:", err);
-    alert("❌ Erreur réseau");
+    showToast("❌ Erreur réseau");
   }
 }
 
-
-
 /*SECTION USERS*/
 function showUsers() {
-  hideAllSectionsUser();
-  document.getElementById("usersSection").classList.remove("hidden");
+  //CACHER LES AUTRES SECTIONS
+  hideAllSectionsForms();
+  document.getElementById("usersSection").style.display = "block";
 
   renderUsers(); // ✅ recharge la liste
 }
-
+/*CACHER LA SECTION USER*/
 function hideUsers() {
-  document.getElementById("usersSection").classList.add("hidden");
+  //document.getElementById("usersSection").classList.add("hidden");
+  document.getElementById("usersSection").style.display = "none";
 }
-
-
-function hideAllSectionsUser() {
-
-  document.getElementById("registerForm")?.classList.add("hidden");
-  document.getElementById("usersSection")?.classList.add("hidden");
-  document.getElementById("settingsSection")?.classList.add("hidden");
-
+/*CACHE TOUTES LES SECTION : INFO MAG, USER, FORM CREATION USER*/
+function hideAllSectionsForms() {
+  document.getElementById("infoShop").style.display = "none";
+  document.getElementById("formRegister").style.display = "none";
+  document.getElementById("usersSection").style.display = "none";
 }
 
 /************************************************************
- * INFO MAGASIN POUT HEADER TICKET DE CAISSE
+ * INFO MAGASIN POUR HEADER TICKET DE CAISSE
  ***********************************************************/
 
 function showStoreInfo() {
   // ✅ cacher les autres sections si besoin
-  //hideAllSections();
-
+  //hideUsers();
+  // hideRegister()
+  hideAllSectionsForms();
   // ✅ afficher la section magasin
   document.getElementById("infoShop").style.display = "block";
+
 }
 
-
+/************************************************************
+ * INFO MAGASIN FORM REGISTER
+ ***********************************************************/
 function saveStoreInfo() {
 
   const name = document.getElementById("storeName").value.trim();
@@ -605,13 +728,14 @@ function saveStoreInfo() {
 }
 
 
-
-//BOUTON RETOUR
+/*BOUTON RETOUR*/
 function closeStoreInfo() {
   document.getElementById("infoShop").style.display = "none";
 }
 
-
+/************************************************************
+ * AFFICHE UNE NOTIFICATION TEMPORAIRE A L'UTILISATEUR
+ ***********************************************************/
 function showToast(message, type = "info") {
 
   const toast = document.getElementById("toast");

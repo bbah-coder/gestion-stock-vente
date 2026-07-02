@@ -137,26 +137,38 @@
 
     </section>
 
-    <section id="formRegister">
-      <!-- ✅ REGISTER FORM (caché au début) -->
-      <div id="registerForm" class="auth-box hidden">
+    <section id="formRegister" class="hidden">
 
-        <!--<h3>🆕 Créer un compte</h3>-->
+      <div id="registerForm" class="store-section">
 
-        <input id="newUsername" placeholder="Nom utilisateur">
-        <input id="newPassword" type="password" placeholder="Mot de passe">
+        <!-- HEADER -->
+        <div class="store-header">
+          <button class="btn-back" onclick="hideRegister()">←</button>
+          <h2>🆕 Créer un compte</h2>
+        </div>
 
-        <!--ROLE-->
-        <select id="role">
-          <option value="vendeur">Vendeur</option>
-          <option value="admin">Admin</option>
-        </select>
+        <!-- FORM -->
+        <div class="store-form">
 
-        <button onclick="createAccount()" class="btn primary">Créer </button>
-        <button onclick="hideRegister()" class="btn secondary">⬅ Retour</button>
+          <input id="newUsername" placeholder="Nom utilisateur">
+
+          <input id="newPassword" type="password" placeholder="Mot de passe">
+
+          <select id="role">
+            <option value="vendeur">Vendeur</option>
+            <option value="admin">Admin</option>
+          </select>
+
+          <button class="btn-save" onclick="createAccount()">
+            👤 Créer le compte
+          </button>
+
+        </div>
 
       </div>
+
     </section>
+
 
     <section id="usersSection" class="hidden">
 
@@ -412,12 +424,10 @@
       </div>
     </footer>
     <div id="toast" class="toast"></div>
-
   </main>
   <!--</div>-->
 
   <script src="js/utils.js"></script>
-  <script src="js/home.js"></script>
   <script src="js/admin/auth.js"></script>
   <script src="js/config.js"></script>
   <script src="js/admin/backup.js"></script>

@@ -32,6 +32,26 @@ const supabaseClient = supabase.createClient(
   "sb_publishable_fc5s-5QrMhO9Daiw-ADDcQ_OA6HRPpD"
 );
 
+/************************************************************
+ * FORMAT WHATSAPP PHONE
+ ***********************************************************/
+function formatWhatsAppPhone(phone) {
+
+  let cleanPhone = phone.replace(/\D/g, "");
+
+  // Déjà au format international
+  if (cleanPhone.startsWith("224")) {
+    return cleanPhone;
+  }
+
+  // Format local : 0622123456
+  if (cleanPhone.startsWith("0")) {
+    return "224" + cleanPhone.substring(1);
+  }
+
+  // Format local : 622123456
+  return "224" + cleanPhone;
+}
 
 //INFO MAGASIN 
 

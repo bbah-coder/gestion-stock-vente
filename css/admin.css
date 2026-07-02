@@ -926,15 +926,7 @@ td:last-child {
   align-items: center;
 }
 
-/*CSS REGISTRE FORM CREATION COMPTE*/
-/* ✅ SECTION */
-#formRegister {
-  width: 100%;
-  display: flex;
-  justify-content: center;
-}
-
-/* ✅ CARD FORM */
+/*CSS SECTION USER*/
 
 .auth-box {
   width: 100%;
@@ -945,7 +937,7 @@ td:last-child {
 
   background: #ffffff;
   padding: 16px;
-  /* ✅ FIX ICI */
+
 
   border-radius: 16px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
@@ -1021,10 +1013,6 @@ td:last-child {
 
 /* ✅ MOBILE */
 @media (max-width: 768px) {
-  #formRegister {
-    padding: 10px;
-  }
-
   .auth-box {
     padding: 16px;
     gap: 16px;
@@ -1047,16 +1035,6 @@ td:last-child {
   display: none;
 }
 
-/*CSS USER*/
-/*.user-item {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-
-  padding: 5px;
-  border-bottom: 1px solid #eee;
-}*/
-
 .user-item {
   display: flex;
   justify-content: space-between;
@@ -1073,7 +1051,6 @@ td:last-child {
 
   transition: all 0.2s ease;
 }
-
 
 .user-actions {
   display: flex;
@@ -1141,8 +1118,8 @@ td:last-child {
   transform: scale(0.95);
 }
 
-/*CSS INFO MAGASIN*/
-/* ✅ SECTION CONTAINER (sans toucher au body) */
+/*CSS SECTION CRER COMPTE ET INFO MAGASIN*/
+
 #infoShop {
   padding: 16px;
 }
@@ -1219,6 +1196,19 @@ td:last-child {
   opacity: 0.9;
 }
 
+#infoShop {
+  display: none;
+}
+
+.store-form select {
+  padding: 10px;
+  border-radius: 8px;
+  border: 1px solid #ddd;
+  background: white;
+  font-size: 14px;
+}
+
+/*CSS SECTION TOAST Remplacement FENETRE POPUP*/
 .toast {
   position: fixed;
   bottom: 20px;
@@ -1243,8 +1233,4 @@ td:last-child {
 .toast.show {
   opacity: 1;
   transform: translateX(-50%) translateY(0);
-}
-
-#infoShop {
-  display: none;
 }

@@ -566,3 +566,129 @@ document.getElementById("ticketPayment").onchange = () => {
   ticketPage = 1;
   renderTickets();
 };
+
+
+/************************************************************
+ * SEND TICKET WHATSAPP
+ ***********************************************************/
+
+function sendTicketWhatsApp(id) {
+
+  const tickets = getTickets();
+  const t = tickets.find(x => String(x.id) === String(id));
+
+  if (!t) {
+    showToast("❌ Ticket introuvable", "error");
+    return;
+  }
+
+  // ✅ téléphone client
+  const phone = t.clientPhone || "";
+
+  if (!phone.trim()) {
+    showToast(
+      "⚠️ Aucun numéro associé à ce ticket",
+      "warning"
+    );
+    return;
+  }
+
+  //const phone = t.clientPhone;
+
+  const store = getStoreInfo();
+  const date = new Date(t.date);
+
+  let totalBrut = 0;
+  let articles = "";
+
+  // ✅ articles
+  (t.items || []).forEach(item => {
+
+    const qty = item.quantity ?? item.qty ?? 0;
+    const price = item.price ?? 0;
+
+    const subtotal = qty * price;
+
+    totalBrut += subtotal;
+
+    articles +=
+      `${item.name} x ${qty}
+${qty} x ${formatPrice(price)} GNF = ${formatPrice(subtotal)} GNF
+
+`;
+
+  });
+
+  const remise = t.remise || 0;
+  const totalNet = t.total || (totalBrut - remise);
+
+  // ✅ base message
+  let message =
+    `${store.name || "MON SHOP"}
+
+Tel : ${store.phone || ""}
+
+${store.address || ""}
+
+--------------------------------
+
+Ticket #${t.id}
+
+${date.toLocaleDateString()} ${date.toLocaleTimeString()}
+
+${getPaymentLabelPDF(t.payment)}
+
+--------------------------------
+
+${articles}
+--------------------------------
+
+Total brut : ${formatPrice(totalBrut)} GNF
+`;
+
+  // ✅ remise
+  if (remise > 0) {
+    message +=
+      `Remise : -${formatPrice(remise)} GNF
+`;
+  }
+
+  // ✅ crédit
+  if (t.payment === "credit") {
+
+    const remaining = t.credit || 0;
+    const total = t.total || totalBrut;
+
+    const encaisse = total - remaining;
+
+    if (encaisse > 0) {
+      message +=
+        `Payé : ${formatPrice(encaisse)} GNF
+`;
+    }
+
+    if (remaining > 0) {
+      message +=
+        `Reste à payer : ${formatPrice(remaining)} GNF
+`;
+    }
+
+    if (remaining <= 0) {
+      message +=
+        `Crédit soldé
+`;
+    }
+  }
+
+  message +=
+    `
+TOTAL : ${formatPrice(totalNet)} GNF
+
+Merci pour votre achat`;
+
+  const whatsappUrl =
+    `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
+
+  window.open(whatsappUrl, "_blank");
+}
+
