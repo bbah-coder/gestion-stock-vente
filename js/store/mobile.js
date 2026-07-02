@@ -620,7 +620,7 @@ function renderSalesMobile() {
         ` : ""}
 
       </div>
-
+     <div class="credit-actions">
       <button onclick="exportTicketPDF(${sale.id})">
         📄 Ticket PDF
       </button>
@@ -631,7 +631,11 @@ function renderSalesMobile() {
           📱 WhatsApp
       </button>
       ` : ""}
+      
+      </div>
     `;
+
+
 
       container.appendChild(card);
     });
