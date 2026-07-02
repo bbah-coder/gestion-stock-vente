@@ -520,6 +520,7 @@ function displayUsers(users) {
 
 /*LISTE USERS*/
 async function renderUsers() {
+  console.log("✅ renderUsers appelé");
 
   const container = document.getElementById("usersList");
 
@@ -528,9 +529,25 @@ async function renderUsers() {
   // ✅ ONLINE → Supabase
   if (navigator.onLine) {
 
+    const {
+      data: { user }
+    } = await supabaseClient.auth.getUser();
+
+    console.log("USER CONNECTÉ :", user);
+
+    const {
+      data: { session }
+    } = await supabaseClient.auth.getSession();
+
+    console.log("SESSION :", session);
+
+
     const { data: users, error } = await supabaseClient
       .from("profiles")
       .select("*");
+
+    console.log("USERS SUPABASE :", users);
+    console.log("ERROR SUPABASE :", error);
 
     if (error) {
       console.error(error);
