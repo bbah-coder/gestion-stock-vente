@@ -36,11 +36,13 @@ async function login() {
 
       const { data: prof } = await supabaseClient
         .from("profiles")
-        .select("username, role, active")
+        .select("id, username, role, active")
         .eq("id", data.user.id)
         .single();
 
       profile = prof;
+      console.log("PROFILE =", profile);
+      console.log("ROLE =", profile.role);
       onlineSuccess = true;
     }
 
@@ -70,8 +72,28 @@ async function login() {
     localStorage.setItem("isLoggedIn", "true");
     localStorage.setItem("username", profile.username);
     localStorage.setItem("userRole", profile.role);
+    localStorage.setItem("userId", profile.id);
 
-    window.location.href = profile.role === "admin" ? "admin" : "index";
+    console.log("✅ REDIRECTION");
+    console.log("ROLE =", profile.role);
+
+
+    // ✅ Super Admin et Admin
+    if (
+      profile.role === "admin" ||
+      profile.role === "super_admin"
+    ) {
+
+      window.location.href = "admin";
+
+    } else {
+
+      // ✅ Vendeur
+      window.location.href = "index";
+
+    }
+
+    return;
 
     return;
   }
@@ -115,8 +137,22 @@ async function login() {
   localStorage.setItem("isLoggedIn", "true");
   localStorage.setItem("username", offlineUser.username);
   localStorage.setItem("userRole", offlineUser.role);
+  localStorage.setItem("userId", offlineUser.id);
 
-  window.location.href = offlineUser.role === "admin" ? "admin" : "index";
+  // ✅ Admin et Super Admin
+  if (
+    offlineUser.role === "admin" ||
+    offlineUser.role === "super_admin"
+  ) {
+
+    window.location.href = "admin";
+
+  } else {
+
+    // ✅ Vendeur
+    window.location.href = "index";
+
+  }
 }
 
 

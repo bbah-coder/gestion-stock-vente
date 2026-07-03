@@ -2,17 +2,17 @@
  * 🔐 AUTHENTIFICATION
  ************************************************************/
 
-function initAuth(){
+function initAuth() {
 
   const role = localStorage.getItem("userRole");
 
-  if (!role || role !== "admin") {
+  if (!role || role !== "admin" && role !== "super_admin") {
     window.location.href = "login.html";
     return false;
   }
 
   const app = document.getElementById("app");
-  if(app){
+  if (app) {
     app.style.display = "block";
   }
 
@@ -21,11 +21,11 @@ function initAuth(){
 
 // Déconnexion
 
-function logout(){
+function logout() {
 
-  if(!confirm("Voulez-vous vous déconnecter ?")) return;
+  if (!confirm("Voulez-vous vous déconnecter ?")) return;
   // ✅ fermer boutique si ouverte
-  if(typeof shopWindow !== "undefined" && shopWindow && !shopWindow.closed){
+  if (typeof shopWindow !== "undefined" && shopWindow && !shopWindow.closed) {
     shopWindow.close();
   }
 

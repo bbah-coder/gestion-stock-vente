@@ -4,11 +4,18 @@
 document.addEventListener("DOMContentLoaded", initApp);
 
 
-function initApp() {
+async function initApp() {
   console.log("🚀 App démarrée");
 
   // ✅ Sécurité
   if (!initAuth()) return;
+
+  await loadCurrentShop();
+
+  // ✅ Vérifier compte actif
+  const ok = await initCurrentUserContext();
+
+  if (!ok) return;
 
   initServiceWorker();
 

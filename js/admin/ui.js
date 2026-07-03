@@ -1,6 +1,8 @@
 /************************************************************
  * 🎨 UI / RENDER
  ************************************************************/
+/*VARIABLE MAGASIN*/
+let currentShopId = null;
 
 function updateUserInfo() {
 
@@ -367,12 +369,15 @@ function render() {
  ***********************************************************/
 
 /*AFFICHER LE FORMULAIRE DE CREATION DE USER COMPTE*/
-function showRegister() {
+async function showRegister() {
   //CACHER LES AUTRES SECTIONS
   hideAllSectionsForms();
 
   document.getElementById("registerForm").style.display = "block";
   document.getElementById("formRegister").style.display = "block";
+
+  //CHARGER LES MAGASIN
+  await populateShopsSelect();
 }
 
 /*CACHE LE FORMULAIRE DE CREATION DE USER COMPTE*/
@@ -383,16 +388,35 @@ function hideRegister() {
 }
 
 /*CREATION USER*/
+
 async function createAccount() {
 
   const usernameEl = document.getElementById("newUsername");
   const passwordEl = document.getElementById("newPassword");
   const roleEl = document.getElementById("role");
+  // const shopEl = document.getElementById("userShop");
 
   const username = usernameEl.value.trim();
   const password = passwordEl.value;
   const role = roleEl.value;
 
+  // ✅ magasin sélectionné
+  //const shopId = shopEl?.value || "";
+  //const shopId = currentShop?.id || null;
+  const currentShop = getCurrentShop();
+  const shopId = currentShop?.id || null;
+
+  // ✅ Sauf premier admin
+  if (!shopId) {
+
+    showToast(
+      "⚠️ Aucun magasin associé à votre compte"
+    );
+
+    return;
+  }
+
+  // ✅ validations
   if (!username || !password) {
     showToast("⚠️ Remplir tous les champs");
     return;
@@ -407,7 +431,7 @@ async function createAccount() {
 
   try {
 
-    // ✅ 1. Signup
+    // ✅ 1. Création Auth Supabase
     const { error } = await supabaseClient.auth.signUp({
       email,
       password
@@ -420,8 +444,9 @@ async function createAccount() {
 
     console.log("✅ User créé Supabase :", email);
 
-    // ✅ 2. RÉCUPÉRER USER CONNECTÉ (SOLUTION FIABLE)
-    const { data: userData } = await supabaseClient.auth.getUser();
+    // ✅ 2. Récupération user connecté
+    const { data: userData } =
+      await supabaseClient.auth.getUser();
 
     const userId = userData?.user?.id;
 
@@ -430,58 +455,83 @@ async function createAccount() {
       return;
     }
 
-    console.log("✅ USER ID:", userId);
+    console.log("✅ USER ID :", userId);
 
-    // ✅ 3. INSERT PROFILE
-    const { data: profileData, error: profileError } = await supabaseClient
-      .from("profiles")
-      .insert([
-        {
-          id: userId,
-          username,
-          role
-        }
-      ])
-      .select();
+    // ✅ 3. Création profil
+    const { data: profileData, error: profileError } =
+      await supabaseClient
+        .from("profiles")
+        .insert([
+          {
+            id: userId,
+            username,
+            role,
+            active: true,
+            shop_id: shopId
+          }
+        ])
+        .select();
 
-    console.log("PROFILE INSERT DATA:", profileData);
-    console.log("PROFILE INSERT ERROR:", profileError);
+    console.log("PROFILE INSERT DATA :", profileData);
+    console.log("PROFILE INSERT ERROR :", profileError);
 
     if (profileError) {
       console.error(profileError);
-      showToast("❌ Erreur création profil");
+
+      showToast(
+        "❌ Erreur création profil"
+      );
+
       return;
     }
 
-    // ✅ 4. fallback local
-    let users = JSON.parse(localStorage.getItem("users") || "[]");
+    // ✅ 4. Cache local
+    let users = JSON.parse(
+      localStorage.getItem("users") || "[]"
+    );
 
     users.push({
       id: userId,
       username,
       password: btoa(password),
       role,
-      active: true
+      active: true,
+      shop_id: shopId || null
     });
 
-    localStorage.setItem("users", JSON.stringify(users));
+    localStorage.setItem(
+      "users",
+      JSON.stringify(users)
+    );
 
-    showToast("✅ Compte créé");
-
+    // ✅ Réinitialisation formulaire
     usernameEl.value = "";
     passwordEl.value = "";
 
+    /*if (shopEl) {
+      shopEl.value = "";
+    }*/
+
+    showToast(
+      "✅ Compte créé avec succès",
+      "success"
+    );
+
     hideRegister();
 
+    // ✅ Rafraîchir la liste
     if (typeof renderUsers === "function") {
-      renderUsers();
+      await renderUsers();
     }
 
   } catch (err) {
 
     console.error(err);
-    showToast("❌ Erreur réseau");
 
+    showToast(
+      "❌ Erreur réseau",
+      "error"
+    );
   }
 }
 
@@ -501,7 +551,12 @@ function displayUsers(users) {
       <div>
         <strong>${user.username}</strong>
         <small>(${user.role})</small>
-      </div>
+
+       ${isSuperAdmin()
+        ? `<br><small>🏪 ${user.shops?.name || "Aucun magasin"}</small>`
+        : ""
+      }
+    </div>
 
       <div class="actions">
         <button onclick="toggleUser('${user.id}')">
@@ -542,9 +597,34 @@ async function renderUsers() {
     console.log("SESSION :", session);
 
 
-    const { data: users, error } = await supabaseClient
+    /*const currentShop = getCurrentShop();
+
+    const { data: users, error } =
+      await supabaseClient
+        .from("profiles")
+        .select("*")
+        .eq("shop_id", currentShop.id);*/
+
+    const currentShop = getCurrentShop();
+
+    let query = supabaseClient
       .from("profiles")
-      .select("*");
+      .select(`
+        *,
+        shops(name)
+       `);
+
+    // ✅ SUPER ADMIN
+    if (!isSuperAdmin()) {
+
+      query = query
+        .eq("shop_id", currentShop.id)
+        .neq("role", "super_admin");
+
+    }
+
+    const { data: users, error } =
+      await query;
 
     console.log("USERS SUPABASE :", users);
     console.log("ERROR SUPABASE :", error);
@@ -569,62 +649,154 @@ async function renderUsers() {
 }
 
 /*ACTIVER/DESACTIVER USER*/
+
 async function toggleUser(userId) {
 
   console.log("✅ toggleUser appelé avec:", userId);
 
-  const { data: profile, error: fetchError } = await supabaseClient
+  const currentShop = getCurrentShop();
+
+  if (!isSuperAdmin() && !currentShop?.id) {
+
+    showToast("❌ Magasin introuvable");
+
+    return;
+  }
+
+  const currentUserId = localStorage.getItem("userId");
+
+  // ✅ Empêcher l'auto-désactivation
+  if (currentUserId === userId) {
+
+    showToast(
+      "⚠️ Impossible de désactiver votre propre compte"
+    );
+
+    return;
+  }
+
+  let fetchQuery = supabaseClient
     .from("profiles")
-    .select("active")
-    .eq("id", userId)
-    .single();
+    .select("id, username, role, active")
+    .eq("id", userId);
+
+  if (!isSuperAdmin()) {
+
+    fetchQuery = fetchQuery.eq(
+      "shop_id",
+      currentShop.id
+    );
+  }
+
+  const {
+    data: profile,
+    error: fetchError
+  } = await fetchQuery.single();
 
   if (fetchError) {
-    console.error("❌ fetch error:", fetchError);
+    console.error(fetchError);
     return;
   }
 
   if (!profile) {
-    console.error("❌ profile introuvable pour id:", userId);
+    showToast("❌ Utilisateur introuvable");
+    return;
+  }
+
+  // ✅ Seul le super-admin peut gérer les super-admin
+  if (
+    profile.role === "super_admin" &&
+    !isSuperAdmin()
+  ) {
+
+    showToast(
+      "❌ Action non autorisée"
+    );
+
+    return;
+  }
+
+  // ✅ Protection compte principal
+  if (profile.username === "bbah-admin") {
+
+    showToast(
+      "⚠️ Impossible de désactiver le compte principal"
+    );
+
     return;
   }
 
   const newStatus = !profile.active;
 
-  console.log("🔄 Nouveau statut:", newStatus);
-
-  const { error } = await supabaseClient
+  let updateQuery = supabaseClient
     .from("profiles")
-    .update({ active: newStatus })
+    .update({
+      active: newStatus
+    })
     .eq("id", userId);
 
+  if (!isSuperAdmin()) {
+
+    updateQuery = updateQuery.eq(
+      "shop_id",
+      currentShop.id
+    );
+  }
+
+  const { error } = await updateQuery;
 
   if (error) {
-    console.error("❌ update error:", error);
+    console.error(error);
+    showToast("❌ Erreur mise à jour");
     return;
   }
 
-  console.log("✅ Supabase updated");
-
-  let users = JSON.parse(localStorage.getItem("users") || "[]");
+  let users = JSON.parse(
+    localStorage.getItem("users") || "[]"
+  );
 
   users = users.map(u => {
+
     if (u.id === userId) {
       u.active = newStatus;
     }
+
     return u;
   });
 
-  localStorage.setItem("users", JSON.stringify(users));
+  localStorage.setItem(
+    "users",
+    JSON.stringify(users)
+  );
 
-  renderUsers();
+  showToast("✅ Statut utilisateur modifié");
+
+  await renderUsers();
 }
-
 /*SUPPRIMER UN USER*/
 
-async function deleteUser(userId) {
+/*async function deleteUser(userId) {
 
   console.log("🗑 Suppression userId:", userId);
+
+  const currentShop = getCurrentShop();
+
+  if (!currentShop?.id) {
+    showToast("❌ Magasin introuvable");
+    return;
+  }
+
+  // ✅ empêcher l'auto-suppression
+  const currentUserId = localStorage.getItem("userId");
+
+  if (currentUserId === userId) {
+
+    showToast(
+      "⚠️ Impossible de supprimer votre propre compte"
+    );
+
+    return;
+  }
 
   // ✅ sécurité id
   if (!userId || userId === "undefined") {
@@ -641,6 +813,7 @@ async function deleteUser(userId) {
       .from("profiles")
       .delete()
       .eq("id", userId)
+      .eq("shop_id", currentShop.id)
       .select(); // ✅ important pour voir résultat réel
 
     if (error) {
@@ -669,6 +842,145 @@ async function deleteUser(userId) {
     console.error("❌ ERROR:", err);
     showToast("❌ Erreur réseau");
   }
+}*/
+async function deleteUser(userId) {
+
+  console.log("🗑 Suppression userId:", userId);
+
+  const currentShop = getCurrentShop();
+
+  if (!isSuperAdmin() && !currentShop?.id) {
+
+    showToast("❌ Magasin introuvable");
+
+    return;
+  }
+
+  const currentUserId = localStorage.getItem("userId");
+
+  // ✅ Empêcher l'auto-suppression
+  if (currentUserId === userId) {
+
+    showToast(
+      "⚠️ Impossible de supprimer votre propre compte"
+    );
+
+    return;
+  }
+
+  if (!userId || userId === "undefined") {
+
+    showToast(
+      "Utilisateur invalide"
+    );
+
+    return;
+  }
+
+  let profileQuery = supabaseClient
+    .from("profiles")
+    .select("id, username, role")
+    .eq("id", userId);
+
+  if (!isSuperAdmin()) {
+
+    profileQuery = profileQuery.eq(
+      "shop_id",
+      currentShop.id
+    );
+  }
+
+  const {
+    data: profile,
+    error: profileError
+  } = await profileQuery.single();
+
+  if (profileError || !profile) {
+
+    showToast(
+      "❌ Utilisateur introuvable"
+    );
+
+    return;
+  }
+
+  // ✅ Seul le super-admin peut gérer les super-admin
+  if (
+    profile.role === "super_admin" &&
+    !isSuperAdmin()
+  ) {
+
+    showToast(
+      "❌ Action non autorisée"
+    );
+
+    return;
+  }
+
+  // ✅ Protection compte principal
+  if (profile.username === "bbah-admin") {
+
+    showToast(
+      "⚠️ Impossible de supprimer le compte principal"
+    );
+
+    return;
+  }
+
+  if (
+    !confirm(
+      `Supprimer ${profile.username} ?`
+    )
+  ) {
+    return;
+  }
+
+  let deleteQuery = supabaseClient
+    .from("profiles")
+    .delete()
+    .eq("id", userId);
+
+  if (!isSuperAdmin()) {
+
+    deleteQuery = deleteQuery.eq(
+      "shop_id",
+      currentShop.id
+    );
+  }
+
+  const { data, error } =
+    await deleteQuery.select();
+
+  if (error) {
+
+    console.error(error);
+
+    showToast(
+      "❌ Erreur suppression"
+    );
+
+    return;
+  }
+
+  let users = JSON.parse(
+    localStorage.getItem("users") || "[]"
+  );
+
+  users = users.filter(
+    u => u.id !== userId
+  );
+
+  localStorage.setItem(
+    "users",
+    JSON.stringify(users)
+  );
+
+  showToast(
+    "✅ Utilisateur supprimé",
+    "success"
+  );
+
+  await renderUsers();
 }
 
 /*SECTION USERS*/
@@ -697,57 +1009,226 @@ function hideAllSectionsForms() {
 
 function showStoreInfo() {
   // ✅ cacher les autres sections si besoin
-  //hideUsers();
-  // hideRegister()
+
   hideAllSectionsForms();
   // ✅ afficher la section magasin
   document.getElementById("infoShop").style.display = "block";
 
+  loadStoreForm();
+
+}
+
+/************************************************************
+ * PERMET DE CHARGER LES MAGASINS
+ ***********************************************************/
+async function populateShopsSelect() {
+
+  const select = document.getElementById("userShop");
+
+  if (!select) return;
+
+  try {
+
+    const { data: shops, error } = await supabaseClient
+      .from("shops")
+      .select("*")
+      .order("name");
+
+    if (error) throw error;
+
+    select.innerHTML =
+      '<option value="">Choisir un magasin</option>';
+
+    shops.forEach(shop => {
+
+      select.innerHTML += `
+        <option value="${shop.id}">
+          ${shop.name}
+        </option>
+      `;
+
+    });
+
+  } catch (err) {
+
+    console.error(err);
+
+  }
 }
 
 /************************************************************
  * INFO MAGASIN FORM REGISTER
  ***********************************************************/
-function saveStoreInfo() {
+
+async function saveStoreInfo() {
 
   const name = document.getElementById("storeName").value.trim();
   const phone = document.getElementById("storePhone").value.trim();
   const address = document.getElementById("storeAddress").value.trim();
 
-  // ✅ compter champs remplis
+  // ✅ Compter les champs renseignés
   let filledFields = 0;
 
   if (name) filledFields++;
   if (phone) filledFields++;
   if (address) filledFields++;
 
-  // ✅ au moins 2 champs requis
+  // ✅ Au moins 2 champs requis
   if (filledFields < 2) {
-    showToast("⚠️ Minimum 2 champs requis");
+    showToast("⚠️ Minimum 2 champs requis", "warning");
     return;
   }
 
-  // ✅ sauvegarde
-  const store = { name, phone, address };
+  const store = {
+    name,
+    phone,
+    address
+  };
 
-  localStorage.setItem("storeInfo", JSON.stringify(store));
+  try {
 
-  console.log("✅ store sauvegardé:", store);
+    // ✅ Création d'un nouveau magasin
+    if (!currentShopId) {
 
-  showToast("✅ Infos magasin sauvegardées");
+      const { data, error } = await supabaseClient
+        .from("shops")
+        .insert([store])
+        .select()
+        .single();
 
-  // ✅ reset form
-  document.getElementById("storeName").value = "";
-  document.getElementById("storePhone").value = "";
-  document.getElementById("storeAddress").value = "";
+      if (error) throw error;
 
-  closeStoreInfo()
+      currentShopId = data.id;
+
+      //PROFIL ADMIN
+      const profile = await getCurrentProfile();
+
+      if (profile &&
+        profile.role === "admin" &&
+        !profile.shop_id) {
+
+        const { error: profileError } =
+          await supabaseClient
+            .from("profiles")
+            .update({
+              shop_id: data.id
+            })
+            .eq("id", profile.id);
+
+        if (!profileError) {
+
+          console.log(
+            "✅ Admin associé au magasin"
+          );
+
+        }
+      }
+      await loadCurrentShop();
+
+      localStorage.setItem(
+        "storeInfo",
+        JSON.stringify(data)
+      );
+
+      showToast("✅ Magasin créé", "success");
+
+    }
+
+    // ✅ Mise à jour magasin existant
+    else {
+
+      const { error } = await supabaseClient
+        .from("shops")
+        .update(store)
+        .eq("id", currentShopId);
+
+      if (error) throw error;
+
+      localStorage.setItem(
+        "storeInfo",
+        JSON.stringify({
+          id: currentShopId,
+          ...store
+        })
+      );
+
+      showToast("✅ Magasin mis à jour", "success");
+    }
+
+    console.log("✅ Magasin sauvegardé :", store);
+
+    closeStoreInfo();
+
+  } catch (error) {
+
+    console.error(error);
+
+    showToast(
+      "❌ Erreur lors de la sauvegarde",
+      "error"
+    );
+
+  }
+
 }
 
+/*CHANGER LE MAGASIN EXISTANT */
+function loadStoreForm() {
+
+  const store = JSON.parse(
+    localStorage.getItem("storeInfo") || "{}"
+  );
+
+  if (!store.name) return;
+
+  currentShopId = store.id || null;
+
+  document.getElementById("storeName").value =
+    store.name || "";
+
+  document.getElementById("storePhone").value =
+    store.phone || "";
+
+  document.getElementById("storeAddress").value =
+    store.address || "";
+
+}
 
 /*BOUTON RETOUR*/
 function closeStoreInfo() {
   document.getElementById("infoShop").style.display = "none";
+}
+
+
+function getCurrentShop() {
+
+  return JSON.parse(
+    localStorage.getItem("storeInfo") || "{}"
+  );
+
+}
+
+/************************************************************
+ * ON RECUPERE LE PROFIL ADMIN
+ ***********************************************************/
+async function getCurrentProfile() {
+
+  const username = localStorage.getItem("username");
+
+  if (!username) return null;
+
+  const { data, error } = await supabaseClient
+    .from("profiles")
+    .select("*")
+    .eq("username", username)
+    .single();
+
+  if (error) {
+    console.error(error);
+    return null;
+  }
+
+  return data;
 }
 
 /************************************************************
@@ -784,3 +1265,5 @@ function showToast(message, type = "info") {
     toast.classList.remove("show");
   }, 2500);
 }
+
+

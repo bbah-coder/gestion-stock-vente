@@ -3,11 +3,25 @@
  ************************************************************/
 
 
-document.addEventListener("DOMContentLoaded", () => {
+/*document.addEventListener("DOMContentLoaded", () => {
   //updateUserInfo();
   initServiceWorker();
   initApp();
   updateUserUI();
+});*/
+
+document.addEventListener("DOMContentLoaded", async () => {
+
+  initServiceWorker();
+
+  const ok = await initCurrentUserContext();
+
+  if (!ok) return;
+
+  initApp();
+
+  updateUserUI();
+
 });
 
 

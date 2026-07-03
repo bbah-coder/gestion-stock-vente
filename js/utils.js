@@ -26,11 +26,83 @@
  * - getTopProductsWithTie()    → top produits avec égalités
  *
  ************************************************************/
+window.addEventListener("online", async () => {
+
+  console.log("🌐 Retour online");
+
+  await checkCurrentUserStatus();
+
+});
+
 
 const supabaseClient = supabase.createClient(
   "https://amtlfqzhuqwrudaachvy.supabase.co",
   "sb_publishable_fc5s-5QrMhO9Daiw-ADDcQ_OA6HRPpD"
 );
+
+/************************************************************
+ * SUPPER-ADMIN
+ ***********************************************************/
+function isSuperAdmin() {
+
+  return (
+    localStorage.getItem("userRole") ===
+    "super_admin"
+  );
+
+}
+
+async function initCurrentUserContext() {
+
+  const isAllowed = await checkCurrentUserStatus();
+
+  if (!isAllowed) return false;
+
+  await loadCurrentShop();
+
+  return true;
+}
+/************************************************************
+ * CHARGE LES MAGS DE L'UTILISATEUR CONNECTE
+ ***********************************************************/
+async function loadCurrentShop() {
+
+  const username =
+    localStorage.getItem("username");
+
+  if (!username) return null;
+
+  // Profil utilisateur
+  const { data: profile, error: profileError } =
+    await supabaseClient
+      .from("profiles")
+      .select("shop_id")
+      .eq("username", username)
+      .single();
+
+  if (profileError || !profile?.shop_id) {
+    return null;
+  }
+
+  // Magasin associé
+  const { data: shop, error: shopError } =
+    await supabaseClient
+      .from("shops")
+      .select("*")
+      .eq("id", profile.shop_id)
+      .single();
+
+  if (shopError || !shop) {
+    return null;
+  }
+
+  localStorage.setItem(
+    "storeInfo",
+    JSON.stringify(shop)
+  );
+
+  return shop;
+}
 
 /************************************************************
  * FORMAT WHATSAPP PHONE
@@ -280,4 +352,53 @@ function colorDiff(value) {
   if (value === "—") return "gray";
 
   return value.startsWith("-") ? "red" : "green";
+}
+
+/************************************************************
+ * VERIFIE SI L'UTILISATEUR CONNECTE EST TOUJOURS ACTIF.
+ * RETOURNE TRUE SI ACCES AUTORISE
+ ***********************************************************/
+async function checkCurrentUserStatus() {
+
+  try {
+
+    const username = localStorage.getItem("username");
+
+    if (!username) {
+      return true;
+    }
+
+    const { data, error } = await supabaseClient
+      .from("profiles")
+      .select("active")
+      .eq("username", username)
+      .single();
+
+    if (error) {
+      console.error("❌ Vérification compte :", error);
+      return true;
+    }
+
+    if (!data?.active) {
+
+      showToast(
+        "⛔ Votre compte a été désactivé",
+        "error"
+      );
+
+      setTimeout(async () => {
+        await logout();
+      }, 1500);
+
+      return false;
+    }
+
+    return true;
+
+  } catch (err) {
+
+    console.error("❌ checkCurrentUserStatus :", err);
+
+    return true;
+  }
 }
