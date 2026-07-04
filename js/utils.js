@@ -103,6 +103,7 @@ async function loadCurrentShop() {
       suspended: true
     };
   }
+
   if (shopError || !shop) {
     return null;
   }
