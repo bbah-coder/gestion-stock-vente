@@ -41,6 +41,16 @@ function updateUserUI() {
       userEl.innerText = "👤 Utilisateur";
     }
   }
+  //✅ AFFICHER LE MENU MAGASIN UNIQUEMENT POUR LE SUPER-ADMIN
+  const shopsBtn =
+    document.getElementById("btnManageShops");
+
+  if (shopsBtn) {
+
+    shopsBtn.style.display =
+      isSuperAdmin() ? "block" : "none";
+
+  }
 
   // ✅ FOOTER USER
   const footerUser = document.getElementById("footerUser");
@@ -1232,38 +1242,122 @@ async function getCurrentProfile() {
 }
 
 /************************************************************
- * AFFICHE UNE NOTIFICATION TEMPORAIRE A L'UTILISATEUR
+ * SECTION GESTION DES MAGASINS 
  ***********************************************************/
-function showToast(message, type = "info") {
+//AFFICHE LES MAGASIN -->MENU MAGASIN
+async function showShops() {
 
-  const toast = document.getElementById("toast");
+  hideAllSectionsForms();
 
-  if (!toast) return;
+  document.getElementById(
+    "shopsSection"
+  ).style.display = "block";
 
-  toast.innerText = message;
+  await renderShops();
+}
 
-  // ✅ couleur selon type
-  switch (type) {
-    case "success":
-      toast.style.background = "#28a745";
-      break;
-    case "error":
-      toast.style.background = "#dc3545";
-      break;
-    case "warning":
-      toast.style.background = "#ff9800";
-      break;
-    default:
-      toast.style.background = "#333";
+//CHARGE LES MAGASINS
+async function renderShops() {
+
+  const container =
+    document.getElementById("shopsList");
+
+  container.innerHTML = "";
+
+  const { data: shops, error } =
+    await supabaseClient
+      .from("shops")
+      .select("*")
+      .order("name");
+
+  if (error) {
+
+    console.error(error);
+
+    showToast(
+      "❌ Erreur chargement magasins"
+    );
+
+    return;
   }
 
-  // ✅ afficher
-  toast.classList.add("show");
-
-  // ✅ cacher après 2.5s
-  setTimeout(() => {
-    toast.classList.remove("show");
-  }, 2500);
+  displayShops(shops);
 }
+
+//AFFICHAGE DES MAGASINS V1
+function displayShops(shops) {
+
+  const container =
+    document.getElementById("shopsList");
+
+  container.innerHTML = "";
+
+  shops.forEach(shop => {
+
+    const div =
+      document.createElement("div");
+
+    div.className = "shop-item";
+
+    div.innerHTML = `
+      <div>
+        <strong>🏪 ${shop.name}</strong>
+        <br>
+        <small> 📞 ${shop.phone || ""}</small>
+      </div>
+
+      <div class="actions">
+
+        <button
+          onclick="toggleShop(
+            '${shop.id}',
+            ${shop.active}
+          )">
+
+          ${shop.active
+        ? "✅"
+        : "⛔"}
+
+        </button>
+
+      </div>
+    `;
+
+    container.appendChild(div);
+
+  });
+
+}
+
+//DESACTIVER UN MAGASIN
+async function toggleShop(
+  shopId,
+  currentStatus
+) {
+
+  const { error } =
+    await supabaseClient
+      .from("shops")
+      .update({
+        active: !currentStatus
+      })
+      .eq("id", shopId);
+
+  if (error) {
+
+    showToast(
+      "❌ Erreur mise à jour"
+    );
+
+    return;
+  }
+
+  showToast(
+    "✅ Statut magasin mis à jour"
+  );
+
+  await renderShops();
+}
+
 
 

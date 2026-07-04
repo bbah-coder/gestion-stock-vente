@@ -74,6 +74,26 @@ async function login() {
     localStorage.setItem("userRole", profile.role);
     localStorage.setItem("userId", profile.id);
 
+
+    // ✅ Charger le magasin associé
+    const shopResult =
+      await loadCurrentShop();
+
+    if (shopResult?.suspended) {
+
+      errorEl.innerText =
+        "⛔ Votre magasin est temporairement suspendu. Veuillez contacter votre administrateur ou le support.";
+
+      await supabaseClient.auth.signOut();
+
+      localStorage.removeItem("isLoggedIn");
+      localStorage.removeItem("username");
+      localStorage.removeItem("userRole");
+      localStorage.removeItem("userId");
+
+      return;
+    }
+
     console.log("✅ REDIRECTION");
     console.log("ROLE =", profile.role);
 

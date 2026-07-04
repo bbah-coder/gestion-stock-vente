@@ -1234,3 +1234,23 @@ td:last-child {
   opacity: 1;
   transform: translateX(-50%) translateY(0);
 }
+
+/*CSS GESTIN DES MAGASINS*/
+.shop-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  padding: 15px;
+  margin-bottom: 10px;
+
+  background: #fff;
+
+  border: 1px solid #ddd;
+  border-radius: 12px;
+}
+
+.shop-item .actions {
+  display: flex;
+  gap: 10px;
+}

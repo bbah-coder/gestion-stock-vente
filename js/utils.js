@@ -92,6 +92,17 @@ async function loadCurrentShop() {
       .eq("id", profile.shop_id)
       .single();
 
+  // ✅ Magasin désactivé
+  if (
+    !isSuperAdmin() &&
+    shop &&
+    shop.active === false
+  ) {
+
+    return {
+      suspended: true
+    };
+  }
   if (shopError || !shop) {
     return null;
   }
@@ -103,6 +114,59 @@ async function loadCurrentShop() {
 
   return shop;
 }
+
+//FONCTION FORCE LOGOUT POUR MAGASIN DESACTIVE
+async function forceLogout() {
+
+  try {
+    await supabaseClient.auth.signOut();
+  } catch (e) {
+    console.warn(e);
+  }
+
+  localStorage.removeItem("isLoggedIn");
+  localStorage.removeItem("username");
+  localStorage.removeItem("userRole");
+  localStorage.removeItem("userId");
+
+  window.location.href = "login.html";
+}
+
+/************************************************************
+ * AFFICHE UNE NOTIFICATION TEMPORAIRE A L'UTILISATEUR
+ ***********************************************************/
+function showToast(message, type = "info") {
+
+  const toast = document.getElementById("toast");
+
+  if (!toast) return;
+
+  toast.innerText = message;
+
+  // ✅ couleur selon type
+  switch (type) {
+    case "success":
+      toast.style.background = "#28a745";
+      break;
+    case "error":
+      toast.style.background = "#dc3545";
+      break;
+    case "warning":
+      toast.style.background = "#ff9800";
+      break;
+    default:
+      toast.style.background = "#333";
+  }
+
+  // ✅ afficher
+  toast.classList.add("show");
+
+  // ✅ cacher après 2.5s
+  setTimeout(() => {
+    toast.classList.remove("show");
+  }, 2500);
+}
+
 
 /************************************************************
  * FORMAT WHATSAPP PHONE
