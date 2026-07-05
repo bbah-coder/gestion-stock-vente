@@ -1324,17 +1324,44 @@ async function renderShops() {
       .order("name");
 
   if (error) {
-
     console.error(error);
-
-    showToast(
-      "❌ Erreur chargement magasins"
-    );
-
     return;
   }
 
-  displayShops(shops);
+  // ✅ récupérer les utilisateurs
+  const { data: users } =
+    await supabaseClient
+      .from("profiles")
+      .select("shop_id, username, role");
+
+  const shopsWithStats = shops.map(shop => {
+
+    const shopUsers = users.filter(
+      u => u.shop_id === shop.id
+    );
+
+    const admins = shopUsers.filter(
+      u => u.role === "admin"
+    );
+
+    const adminNames = admins
+      .map(a => a.username)
+      .join(", ");
+
+    return {
+
+      ...shop,
+
+      usersCount: shopUsers.length,
+
+      adminNames:
+        adminNames || "Non défini"
+
+    };
+
+  });
+
+  displayShops(shopsWithStats);
 }
 
 //AFFICHAGE DES MAGASINS V1
@@ -1353,28 +1380,57 @@ function displayShops(shops) {
     div.className = "shop-item";
 
     div.innerHTML = `
-      <div>
-        <strong>🏪 ${shop.name}</strong>
-        <br>
-        <small> 📞 ${shop.phone || ""}</small>
-      </div>
+  <div>
 
-      <div class="actions">
+    <strong>
+      🏪 ${shop.name}
+    </strong>
 
-        <button
-          onclick="toggleShop(
-            '${shop.id}',
-            ${shop.active}
-          )">
+    <br>
 
-          ${shop.active
+    <small>
+    👑 Admin (s) :
+    ${shop.adminNames}
+  </small>
+
+  <br>
+
+    <small>
+      📞 ${shop.phone || "-"}
+    </small>
+
+    <br>
+
+    <small>
+      👤 Utilisateurs :
+      ${shop.usersCount}
+    </small>
+
+    <br>
+
+    <small>
+      📅 Créé le :
+      ${formatDate(shop.created_at)}
+    </small>
+
+  </div>
+
+  <div class="actions">
+
+    <button
+      onclick="toggleShop(
+        '${shop.id}',
+        ${shop.active}
+      )">
+
+      ${shop.active
         ? "✅"
         : "⛔"}
 
-        </button>
+    </button>
 
-      </div>
-    `;
+  </div>
+`;
 
     container.appendChild(div);
 
