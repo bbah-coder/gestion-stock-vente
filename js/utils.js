@@ -70,6 +70,7 @@ async function loadCurrentShop() {
   const username =
     localStorage.getItem("username");
 
+
   if (!username) return null;
 
   // Profil utilisateur
@@ -80,7 +81,21 @@ async function loadCurrentShop() {
       .eq("username", username)
       .single();
 
-  if (profileError || !profile?.shop_id) {
+  /*if (profileError || !profile?.shop_id) {
+    return null;
+  }*/
+
+  if (profileError) {
+    return null;
+  }
+
+  //RESET FORMULAIRE SI POUR LOCALE STORAGE
+  if (!profile?.shop_id) {
+
+    console.log("🧹 Suppression storeInfo");
+
+    localStorage.removeItem("storeInfo");
+
     return null;
   }
 

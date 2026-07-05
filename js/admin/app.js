@@ -10,6 +10,27 @@ async function initApp() {
   // ✅ Sécurité
   if (!initAuth()) return;
 
+  //FORCER LA CREATION DU MAGASIN AUX ADMINS SANS MAGAISN
+  const role =
+    localStorage.getItem("userRole");
+
+  if (role === "admin") {
+
+    const hasShop =
+      await hasShopAssigned();
+
+    if (!hasShop) {
+
+      showToast(
+        "🏪 Créez votre premier magasin"
+      );
+
+      showStoreInfo();
+
+      return;
+    }
+  }
+
   await loadCurrentShop();
 
   // ✅ Vérifier compte actif

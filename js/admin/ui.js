@@ -410,14 +410,21 @@ async function createAccount() {
   const password = passwordEl.value;
   const role = roleEl.value;
 
-  // ✅ magasin sélectionné
-  //const shopId = shopEl?.value || "";
-  //const shopId = currentShop?.id || null;
-  const currentShop = getCurrentShop();
-  const shopId = currentShop?.id || null;
+  let shopId = null;
 
-  // ✅ Sauf premier admin
-  if (!shopId) {
+  // ✅ Un admin normal hérite de son magasin
+  if (!isSuperAdmin()) {
+
+    const currentShop = getCurrentShop();
+
+    shopId = currentShop?.id || null;
+  }
+
+  // ✅ Un admin doit avoir un magasin
+  if (
+    !isSuperAdmin() &&
+    !shopId
+  ) {
 
     showToast(
       "⚠️ Aucun magasin associé à votre compte"
@@ -1110,6 +1117,24 @@ async function saveStoreInfo() {
 
       currentShopId = data.id;
 
+      //AJOUT DU NOUVEAU MAGASIN CREER PAR L'ADMIN
+      const role =
+        localStorage.getItem("userRole");
+
+      if (role === "admin") {
+
+        const currentUserId =
+          localStorage.getItem("userId");
+
+        await supabaseClient
+          .from("profiles")
+          .update({
+            shop_id: data.id
+          })
+          .eq("id", currentUserId);
+
+      }
+
       //PROFIL ADMIN
       const profile = await getCurrentProfile();
 
@@ -1183,7 +1208,7 @@ async function saveStoreInfo() {
 }
 
 /*CHANGER LE MAGASIN EXISTANT */
-function loadStoreForm() {
+/*function loadStoreForm() {
 
   const store = JSON.parse(
     localStorage.getItem("storeInfo") || "{}"
@@ -1202,6 +1227,34 @@ function loadStoreForm() {
   document.getElementById("storeAddress").value =
     store.address || "";
 
+}*/
+function loadStoreForm() {
+
+  const store = JSON.parse(
+    localStorage.getItem("storeInfo") || "{}"
+  );
+
+  if (!store?.id) {
+
+    document.getElementById("storeName").value = "";
+    document.getElementById("storePhone").value = "";
+    document.getElementById("storeAddress").value = "";
+
+    currentShopId = null;
+
+    return;
+  }
+
+  currentShopId = store.id;
+
+  document.getElementById("storeName").value =
+    store.name || "";
+
+  document.getElementById("storePhone").value =
+    store.phone || "";
+
+  document.getElementById("storeAddress").value =
+    store.address || "";
 }
 
 /*BOUTON RETOUR*/
@@ -1359,5 +1412,26 @@ async function toggleShop(
   await renderShops();
 }
 
+/************************************************************
+ * DETECTER L'ADMIN SANS MAGASIN
+ ***********************************************************/
 
+async function hasShopAssigned() {
 
+  const username =
+    localStorage.getItem("username");
+
+  const { data, error } =
+    await supabaseClient
+      .from("profiles")
+      .select("shop_id")
+      .eq("username", username)
+      .single();
+
+  if (error) {
+    console.error(error);
+    return false;
+  }
+
+  return !!data?.shop_id;
+}
