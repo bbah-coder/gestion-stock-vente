@@ -373,6 +373,62 @@
 
     </section>
 
+
+    <!--=============STOCK MOUVEMENTS======-->
+    <section>
+
+      <div id="stockMovementModal" class="modal" style="display:none;">
+
+        <div class="modal-content">
+
+          <h2>📦 Mouvement de stock</h2>
+
+          <label>Type</label>
+
+          <select id="movementType">
+            <option value="entry">Entrée</option>
+            <option value="exit">Sortie</option>
+          </select>
+
+          <label>Motif</label>
+
+          <select id="movementReason">
+            <option value="achat">Achat fournisseur</option>
+            <option value="retour">Retour client</option>
+            <option value="broken">Cassé</option>
+            <option value="expired">Périmé</option>
+            <option value="lost">Perdu</option>
+            <option value="stolen">Vol</option>
+            <option value="donation">Don</option>
+          </select>
+
+          <!--<label>Quantité</label>-->
+
+          <input type="number" id="movementQuantity" min="1" placeholder="Quantité">
+
+          <!--<label>Commentaire</label>-->
+
+          <textarea id="movementComment" placeholder="Commentaire facultatif"></textarea>
+
+          <div class="modal-actions">
+
+            <button type="button" onclick="closeStockMovement()">
+              Annuler
+            </button>
+
+            <button type="button" onclick="saveStockMovement()">
+              Valider
+            </button>
+
+          </div>
+
+        </div>
+
+      </div>
+
+
+
+    </section>
     <!-- ========= HISTORIQUE ========= -->
     <section id="historyCard" class="card">
 

@@ -1254,3 +1254,15 @@ td:last-child {
   display: flex;
   gap: 10px;
 }
+
+.stock-real {
+  font-weight: bold;
+  color: #16a34a;
+  font-size: 16px;
+  margin-top: 5px;
+}
+
+.stock-loss {
+  color: #dc2626;
+  font-weight: 500;
+}

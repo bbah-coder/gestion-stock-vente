@@ -3,10 +3,10 @@
  ************************************************************/
 
 
-function toggleMenu(){
+function toggleMenu() {
   const menu = document.getElementById("mobileMenu");
 
-  if(menu.style.display === "flex"){
+  if (menu.style.display === "flex") {
     menu.style.display = "none";
   } else {
     menu.style.display = "flex";
@@ -14,20 +14,20 @@ function toggleMenu(){
 }
 
 
-function openSearch(){
+function openSearch() {
   const bar = document.getElementById("searchBar");
   const input = document.getElementById("searchInputAdmin");
-  
+
 
   const isOpening = !bar.classList.contains("active");
 
   bar.classList.toggle("active");
 
-  if(isOpening){
+  if (isOpening) {
     input.value = "";
     render();
 
-    setTimeout(()=> input.focus(), 100);
+    setTimeout(() => input.focus(), 100);
   } else {
     input.value = "";
     render();
@@ -35,7 +35,7 @@ function openSearch(){
 }
 
 
-function closeSearch(){
+function closeSearch() {
   const overlay = document.getElementById("searchOverlay");
   overlay.classList.remove("active");
 
@@ -43,18 +43,18 @@ function closeSearch(){
   render(); // reset
 }
 
-function toggleClearBtn(){
+function toggleClearBtn() {
   const input = document.getElementById("searchInputAdmin");
   const btn = document.querySelector(".clear-btn-mobile-admin");
 
-  if(input.value.length > 0){
+  if (input.value.length > 0) {
     btn.style.display = "block";
-  }else{
+  } else {
     btn.style.display = "none";
   }
 }
 
-function clearSearchMobile(){
+function clearSearchMobile() {
   const input = document.getElementById("searchInputAdmin");
 
   input.value = "";
@@ -63,14 +63,14 @@ function clearSearchMobile(){
   input.focus();      // reste actif
 }
 
-function closeMobileMenu(){
+function closeMobileMenu() {
   const menu = document.getElementById("mobileMenu");
-  if(menu){
+  if (menu) {
     menu.style.display = "none";
   }
 }
 
-document.addEventListener("click", function(e){
+document.addEventListener("click", function (e) {
 
   const menu = document.getElementById("mobileMenu");
   const burger = document.querySelector(".mobile-icons span:last-child");
@@ -79,18 +79,18 @@ document.addEventListener("click", function(e){
   const searchBtn = document.querySelector(".mobile-icons span:first-child");
 
   // ✅ MENU BURGER
-  if(menu && burger){
-    if(menu.style.display === "flex"){
-      if(!menu.contains(e.target) && !burger.contains(e.target)){
+  if (menu && burger) {
+    if (menu.style.display === "flex") {
+      if (!menu.contains(e.target) && !burger.contains(e.target)) {
         menu.style.display = "none";
       }
     }
   }
 
   // ✅ SEARCH BAR
-  if(searchBar && searchBtn){
-    if(searchBar.classList.contains("active")){
-      if(!searchBar.contains(e.target) && !searchBtn.contains(e.target)){
+  if (searchBar && searchBtn) {
+    if (searchBar.classList.contains("active")) {
+      if (!searchBar.contains(e.target) && !searchBtn.contains(e.target)) {
         searchBar.classList.remove("active");
       }
     }
@@ -102,12 +102,12 @@ document.addEventListener("click", function(e){
  * MOBILE PRODUCT CARDS 
  ************************************************************/
 
-function renderCards(productsList){
+function renderCards(productsList) {
 
   const list = document.getElementById("mobileList");
   list.innerHTML = "";
 
-  productsList.forEach((p)=>{
+  productsList.forEach((p) => {
 
     const promo = Number(p.promo) || 0;
     const price = Number(p.price) || 0;
@@ -120,25 +120,25 @@ function renderCards(productsList){
 
     const card = document.createElement("div");
     card.className = "product-card";
-    
 
-card.innerHTML = `
+
+    card.innerHTML = `
 
     <div class="card-top">
       <div class="card-image">
         ${p.image
-         ? `<img src="${p.image}" class="card-img">`
+        ? `<img src="${p.image}" class="card-img">`
         : `<div class="no-image">📦</div>`
-          }
+      }
       </div>
    
       <div class="card-info">
          <!--<div class="card-name">${p.name}</div>-->
          <div class="card-name">${p.name}
-            ${promo > 0 
-             ? `<span class="promo-badge">(-${promo}%)</span>`
-             : ""
-            }
+            ${promo > 0
+        ? `<span class="promo-badge">(-${promo}%)</span>`
+        : ""
+      }
          </div>
          
       <div class="card-price">${promo > 0 ? `
@@ -150,14 +150,50 @@ card.innerHTML = `
       </div>
 
      <div class="card-stock">
-       <div>Vendu : ${p.sold || 0}</div>
-      Stock Restant : ${p.stock}
-      ${
-        p.stock <= LOW_STOCK_THRESHOLD
+     <!--div>Stock initial : ${p.initialStock}</div> -->
+
+     <div class="stock-real">
+       📦 Stock réel : ${p.stock || 0}  </div>
+      ${p.stock <= LOW_STOCK_THRESHOLD
         ? `<span class="badge-danger">Faible</span>`
         : ""
       }
-       <div>Stock initial : ${p.initialStock || p.stock}</div>
+
+     ${(p.entries || 0) > 0
+        ? `<div>📥 Entrées : ${p.entries}</div>`
+        : ""
+      }
+
+       ${(p.sold || 0) > 0
+        ? `<div>🛒 Vendu : ${p.sold}</div>`
+        : ""
+      }
+      
+     ${(p.broken || 0) > 0
+        ? `<div>🔨 Cassé : ${p.broken}</div>`
+        : ""
+      }
+
+     ${(p.expired || 0) > 0
+        ? `<div>⏰ Périmé : ${p.expired}</div>`
+        : ""
+      }
+
+    ${(p.lost || 0) > 0
+        ? `<div>❓ Perdu : ${p.lost}</div>`
+        : ""
+      }
+
+    ${(p.stolen || 0) > 0
+        ? `<div class="stock-loss">🚨 Vol : ${p.stolen}</div>`
+        : ""
+      }
+
+    ${(p.donation || 0) > 0
+        ? `<div>🎁 Don : ${p.donation}</div>`
+        : ""
+      }
+      
       
      </div>
 
@@ -167,7 +203,8 @@ card.innerHTML = `
 
   <div class="card-footer">
      <button class="btn-edit" onclick="editProduct(${realIndex})">Modifier️</button>
-     <button class="btn-add" onclick="addStock(${realIndex})">➕ Ajouter du stock</button>
+     <button class="btn-add" onclick="openStockMovement(${realIndex})">📦 Mouvement</button>
+     <!--<button class="btn-add" onclick="addStock(${realIndex})">➕ Ajouter du stock</button>-->
      <!--<button onclick="archiveProduct(${realIndex})">📦</button>-->
   </div>
 `;
@@ -181,7 +218,7 @@ card.innerHTML = `
 
 /* PRODUIT INACTIF MOBILE */
 
-function renderInactiveCards(listData){
+function renderInactiveCards(listData) {
 
   const container = document.getElementById("mobileList");
   container.innerHTML = "";
@@ -205,32 +242,31 @@ function renderInactiveCards(listData){
         <div class="card-top">
 
           <div class="card-image">
-            ${p.image 
-              ? `<img src="${p.image}" class="card-img">`
-              : `<div class="no-image">📦</div>`
-            }
+            ${p.image
+        ? `<img src="${p.image}" class="card-img">`
+        : `<div class="no-image">📦</div>`
+      }
           </div>
 
           <div class="card-info">
 
             <!--<div class="card-name">${p.name}</div>-->
             <div class="card-name">${p.name}
-            ${promo > 0 
-             ? `<span class="promo-badge">(-${promo}%)</span>`
-             : ""
-            }
+            ${promo > 0
+        ? `<span class="promo-badge">(-${promo}%)</span>`
+        : ""
+      }
          </div>
             
 
             <div class="card-price">
-              ${
-                promo > 0
-                ? `
+              ${promo > 0
+        ? `
                   <span class="price-old">${formatPrice(price)} GNF</span>
                   <span class="price-new">${formatPrice(finalPrice)} GNF</span>
                 `
-                : `${formatPrice(price)} GNF`
-              }
+        : `${formatPrice(price)} GNF`
+      }
             </div>
 
             <div class="card-stock">
@@ -274,7 +310,7 @@ function renderInactiveCards(listData){
 }
 
 /*Produit archivé */
-function renderArchivedCards(listData){
+function renderArchivedCards(listData) {
 
   const container = document.getElementById("mobileList");
   container.innerHTML = "";
@@ -298,30 +334,29 @@ function renderArchivedCards(listData){
         <div class="card-top">
 
           <div class="card-image">
-            ${p.image 
-              ? `<img src="${p.image}" class="card-img">`
-              : `<div class="no-image">📦</div>`
-            }
+            ${p.image
+        ? `<img src="${p.image}" class="card-img">`
+        : `<div class="no-image">📦</div>`
+      }
           </div>
 
           <div class="card-info">
 
             <div class="card-name">${p.name}
-            ${promo > 0 
-             ? `<span class="promo-badge">(-${promo}%)</span>`
-             : ""
-            }
+            ${promo > 0
+        ? `<span class="promo-badge">(-${promo}%)</span>`
+        : ""
+      }
          </div>
 
             <div class="card-price">
-              ${
-                promo > 0
-                ? `
+              ${promo > 0
+        ? `
                   <span class="price-old">${formatPrice(price)} GNF</span>
                   <span class="price-new">${formatPrice(finalPrice)} GNF</span>
                 `
-                : `${formatPrice(price)} GNF`
-              }
+        : `${formatPrice(price)} GNF`
+      }
             </div>
 
             <div class="card-meta">
