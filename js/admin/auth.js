@@ -36,5 +36,5 @@ function logout() {
 
   // ✅ redirection vers login
   //window.location.href = "login.html";
-  window.location.href = "home.html";
+  window.location.href = "home";
 }

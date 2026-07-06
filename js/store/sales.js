@@ -519,7 +519,7 @@ function validerPanier() {
   let clientPhone =
     document.getElementById("ticketPhone")?.value.trim() || "";
 
-  // ✅ Normalisation format WhatsApp Guinée
+  // ✅ Normalisation WhatsApp Guinée
   clientPhone = clientPhone
     ? formatWhatsAppPhone(clientPhone)
     : "";
@@ -629,6 +629,11 @@ function validerPanier() {
   localStorage.setItem("stockLogs", JSON.stringify(stockLogs));
 
   // ✅ ✅ ✅ ENREGISTREMENT VENTE (PRO)
+  const salePhone =
+    paymentMethod === "credit"
+      ? creditData?.clientPhone || ""
+      : clientPhone;
+
   sales.push({
 
     id: Date.now(),
@@ -644,7 +649,8 @@ function validerPanier() {
     totalBrut,
     totalRemise,
     total: totalNet, // ✅ IMPORTANT
-    clientPhone,
+    //clientPhone,
+    clientPhone: salePhone,
 
     payment: {
       ...paymentDetails,

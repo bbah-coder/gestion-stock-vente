@@ -273,7 +273,7 @@ function updateReasons() {
         Vol
       </option>
 
-      <option value="donation">
+      <option value="don">
         Don
       </option>
     `;
@@ -374,7 +374,7 @@ function applyStockMovement(
   p.expired ??= 0;
   p.lost ??= 0;
   p.stolen ??= 0;
-  p.donation ??= 0;
+  p.don ??= 0;
 
 
 
@@ -420,8 +420,8 @@ function applyStockMovement(
         p.stolen += quantity;
         break;
 
-      case "donation":
-        p.donation += quantity;
+      case "don":
+        p.don += quantity;
         break;
 
 
@@ -459,4 +459,174 @@ function applyStockMovement(
   render();
 
   showToast("✅ Mouvement enregistré");
+}
+
+//HISTORIQUE DES MOUVEMENTS DE STOCK
+
+function showProductHistory(productName) {
+
+  const historyList =
+    document.getElementById("historyList");
+
+  historyList.innerHTML = "";
+
+  const movements = stockMovements.filter(
+    m => m.product === productName
+  );
+
+  if (movements.length === 0) {
+
+    historyList.innerHTML =
+      "<p>Aucun mouvement</p>";
+
+  } else {
+
+    const grouped = {};
+
+    movements.forEach(m => {
+
+      if (!grouped[m.reason]) {
+        grouped[m.reason] = [];
+      }
+
+      grouped[m.reason].push(m);
+
+    });
+
+    Object.entries(grouped)
+      .forEach(([reason, items]) => {
+
+        const totalQuantity =
+          items.reduce(
+            (sum, item) => sum + item.quantity,
+            0
+          );
+
+        const div =
+          document.createElement("div");
+
+        div.className = "history-item";
+
+        div.innerHTML = `
+          <div class="history-title">
+
+            ${getMovementIcon(reason)}
+
+            ${formatReason(reason)}
+                (${items.length})
+          </div>
+
+          <div class="history-total">
+
+            <!--Mouvements : ${items.length} <br>-->
+            Total : ${totalQuantity}
+
+          </div>
+        `;
+
+        items.forEach(item => {
+
+          div.innerHTML += `
+            <div class="history-detail">
+
+              <div>
+                📦 Quantité :
+                ${item.quantity}
+              </div>
+
+              <div>
+                📅 ${item.date}
+              </div>
+
+              ${item.comment
+              ? `
+                  <div>
+                    📝 ${item.comment}
+                  </div>
+                `
+              : ""
+            }
+
+            </div>
+          `;
+
+        });
+
+        historyList.appendChild(div);
+
+      });
+
+  }
+
+  document.getElementById(
+    "historyModal"
+  ).style.display = "flex";
+
+}
+
+// FERMER LE MODAL HISTORIQUE DES MOUVEMENTS
+function closeHistoryModal() {
+
+  document.getElementById(
+    "historyModal"
+  ).style.display = "none";
+
+}
+
+//ICONES DES MOUVEMENTS
+function getMovementIcon(reason) {
+
+  switch (reason) {
+
+    case "achat":
+      return "📥";
+
+    case "retour":
+      return "↩️";
+
+    case "broken":
+      return "🔨";
+
+    case "expired":
+      return "⏰";
+
+    case "lost":
+      return "❓";
+
+    case "stolen":
+      return "🚨";
+
+    case "don":
+      return "🎁";
+
+    default:
+      return "📦";
+
+  }
+
+}
+
+//LES LIBELLES DES MOUVEMENTS
+
+function formatReason(reason) {
+
+  const labels = {
+
+    achat: "Achat fournisseur",
+
+    retour: "Retour client",
+
+    broken: "Cassé",
+
+    expired: "Périmé",
+
+    lost: "Perdu",
+
+    stolen: "Vol",
+
+    don: "Don"
+
+  };
+
+  return labels[reason] || reason;
 }

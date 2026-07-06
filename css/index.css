@@ -1051,3 +1051,21 @@ td:first-child {
   }
 
 }
+
+/* CSS TICKET DAY*/
+.ticket-day {
+
+  margin: 15px 0 10px;
+
+  font-weight: 700;
+
+  color: #444;
+
+  font-size: 14px;
+
+  text-transform: capitalize;
+
+  padding-left: 5px;
+
+  border-left: 4px solid #3498db;
+}

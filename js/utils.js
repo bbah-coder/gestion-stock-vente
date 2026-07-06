@@ -62,6 +62,11 @@ async function initCurrentUserContext() {
 
   return true;
 }
+
+//ACTIVITE UTILISATEUR
+function updateLastActivity() {
+  localStorage.setItem("lastActivity", Date.now());
+}
 /************************************************************
  * CHARGE LES MAGS DE L'UTILISATEUR CONNECTE
  ***********************************************************/
@@ -145,7 +150,7 @@ async function forceLogout() {
   localStorage.removeItem("userRole");
   localStorage.removeItem("userId");
 
-  window.location.href = "login.html";
+  window.location.href = "login";
 }
 
 /************************************************************
@@ -286,6 +291,22 @@ function formatDateFR(date) {
     month: "long",
     year: "numeric"
   });
+}
+/************************************************************
+ * 📅 FORMAT DATE
+ * ----------------------------------------------------------
+ * - format ticket jour
+ ************************************************************/
+
+function formatTicketDay(date) {
+
+  return new Date(date)
+    .toLocaleDateString("fr-FR", {
+      weekday: "long",
+      day: "2-digit",
+      month: "long"
+    });
+
 }
 
 /************************************************************

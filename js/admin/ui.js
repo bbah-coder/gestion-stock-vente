@@ -97,10 +97,6 @@ function updateUI() {
   }
 }
 
-function updateLastActivity() {
-  localStorage.setItem("lastActivity", Date.now());
-}
-
 function initPDFDate() {
 
   const pdfInput = document.getElementById("pdfDate");

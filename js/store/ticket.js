@@ -239,7 +239,7 @@ function renderTickets() {
 
       list.appendChild(header);
 
-      group.tickets.forEach(t => {
+      /*group.tickets.forEach(t => {
 
         const card = document.createElement("div");
         card.className = "ticket-card";
@@ -277,7 +277,96 @@ function renderTickets() {
     `;
 
         list.appendChild(card);
+      });*/
+
+      const dayGroups = {};
+
+      group.tickets.forEach(t => {
+
+        const dayKey = new Date(t.date)
+          .toISOString()
+          .split("T")[0];
+
+        if (!dayGroups[dayKey]) {
+
+          dayGroups[dayKey] = [];
+
+        }
+
+        dayGroups[dayKey].push(t);
+
       });
+
+      Object.entries(dayGroups)
+        .sort((a, b) => new Date(b[0]) - new Date(a[0]))
+        .forEach(([dayKey, dayTickets]) => {
+
+          const dayHeader =
+            document.createElement("div");
+
+          dayHeader.className =
+            "ticket-day";
+
+          dayHeader.textContent =
+            formatTicketDay(dayKey);
+
+          list.appendChild(dayHeader);
+
+          dayTickets.forEach(t => {
+
+            const card =
+              document.createElement("div");
+
+            card.className = "ticket-card";
+
+            const dateObj =
+              new Date(t.date);
+
+            const time =
+              dateObj.toLocaleTimeString([], {
+                hour: "2-digit",
+                minute: "2-digit",
+                second: "2-digit"
+              });
+
+            card.innerHTML = `
+        <div class="ticket-header">
+
+          <span class="ticket-title">
+            📄 Ticket
+          </span>
+
+          <span class="ticket-date-right">
+            ${time}
+          </span>
+
+        </div>
+
+        <div class="ticket-payment">
+          Paiement :
+          ${getPaymentLabel(t.payment)}
+        </div>
+
+        <div class="ticket-total">
+          💰 ${formatPrice(t.total)} GNF
+        </div>
+
+        <div class="ticket-actions">
+          <button onclick="showTicketDetail('${t.id}')">
+            Voir
+          </button>
+
+          <button onclick="exportTicketPDF(${t.id})">
+            PDF
+          </button>
+        </div>
+      `;
+
+            list.appendChild(card);
+
+          });
+
+        });
 
     });
 

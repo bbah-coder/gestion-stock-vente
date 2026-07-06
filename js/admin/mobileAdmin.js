@@ -189,11 +189,10 @@ function renderCards(productsList) {
         : ""
       }
 
-    ${(p.donation || 0) > 0
-        ? `<div>🎁 Don : ${p.donation}</div>`
+    ${(p.don || 0) > 0
+        ? `<div>🎁 Don : ${p.don}</div>`
         : ""
       }
-      
       
      </div>
 
@@ -204,6 +203,7 @@ function renderCards(productsList) {
   <div class="card-footer">
      <button class="btn-edit" onclick="editProduct(${realIndex})">Modifier️</button>
      <button class="btn-add" onclick="openStockMovement(${realIndex})">📦 Mouvement</button>
+     <button class="btn-history" onclick="showProductHistory('${p.name}')">📜 Historique </button>
      <!--<button class="btn-add" onclick="addStock(${realIndex})">➕ Ajouter du stock</button>-->
      <!--<button onclick="archiveProduct(${realIndex})">📦</button>-->
   </div>

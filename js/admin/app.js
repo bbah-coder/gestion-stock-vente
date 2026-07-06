@@ -98,14 +98,10 @@ function initServiceWorker() {
 
 }
 
-
-
 /************************************************************
  * 🧠 VARIABLES GLOBALES
 ************************************************************/
 let shopWindow = null; // ✅ référence fenêtre boutique
-
-
 
 /************************************************************
  * 🛒 NAVIGATION
@@ -137,26 +133,84 @@ function clearSearch() {
 /************************************************************
  * 🔐 SESSION
 ************************************************************/
+/************************************************************
+ * ⏱️ TIMERS / ACTIVITÉ
+ ************************************************************/
 
-/*function checkSessionTimeout() {
+// 🔁 check session
+setInterval(checkSessionTimeout, 5000);
 
-  const lastActivity = localStorage.getItem("lastActivity");
+const SESSION_Timeout = 60 * 60 * 1000;// 1 heure
+const WARNING_TIME =
+  SESSION_Timeout - (5 * 60 * 1000);
+
+
+// 📌 activité utilisateur
+//document.addEventListener("click", updateLastActivity);
+//document.addEventListener("keypress", updateLastActivity);
+
+// 💾 rappel backup
+//setInterval(checkBackupReminder, 10 * 60 * 1000);
+
+//ECOUTER LES ACTIONS UTILISATEUR
+[
+  "click",
+  // "mousemove",
+  "keydown",
+  //"scroll",
+  "touchstart"
+].forEach(event => {
+
+  document.addEventListener(
+    event,
+    updateLastActivity,
+    { passive: true }
+  );
+
+});
+
+function checkSessionTimeout() {
+
+  const lastActivity = Number(
+    localStorage.getItem("lastActivity")
+  );
+
   if (!lastActivity) return;
 
-  const now = Date.now();
+  const inactiveTime =
+    Date.now() - lastActivity;
 
-  if (now - lastActivity > SESSION_TIMEOUT) {
+  if (
+    inactiveTime >= WARNING_TIME &&
+    inactiveTime < SESSION_Timeout
+  ) {
 
-    // ✅ afficher message
-    const msg = document.getElementById("sessionMessage");
-    msg.style.display = "block";
+    showToast(
+      "⚠️ Votre session va expirer bientôt"
+    );
 
-    // ✅ attendre 1 seconde puis déconnecter
-    setTimeout(() => {
-      logout();
-    }, 1000);
   }
-}*/
+
+  if (inactiveTime >= SESSION_Timeout) {
+
+
+    forceLogout();
+
+  }
+
+}
+
+//FORCER LA DECONNEXION
+function forceLogout() {
+
+  localStorage.removeItem("isLoggedIn");
+  localStorage.removeItem("username");
+  localStorage.removeItem("userRole");
+  localStorage.removeItem("userId");
+
+  window.location.href = "login";
+}
+
 
 /************************************************************
  * 📄 PAGINATION ADMIN
@@ -381,22 +435,6 @@ channel.onmessage = (event) => {
     render();
   }
 };
-
-
-/************************************************************
- * ⏱️ TIMERS / ACTIVITÉ
- ************************************************************/
-
-// 🔁 check session
-//setInterval(checkSessionTimeout, 5000);
-
-// 📌 activité utilisateur
-document.addEventListener("click", updateLastActivity);
-document.addEventListener("keypress", updateLastActivity);
-
-// 💾 rappel backup
-setInterval(checkBackupReminder, 10 * 60 * 1000);
-
 
 /************************************************************
  * Footer 

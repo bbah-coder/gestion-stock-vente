@@ -72,7 +72,75 @@ function initServiceWorker() {
 
 }
 
+/************************************************************
+ * 🔐 SESSION
+************************************************************/
+// 🔁 check session
+setInterval(checkSessionTimeout, 5000);
 
+const SESSION_Timeout = 60 * 60 * 1000;// 1 heure
+const WARNING_TIME =
+  SESSION_Timeout - (5 * 60 * 1000);
+
+
+//ECOUTER LES ACTIONS UTILISATEUR
+[
+  "click",
+  //"mousemove",
+  "keydown",
+  // "scroll",
+  "touchstart"
+].forEach(event => {
+
+  document.addEventListener(
+    event,
+    updateLastActivity,
+    { passive: true }
+  );
+
+});
+
+function checkSessionTimeout() {
+
+  const lastActivity = Number(
+    localStorage.getItem("lastActivity")
+  );
+
+  if (!lastActivity) return;
+
+  const inactiveTime =
+    Date.now() - lastActivity;
+
+  if (
+    inactiveTime >= WARNING_TIME &&
+    inactiveTime < SESSION_Timeout
+  ) {
+
+    showToast(
+      "⚠️ Votre session va expirer bientôt"
+    );
+
+  }
+
+  if (inactiveTime >= SESSION_Timeout) {
+
+
+    forceLogout();
+
+  }
+
+}
+
+//FORCER LA DECONNEXION
+function forceLogout() {
+
+  localStorage.removeItem("isLoggedIn");
+  localStorage.removeItem("username");
+  localStorage.removeItem("userRole");
+  localStorage.removeItem("userId");
+
+  window.location.href = "login";
+}
 /************************************************************
  * 🎮 NAVIGATION
  ***********************************************************/

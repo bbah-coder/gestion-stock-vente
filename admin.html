@@ -399,7 +399,7 @@
             <option value="expired">Périmé</option>
             <option value="lost">Perdu</option>
             <option value="stolen">Vol</option>
-            <option value="donation">Don</option>
+            <option value="don">Don</option>
           </select>
 
           <!--<label>Quantité</label>-->
@@ -425,8 +425,27 @@
         </div>
 
       </div>
+    </section>
 
+    <!-- ========= HISTORIQUE MOUVEMENT DE STOCK ========= -->
+    <section>
+      <div id="historyModal" class="modal" style="display:none;">
 
+        <div class="modal-content">
+
+          <h2>📜 Historique des mouvements</h2>
+
+          <div class="history-body" id="historyList"></div>
+
+          <div class="history-footer">
+            <button type="button" onclick="closeHistoryModal()">
+              Fermer
+            </button>
+          </div>
+
+        </div>
+
+      </div>
 
     </section>
     <!-- ========= HISTORIQUE ========= -->
