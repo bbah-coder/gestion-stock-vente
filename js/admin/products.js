@@ -6,7 +6,7 @@ let products = JSON.parse(localStorage.getItem("products") || "[]");
 let currentPromoIndex = null;
 let editIndex = null;
 
-function saveProducts(){
+function saveProducts() {
   localStorage.setItem("products", JSON.stringify(products));
   localStorage.setItem("products_updated_at", Date.now());
 }
@@ -15,49 +15,49 @@ function saveProducts(){
 // ✅ INIT PRODUITS
 //--------------------------------------
 
-function initProducts(){
+function initProducts() {
 
   let updated = false;
 
   products.forEach(p => {
 
-    if(p.promo === undefined){
+    if (p.promo === undefined) {
       p.promo = 0;
       updated = true;
     }
 
-    if(!p.category){
+    if (!p.category) {
       p.category = "Autre";
       updated = true;
     }
 
-    if(p.initialStock === undefined){
+    if (p.initialStock === undefined) {
       p.initialStock = p.stock;
       updated = true;
     }
 
-    if(p.sold === undefined){
+    if (p.sold === undefined) {
       p.sold = 0;
       updated = true;
     }
 
-    if(p.active === undefined){
+    if (p.active === undefined) {
       p.active = true;
     }
 
-    if(!p.createdAt){
+    if (!p.createdAt) {
       p.createdAt = new Date().toISOString();
       updated = true;
     }
-	
-	if(p.archived === undefined){
+
+    if (p.archived === undefined) {
       p.archived = false;
-}
+    }
 
 
   });
 
-  if(updated){
+  if (updated) {
     saveProducts();
   }
 }
@@ -65,7 +65,7 @@ function initProducts(){
 //--------------------------------------
 // ✅ CATEGORIE PRODUIT
 //--------------------------------------
-function populateCategories(){
+function populateCategories() {
 
   const selects = [
     document.getElementById("filterCategoryAdmin"),
@@ -78,7 +78,7 @@ function populateCategories(){
 
   selects.forEach(select => {
 
-    if(!select) return;
+    if (!select) return;
 
     const current = select.value;
 
@@ -92,7 +92,7 @@ function populateCategories(){
     });
 
     // ✅ garder sélection
-    if(current){
+    if (current) {
       select.value = current;
     }
 
@@ -103,14 +103,14 @@ function populateCategories(){
 //--------------------------------------
 
 
-function saveProduct(){
+function saveProduct() {
 
   const category = document.getElementById("category").value.trim();
   const name = document.getElementById("name").value.trim();
   const price = document.getElementById("price").value;
   const stock = parseInt(document.getElementById("stock").value);
 
-  if(!name || !price || isNaN(stock)){
+  if (!name || !price || isNaN(stock)) {
     alert("Remplir tous les champs");
     return;
   }
@@ -118,17 +118,17 @@ function saveProduct(){
   const file = document.getElementById("image").files[0];
 
   // ✅ CAS AVEC IMAGE
-  if(file){
+  if (file) {
     const reader = new FileReader();
 
-    reader.onload = function(e){
+    reader.onload = function (e) {
 
       const product = {
         name: name,
         price: price,
         stock: stock,
         image: e.target.result,
-		category: category || "Autre"
+        category: category || "Autre"
       };
 
       saveFinal(product);
@@ -144,10 +144,10 @@ function saveProduct(){
       name: name,
       price: price,
       stock: stock,
-	  category: category || "Autre"
+      category: category || "Autre"
     };
 
-    if(editIndex !== null){
+    if (editIndex !== null) {
       product.image = products[editIndex].image;
     }
 
@@ -155,7 +155,7 @@ function saveProduct(){
   }
 }
 
-function saveFinal(product){
+function saveFinal(product) {
 
   const normalizedName = product.name.toLowerCase().trim();
 
@@ -165,92 +165,99 @@ function saveFinal(product){
   );
 
   // ✅ MODE MODIFICATION
-if(editIndex !== null){
+  if (editIndex !== null) {
 
-  const existing = products[editIndex];
+    const existing = products[editIndex];
 
-  existing.name = product.name;
-  existing.price = product.price;
-  existing.category = product.category || "Autre";
+    existing.name = product.name;
+    existing.price = product.price;
+    existing.category = product.category || "Autre";
 
-  // ✅ stock modifié
-  existing.stock = product.stock;
+    // ✅ stock modifié
+    existing.stock = product.stock;
 
-  // ✅ NE PAS TOUCHER AUX VENTES
-  const sold = existing.sold || 0;
+    // ✅ NE PAS TOUCHER AUX VENTES
+    const sold = existing.sold || 0;
 
-  // ✅ recalcul cohérent du stock initial
-  existing.initialStock = product.stock + sold;
+    // ✅ recalcul cohérent du stock initial
+    existing.initialStock = product.stock + sold;
 
-  // ✅ NE PAS RESET sold
-  // existing.sold = 0 ❌ SUPPRIME CETTE LIGNE
+    // ✅ NE PAS RESET sold
+    // existing.sold = 0 ❌ SUPPRIME CETTE LIGNE
 
-  if(product.image){
-    existing.image = product.image;
+    if (product.image) {
+      existing.image = product.image;
+    }
   }
-}
 
   // ✅ MODE AJOUT
   else {
 
-   if(existingIndex !== -1){
+    if (existingIndex !== -1) {
 
-  const existingProduct = products[existingIndex];
+      const existingProduct = products[existingIndex];
 
-  // ✅ MESSAGE COMPLET
-  const confirmUpdate = confirm(
-    `⚠️ Produit "${existingProduct.name}" existe déjà\n\n` +
-    `Stock actuel : ${existingProduct.stock}\n` +
-    `Stock ajouté : ${product.stock}\n\n` +
-    `Voulez-vous continuer ?`
-  );
+      // ✅ MESSAGE COMPLET
+      const confirmUpdate = confirm(
+        `⚠️ Produit "${existingProduct.name}" existe déjà\n\n` +
+        `Stock actuel : ${existingProduct.stock}\n` +
+        `Stock ajouté : ${product.stock}\n\n` +
+        `Voulez-vous continuer ?`
+      );
 
-  if(!confirmUpdate){
-    return; // ❌ on annule tout
-  }
+      if (!confirmUpdate) {
+        return; // ❌ on annule tout
+      }
 
-  // ✅ BONUS : gestion prix différent
-  if(parseFloat(existingProduct.price) !== parseFloat(product.price)){
-    
-    const confirmPrice = confirm(
-      `⚠️ Prix différent détecté\n\n` +
-      `Ancien : ${existingProduct.price}\n` +
-      `Nouveau : ${product.price}\n\n` +
-      `Mettre à jour le prix ?`
-    );
+      // ✅ BONUS : gestion prix différent
+      if (parseFloat(existingProduct.price) !== parseFloat(product.price)) {
 
-    if(confirmPrice){
-      existingProduct.price = product.price;
-    }
-  }
+        const confirmPrice = confirm(
+          `⚠️ Prix différent détecté\n\n` +
+          `Ancien : ${existingProduct.price}\n` +
+          `Nouveau : ${product.price}\n\n` +
+          `Mettre à jour le prix ?`
+        );
+
+        if (confirmPrice) {
+          existingProduct.price = product.price;
+        }
+      }
 
 
-  // ✅ fusion stock
-  existingProduct.stock += product.stock;
-  existingProduct.initialStock += product.stock;
+      // ✅ fusion stock
+      existingProduct.stock += product.stock;
+      existingProduct.initialStock += product.stock;
 
-  // ✅ mise à jour image (si nouvelle)
-  if(product.image){
-    existingProduct.image = product.image;
-  }
+      // ✅ mise à jour image (si nouvelle)
+      if (product.image) {
+        existingProduct.image = product.image;
+      }
 
-  alert("✅ Stock mis à jour avec succès");
+      alert("✅ Stock mis à jour avec succès");
 
     } else {
 
       // ✅ nouveau produit
       product.initialStock = product.stock; // ✅ stock initial
-	  product.sold = 0;                    // ✅ vendu
-	  product.createdAt = new Date().toISOString(); // ✅ DATE DE CREATION
+      product.sold = 0;                    // ✅ vendu
+      product.createdAt = new Date().toISOString(); // ✅ DATE DE CREATION
+
+      // ✅ auteur création
+      product.createdBy = localStorage.getItem("username");
+      product.createdRole = localStorage.getItem("userRole");
+
       products.unshift(product);
+
 
     }
   }
-  
+
   // ✅ sauvegarde
-  
+
   localStorage.setItem("products", JSON.stringify(products));
-  localStorage.setItem("products_updated_at",Date.now() + "_" + Math.random());
+  localStorage.setItem("products_updated_at", Date.now() + "_" + Math.random());
+
 
 
   // ✅ refresh tableau
@@ -266,24 +273,24 @@ if(editIndex !== null){
 
   // ✅ reset bouton
   document.getElementById("saveBtn").innerText = "Enregistrer";
-  
+
   document.getElementById("formSection").style.border = "none";
 }
 
-function editProduct(index){
+function editProduct(index) {
 
   const p = products[index];
-  
+
   document.getElementById("saveBtn").innerText = "Modifier ✅";
   document.getElementById("formTitle").innerText = "✏️ Modifier le produit";
-  
+
   document.getElementById("name").value = p.name;
   document.getElementById("price").value = p.price;
   document.getElementById("stock").value = p.stock;
 
   editIndex = index;
-  
-// ✅ AFFICHER FORMULAIRE
+
+  // ✅ AFFICHER FORMULAIRE
   showAdminSection("form");
 
   const form = document.getElementById("formSection");
@@ -295,13 +302,13 @@ function editProduct(index){
   form.style.border = "2px solid #f39c12";
 }
 
-function deleteProduct(index){
+function deleteProduct(index) {
 
   // ✅ Popup confirmation
   const confirmDelete = confirm("Voulez-vous vraiment supprimer ce produit ?");
 
   // ✅ Si l'utilisateur annule → on arrête
-  if(!confirmDelete){
+  if (!confirmDelete) {
     return;
   }
 
@@ -315,14 +322,14 @@ function deleteProduct(index){
 
   // ✅ Sauvegarde
   localStorage.setItem("products", JSON.stringify(products));
-  localStorage.setItem("products_updated_at",Date.now() + "_" + Math.random());
+  localStorage.setItem("products_updated_at", Date.now() + "_" + Math.random());
 
 
   // ✅ Rafraîchir affichage
   render();
 }
 
-function cancelEdit(){
+function cancelEdit() {
 
   clearForm();
 
@@ -338,14 +345,14 @@ function cancelEdit(){
 // ✅ FORM
 //--------------------------------------
 
-function clearForm(){
+function clearForm() {
   document.getElementById("category").value = "";
   document.getElementById("name").value = "";
   document.getElementById("price").value = "";
-  document.getElementById("stock").value = ""; 
- 
- 
-// ✅ reset input file
+  document.getElementById("stock").value = "";
+
+
+  // ✅ reset input file
   const imageInput = document.getElementById("image");
   imageInput.value = "";
 
@@ -353,7 +360,7 @@ function clearForm(){
   document.getElementById("fileName").textContent = "Aucune image sélectionnée";
 
   editIndex = null;
-  
+
   document.getElementById("saveBtn").innerText = "Enregistrer";
   document.getElementById("formTitle").innerText = "➕ Ajouter un produit";
   document.getElementById("formSection").style.border = "none";
@@ -364,19 +371,19 @@ function clearForm(){
 // ✅ IMPORT
 //-------------------------------------
 
-function importCSV(){
-  
+function importCSV() {
+
   const input = document.getElementById("fileInput");
   const file = input.files[0];
 
-  if(!file){
+  if (!file) {
     alert("Aucun fichier sélectionné");
     return;
   }
 
   const reader = new FileReader();
 
-  reader.onload = function(e){
+  reader.onload = function (e) {
 
     const content = e.target.result;
 
@@ -388,22 +395,22 @@ function importCSV(){
     lines.forEach((line, index) => {
 
       const clean = line.trim();
-      if(!clean) return;
+      if (!clean) return;
 
       // ✅ ignorer en-tête
-      if(index === 0) return;
+      if (index === 0) return;
 
       const parts = clean.split(/[,;]/);
 
-      if(parts.length < 3) return;
+      if (parts.length < 3) return;
 
       const name = parts[0].trim();
       const price = parseFloat(parts[1].trim());
       const stock = parseInt(parts[2]);
       const image = parts[3] ? parts[3].trim() : "";
-	  const category = parts[4] ? parts[4].trim() : "Autre";
+      const category = parts[4] ? parts[4].trim() : "Autre";
 
-      if(!name || isNaN(price) || isNaN(stock)) return;
+      if (!name || isNaN(price) || isNaN(stock)) return;
 
       const normalizedName = name.toLowerCase().trim();
 
@@ -412,7 +419,7 @@ function importCSV(){
         p.name.toLowerCase().trim() === normalizedName
       );
 
-      if(existingIndex !== -1){
+      if (existingIndex !== -1) {
 
         const existingProduct = products[existingIndex];
 
@@ -424,10 +431,10 @@ function importCSV(){
           `Continuer ?`
         );
 
-        if(!confirmStock) return;
+        if (!confirmStock) return;
 
         // ✅ CONFIRMATION PRIX
-        if(parseFloat(existingProduct.price) !== price){
+        if (parseFloat(existingProduct.price) !== price) {
 
           const confirmPrice = confirm(
             `⚠️ Prix différent détecté\n\n` +
@@ -436,43 +443,43 @@ function importCSV(){
             `Mettre à jour le prix ?`
           );
 
-          if(confirmPrice){
+          if (confirmPrice) {
             existingProduct.price = price;
           }
         }
 
         // ✅ fusion stock
         existingProduct.stock += stock;
-       // ✅ mettre à jour stock initial aussi
-	   if(existingProduct.initialStock === undefined){
-         existingProduct.initialStock = existingProduct.stock;
-       }
-       existingProduct.initialStock += stock;
-      // ✅ sécurité sold
-      if(existingProduct.sold === undefined){
-        existingProduct.sold = 0;
-      }
+        // ✅ mettre à jour stock initial aussi
+        if (existingProduct.initialStock === undefined) {
+          existingProduct.initialStock = existingProduct.stock;
+        }
+        existingProduct.initialStock += stock;
+        // ✅ sécurité sold
+        if (existingProduct.sold === undefined) {
+          existingProduct.sold = 0;
+        }
 
         // ✅ update image (si fournie)
-        if(image){
+        if (image) {
           existingProduct.image = image;
         }
-		if(category && category.trim() !== ""){
+        if (category && category.trim() !== "") {
 
-         if(existingProduct.category !== category){
+          if (existingProduct.category !== category) {
 
-         const confirmUpdate = confirm(
-         `Mettre à jour la catégorie pour ${existingProduct.name} ?\n\n` +
-         `Ancienne : ${existingProduct.category}\n` +
-         `Nouvelle : ${category}`
-    );
+            const confirmUpdate = confirm(
+              `Mettre à jour la catégorie pour ${existingProduct.name} ?\n\n` +
+              `Ancienne : ${existingProduct.category}\n` +
+              `Nouvelle : ${category}`
+            );
 
-    if(confirmUpdate){
-      existingProduct.category = category;
-    }
+            if (confirmUpdate) {
+              existingProduct.category = category;
+            }
 
-  }
-}
+          }
+        }
 
       } else {
 
@@ -481,10 +488,10 @@ function importCSV(){
           name,
           price,
           stock,
-		  initialStock: stock,
-		  sold: 0,
+          initialStock: stock,
+          sold: 0,
           image: image || null,
-		  category: category
+          category: category
         });
 
         count++;
@@ -494,7 +501,7 @@ function importCSV(){
 
     // ✅ sauvegarde
     localStorage.setItem("products", JSON.stringify(products));
-	localStorage.setItem("products_updated_at",Date.now() + "_" + Math.random());
+    localStorage.setItem("products_updated_at", Date.now() + "_" + Math.random());
 
 
     render();
@@ -502,7 +509,7 @@ function importCSV(){
     alert(count + " nouveaux produits importés ✅");
   };
 
-  reader.onerror = function(){
+  reader.onerror = function () {
     alert("Erreur lecture fichier");
   };
 
@@ -522,9 +529,9 @@ function importCSV(){
 // ✅ PROMO
 //--------------------------------------
 
-function openPromoPopup(index, currentValue){
+function openPromoPopup(index, currentValue) {
 
-  if(index === undefined || index === -1){
+  if (index === undefined || index === -1) {
     console.error("❌ index invalide :", index);
     return;
   }
@@ -539,15 +546,15 @@ function openPromoPopup(index, currentValue){
   document.getElementById("promoModal").style.display = "flex";
 }
 
-function updatePromo(index, value){
+function updatePromo(index, value) {
 
   let promo = parseInt(value);
 
-  if(isNaN(promo) || promo < 0){
+  if (isNaN(promo) || promo < 0) {
     promo = 0;
   }
 
-  if(promo > 100){
+  if (promo > 100) {
     promo = 100;
   }
 
@@ -559,15 +566,15 @@ function updatePromo(index, value){
   updateInactiveProducts();
 }
 
-function confirmPromo(){
+function confirmPromo() {
 
   let value = parseInt(document.getElementById("promoInput").value);
 
-  if(isNaN(value) || value < 0){
+  if (isNaN(value) || value < 0) {
     value = 0;
   }
 
-  if(value > 100){
+  if (value > 100) {
     value = 100;
   }
 
@@ -580,7 +587,7 @@ function confirmPromo(){
   updateInactiveProducts(); // ✅ refresh UI
 }
 
-function closePromoPopup(){
+function closePromoPopup() {
   document.getElementById("promoModal").style.display = "none";
 }
 
@@ -589,11 +596,11 @@ function closePromoPopup(){
 // ✅ ARCHIVE
 //--------------------------------------
 
-function archiveProduct(index){
+function archiveProduct(index) {
 
   const confirmAction = confirm("Archiver ce produit ?");
 
-  if(!confirmAction) return;
+  if (!confirmAction) return;
 
   products[index].active = false;
   products[index].deletedAt = new Date().toISOString();
@@ -603,11 +610,11 @@ function archiveProduct(index){
   render();
 }
 
-function restoreProduct(index){
+function restoreProduct(index) {
 
   const confirmAction = confirm("Réactiver ce produit ?");
 
-  if(!confirmAction) return;
+  if (!confirmAction) return;
 
   products[index].active = true;
   delete products[index].deletedAt;
@@ -617,10 +624,10 @@ function restoreProduct(index){
   render();
 }
 
-function showArchived(){
+function showArchived() {
 
   //const isMobile = window.innerWidth <= 768;
-  const isMobileOrTablet  = window.matchMedia("(max-width: 1200px)").matches;
+  const isMobileOrTablet = window.matchMedia("(max-width: 1200px)").matches;
 
   const list = document.getElementById("list");
   const mobileList = document.getElementById("mobileList");
@@ -628,7 +635,7 @@ function showArchived(){
 
   // ✅ RESET COMPLET (FIX BUG 🔥)
   list.innerHTML = "";
-  if(mobileList) mobileList.innerHTML = "";
+  if (mobileList) mobileList.innerHTML = "";
 
   // ✅ HEADER
   header.innerHTML = `
@@ -643,8 +650,8 @@ function showArchived(){
   const archived = products.filter(p => p.active === false);
 
   // ✅ AUCUN RESULTAT
-  if(archived.length === 0){
-    if(isMobileOrTablet){
+  if (archived.length === 0) {
+    if (isMobileOrTablet) {
       mobileList.innerHTML = "<p>✅ Aucun produit archivé</p>";
     } else {
       list.innerHTML = `
@@ -659,7 +666,7 @@ function showArchived(){
   }
 
   // ✅ ✅ ✅ MODE MOBILE (NOUVEAU PROPRE)
-  if(isMobileOrTablet){
+  if (isMobileOrTablet) {
     renderArchivedCards(archived);
     return;
   }
@@ -703,22 +710,20 @@ function showArchived(){
       </td>
 
       <td>
-        ${
-          promo > 0
-          ? `
+        ${promo > 0
+        ? `
             <span class="price-old">${formatPrice(price)} GNF</span><br>
             <span class="price-new">${formatPrice(finalPrice)} GNF</span>
           `
-          : `${formatPrice(price)} GNF`
-        }
+        : `${formatPrice(price)} GNF`
+      }
       </td>
 
       <td>
-        ${
-          promo > 0
-          ? `<span style="color:#3498db;font-weight:bold;">🔥 ${promo}%</span>`
-          : `—`
-        }
+        ${promo > 0
+        ? `<span style="color:#3498db;font-weight:bold;">🔥 ${promo}%</span>`
+        : `—`
+      }
       </td>
 
       <td>${p.stock}</td>
@@ -745,14 +750,14 @@ function showArchived(){
 //--------------------------------------
 // ✅ REINITIALISATION
 //--------------------------------------
-function resetSalesOnly(){
+function resetSalesOnly() {
 
   const step1 = confirm("Réinitialiser la vente en cours ?");
 
-  if(!step1) return;
-  
+  if (!step1) return;
+
   const step2 = confirm("🚨 DERNIÈRE confirmation ?");
-  if(!step2) return;
+  if (!step2) return;
 
   cart = [];
 
@@ -766,19 +771,19 @@ function resetSalesOnly(){
 }
 
 
-function resetStockOnly(){
+function resetStockOnly() {
 
   const step1 = confirm("Réinitialiser les stocks ?");
 
-  if(!step1) return;
-  
+  if (!step1) return;
+
   const step2 = confirm("🚨 DERNIÈRE confirmation ?");
-  if(!step2) return;
+  if (!step2) return;
 
   products.forEach(p => {
 
     // ✅ on force un fallback fiable
-    if(!p.initialStock || isNaN(p.initialStock)){
+    if (!p.initialStock || isNaN(p.initialStock)) {
       p.initialStock = p.stock + (p.sold || 0);
     }
 
@@ -786,9 +791,9 @@ function resetStockOnly(){
     p.stock = Number(p.initialStock);
     p.sold = 0;
   });
-  
+
   localStorage.setItem("products", JSON.stringify(products));
-  localStorage.setItem("products_updated_at",Date.now() + "_" + Math.random());
+  localStorage.setItem("products_updated_at", Date.now() + "_" + Math.random());
 
 
   render();
@@ -796,17 +801,17 @@ function resetStockOnly(){
   alert("✅ Stocks réinitialisés");
 }
 
-function resetAll(){
+function resetAll() {
 
   const step1 = confirm("⚠️ Reset stock + panier ?");
-  if(!step1) return;
-  
+  if (!step1) return;
+
   const step2 = confirm("🚨 DERNIÈRE confirmation ?");
-  if(!step2) return;
+  if (!step2) return;
 
   products.forEach(p => {
 
-    if(!p.initialStock){
+    if (!p.initialStock) {
       p.initialStock = p.stock + (p.sold || 0);
     }
 
@@ -821,7 +826,7 @@ function resetAll(){
   localStorage.removeItem("cart");
 
   localStorage.setItem("products", JSON.stringify(products));
-  localStorage.setItem("products_updated_at",Date.now() + "_" + Math.random());
+  localStorage.setItem("products_updated_at", Date.now() + "_" + Math.random());
 
 
   render();
@@ -830,20 +835,20 @@ function resetAll(){
   alert("✅ Stock réinitialisé + historique conservé");
 }
 
-function resetProducts(){
+function resetProducts() {
 
   const step1 = confirm("⚠️ Supprimer tous les produits ?\nLa boutique sera vide");
-  if(!step1) return;
-  
+  if (!step1) return;
+
   const step2 = confirm("🚨 DERNIÈRE confirmation ?");
-  if(!step2) return;
+  if (!step2) return;
 
   // ✅ vider produits
   products = [];
 
   // ✅ nettoyer stockage
   localStorage.removeItem("products");
-  localStorage.setItem("products_updated_at",Date.now() + "_" + Math.random());
+  localStorage.setItem("products_updated_at", Date.now() + "_" + Math.random());
 
 
   render();
@@ -855,26 +860,26 @@ function resetProducts(){
 // ✅ PRODUITS INACTIFS
 //--------------------------------------
 
-function updateInactiveProducts(){
-  
-  //const isMobile = window.innerWidth <= 768;
-  const isMobileOrTablet  = window.matchMedia("(max-width: 1200px)").matches;
+function updateInactiveProducts() {
 
-  const days = parseInt(document.getElementById("inactiveDays").value);  
+  //const isMobile = window.innerWidth <= 768;
+  const isMobileOrTablet = window.matchMedia("(max-width: 1200px)").matches;
+
+  const days = parseInt(document.getElementById("inactiveDays").value);
   const list = document.getElementById("list");
 
   const inactive = getInactiveProducts(days);
-  
+
   const mobileList = document.getElementById("mobileList");
 
-  
+
   list.innerHTML = "";
   mobileList.innerHTML = "";
 
 
   // ✅ aucun résultat
-  if(inactive.length === 0){
-    if(isMobileOrTablet){
+  if (inactive.length === 0) {
+    if (isMobileOrTablet) {
       mobileList.innerHTML = "<p>✅ Aucun produit inactif</p>";
     } else {
       list.innerHTML = `<tr><td colspan="10">✅ Aucun produit inactif</td></tr>`;
@@ -883,7 +888,7 @@ function updateInactiveProducts(){
   }
 
   // ✅ SWITCH PRINCIPAL
-  if(isMobileOrTablet){
+  if (isMobileOrTablet) {
     renderInactiveCards(inactive);
     return;
   }
@@ -891,13 +896,13 @@ function updateInactiveProducts(){
   inactive.forEach(p => {
 
     const row = document.createElement("tr");
-	const promo = Number(p.promo) || 0;
-	const price = Number(p.price) || 0;
+    const promo = Number(p.promo) || 0;
+    const price = Number(p.price) || 0;
     const discountedPrice = promo > 0
-       ? price * (1 - promo / 100)
-       : price;
+      ? price * (1 - promo / 100)
+      : price;
 
-row.innerHTML = `
+    row.innerHTML = `
   <td>—</td>
   <td>⚠️</td>
 
@@ -910,8 +915,8 @@ row.innerHTML = `
   </td>
 
   <td>
-  ${promo > 0 
-    ? `
+  ${promo > 0
+        ? `
       <span style="text-decoration:line-through;color:#999;">
         ${formatPrice(price)} GNF
       </span>
@@ -920,8 +925,8 @@ row.innerHTML = `
         ${formatPrice(discountedPrice)} GNF
       </strong>
     `
-    : `${formatPrice(price)} GNF`
-  }
+        : `${formatPrice(price)} GNF`
+      }
   </td>
 
   <td>${p.stock}</td>
@@ -952,109 +957,109 @@ row.innerHTML = `
 `;
 
     // ✅ couleur dynamique
-   
-   if(p.days > 30){
-     row.style.background = "#f5b7b1"; // 🔴 critique
-  }
-  else if(p.days > 15){
-     row.style.background = "#f9e79f"; // 🟡 moyen
-  }
-  else{
-    row.style.background = "#fdecea"; // léger
-  }
+
+    if (p.days > 30) {
+      row.style.background = "#f5b7b1"; // 🔴 critique
+    }
+    else if (p.days > 15) {
+      row.style.background = "#f9e79f"; // 🟡 moyen
+    }
+    else {
+      row.style.background = "#fdecea"; // léger
+    }
 
     list.appendChild(row);
   });
 }
 
 
-function getInactiveProducts(days){
+function getInactiveProducts(days) {
 
   const today = new Date();
 
   return products
-  .filter(p => p.active !== false) // ✅ EXCLURE ARCHIVÉS
-  .map(p => {
+    .filter(p => p.active !== false) // ✅ EXCLURE ARCHIVÉS
+    .map(p => {
 
 
-    let lastSaleDate = null;
+      let lastSaleDate = null;
 
-    // ✅ chercher la dernière vente
-    sales.forEach(sale => {
+      // ✅ chercher la dernière vente
+      sales.forEach(sale => {
 
-      sale.items.forEach(item => {
+        sale.items.forEach(item => {
 
-        if(item.name.toLowerCase().trim() === p.name.toLowerCase().trim()){
+          if (item.name.toLowerCase().trim() === p.name.toLowerCase().trim()) {
 
-          const saleDate = new Date(sale.date);
+            const saleDate = new Date(sale.date);
 
-          if(!lastSaleDate || saleDate > lastSaleDate){
-            lastSaleDate = saleDate;
+            if (!lastSaleDate || saleDate > lastSaleDate) {
+              lastSaleDate = saleDate;
+            }
+
           }
 
-        }
+        });
 
       });
 
-    });
+      let diffDays = 0;
 
-    let diffDays = 0;
+      // ✅ CAS 1 : produit déjà vendu
+      if (lastSaleDate) {
 
-    // ✅ CAS 1 : produit déjà vendu
-    if(lastSaleDate){
+        diffDays = Math.floor(
+          (today - lastSaleDate) / (1000 * 60 * 60 * 24)
+        );
 
-      diffDays = Math.floor(
-        (today - lastSaleDate) / (1000 * 60 * 60 * 24)
-      );
+      }
 
-    } 
+      // ✅ CAS 2 : jamais vendu → utiliser date création
+      else {
 
-    // ✅ CAS 2 : jamais vendu → utiliser date création
-    else {
+        const createdDate = new Date(p.createdAt);
 
-      const createdDate = new Date(p.createdAt);
+        diffDays = Math.floor(
+          (today - createdDate) / (1000 * 60 * 60 * 24)
+        );
+      }
 
-      diffDays = Math.floor(
-        (today - createdDate) / (1000 * 60 * 60 * 24)
-      );
-    }
+      let label = "";
 
-    let label = "";
-
-    if(lastSaleDate){
+      if (lastSaleDate) {
         label = diffDays + " jours sans vente";
-   } else {
-      label = "Jamais vendu (" + diffDays + " jours)";
-   }
+      } else {
+        label = "Jamais vendu (" + diffDays + " jours)";
+      }
 
 
-return {
-  ...p,
-  index: products.indexOf(p), // ✅ OBLIGATOIRE
-  days: diffDays,
-  label: label
-};
+      return {
+        ...p,
+        index: products.indexOf(p), // ✅ OBLIGATOIRE
+        days: diffDays,
+        label: label
+      };
 
 
 
-  })
-  .filter(p => p.days >= days) // ✅ filtre dynamique
-  .sort((a,b) => b.days - a.days); // ✅ tri du pire au meilleur
+    })
+    .filter(p => p.days >= days) // ✅ filtre dynamique
+    .sort((a, b) => b.days - a.days); // ✅ tri du pire au meilleur
 }
 
 
-function showInactiveProducts(){
-  
+function showInactiveProducts() {
+
   //const isMobile = window.innerWidth <= 768;
-  const isMobileOrTablet  = window.matchMedia("(max-width: 1200px)").matches;
- 
+  const isMobileOrTablet = window.matchMedia("(max-width: 1200px)").matches;
+
   const list = document.getElementById("list");
   const header = document.getElementById("archivedHeader");
- 
+
 
   const defaultDays = 7;
 
- header.innerHTML = `
+  header.innerHTML = `
   <div class="inactive-header">
 
     <div class="inactive-left">
@@ -1090,10 +1095,10 @@ function showInactiveProducts(){
 
   document.getElementById("filterCategoryAdmin").style.display = "none";
   document.getElementById("pagination").style.display = "none";
-  
-  
+
+
   // ✅ switch vue
-  if(isMobileOrTablet){
+  if (isMobileOrTablet) {
     document.getElementById("tableStock").style.display = "none";
     document.getElementById("mobileList").style.display = "block";
   } else {
@@ -1120,7 +1125,7 @@ function showInactiveProducts(){
 }
 
 
-function changeDays(delta){
+function changeDays(delta) {
 
   const input = document.getElementById("inactiveDays");
 
@@ -1128,7 +1133,7 @@ function changeDays(delta){
 
   value += delta;
 
-  if(value < 1) value = 1;
+  if (value < 1) value = 1;
 
   input.value = value;
 

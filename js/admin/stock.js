@@ -376,9 +376,6 @@ function applyStockMovement(
   p.stolen ??= 0;
   p.don ??= 0;
 
-
-
-
   // ✅ Entrées
   if (type === "entry") {
 
@@ -442,6 +439,10 @@ function applyStockMovement(
 
     comment,
 
+    user: localStorage.getItem("username"),
+
+    role: localStorage.getItem("userRole"),
+
     date: new Date().toLocaleString()
 
   });
@@ -470,9 +471,115 @@ function showProductHistory(productName) {
 
   historyList.innerHTML = "";
 
-  const movements = stockMovements.filter(
+  const product = products.find(
+    p => p.name === productName
+  );
+
+  const historySummary =
+    document.getElementById("historySummary");
+
+  historySummary.innerHTML = `
+  <div class="history-summary">
+
+    <div>
+      <strong>📦 Produit :</strong>
+      ${product?.name || ""}
+    </div>
+
+    <div>
+      <strong>📦 Stock réel :</strong>
+      ${product?.stock || 0}
+    </div>
+
+    <div>
+      <strong>📦 Stock initial :</strong>
+      ${product?.initialStock || 0}
+    </div>
+
+    <div>
+      <strong>🛒 Ventes :</strong>
+      ${product?.sold || 0}
+    </div>
+
+  </div>
+`;
+
+  let movements = stockMovements.filter(
     m => m.product === productName
   );
+
+  // ✅ Ajouter le stock initial
+  if (product?.initialStock > 0) {
+
+    movements.unshift({
+      reason: "initial_stock",
+      quantity: product.initialStock,
+      user: product.createdBy,
+      role: product.createdRole,
+      date: new Date(
+        product.createdAt || "Date inconnu"
+      ).toLocaleString("fr-FR"),
+      comment: ""
+    });
+
+  }
+
+  // ✅ Ajouter les ventes
+  //TOUTES LES VENTES DU PRODUIT
+  const salesMovements =
+    sales.filter(sale =>
+      sale.items.some(
+        item => item.name === product.name
+      )
+    );
+
+
+
+  /*if (product.name === "Coca") {
+    product.sold = 3;
+
+    localStorage.setItem(
+      "products",
+      JSON.stringify(products)
+    );
+  }
+
+  render();*/
+
+
+
+  // TRIE DES DATES DES VENTES
+  salesMovements.sort(
+    (a, b) => new Date(b.date) - new Date(a.date)
+  );
+  //PERMET DE CREER UNE ENTREE PAR VENTE
+  salesMovements.forEach(sale => {
+
+    const items = sale.items.filter(
+      i => i.name === product.name
+    );
+
+
+    items.forEach(item => {
+
+      movements.push({
+
+        reason: "sale",
+
+        quantity: item.quantity,
+
+        user: sale.user,
+
+        role: sale.role,
+
+        date: new Date(
+          sale.date
+        ).toLocaleString("fr-FR")
+
+      });
+
+    });
+  });
 
   if (movements.length === 0) {
 
@@ -528,11 +635,19 @@ function showProductHistory(productName) {
 
           div.innerHTML += `
             <div class="history-detail">
-
+              
               <div>
                 📦 Quantité :
                 ${item.quantity}
               </div>
+
+              <div>
+                👤 ${item.user || "Inconnu"}
+             </div>
+
+            <div>
+              ${formatRole(item.role)}
+            </div>
 
               <div>
                 📅 ${item.date}
@@ -578,6 +693,12 @@ function getMovementIcon(reason) {
 
   switch (reason) {
 
+    case "initial_stock":
+      return "📦";
+
+    case "sale":
+      return "🛒";
+
     case "achat":
       return "📥";
 
@@ -612,6 +733,10 @@ function formatReason(reason) {
 
   const labels = {
 
+    initial_stock: "Stock initial",
+
+    sale: "Ventes",
+
     achat: "Achat fournisseur",
 
     retour: "Retour client",
@@ -629,4 +754,16 @@ function formatReason(reason) {
   };
 
   return labels[reason] || reason;
+}
+
+
+function formatRole(role) {
+
+  const labels = {
+    super_admin: "👑 Super Admin",
+    admin: "🛠️ Admin",
+    vendeur: "🛒 Vendeur"
+  };
+
+  return labels[role] || role;
 }

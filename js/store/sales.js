@@ -637,7 +637,8 @@ function validerPanier() {
   sales.push({
 
     id: Date.now(),
-
+    user: localStorage.getItem("username"),
+    role: localStorage.getItem("userRole"),
     items: cart.map(item => ({
       name: item.name,
       quantity: item.quantity,

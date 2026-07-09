@@ -201,7 +201,7 @@ function renderCards(productsList) {
     </div>
 
   <div class="card-footer">
-     <button class="btn-edit" onclick="editProduct(${realIndex})">Modifier️</button>
+     <!--<button class="btn-edit" onclick="editProduct(${realIndex})">Modifier️</button>-->
      <button class="btn-add" onclick="openStockMovement(${realIndex})">📦 Mouvement</button>
      <button class="btn-history" onclick="showProductHistory('${p.name}')">📜 Historique </button>
      <!--<button class="btn-add" onclick="addStock(${realIndex})">➕ Ajouter du stock</button>-->
