@@ -1373,3 +1373,30 @@ td:last-child {
 .price-gros {
   color: #2563eb;
 }
+
+/*CSS QR MODAL*/
+#qrProductModal {
+  display: none;
+}
+
+#productQrContainer {
+
+  display: flex;
+
+  justify-content: center;
+
+  margin: 10px 0;
+
+}
+
+.qr-code-id {
+
+  text-align: center;
+
+  font-size: 13px;
+
+  color: #666;
+
+  margin-top: 8px;
+
+}

@@ -353,15 +353,25 @@ function render() {
 
     list.appendChild(row);
 
-    new QRCode(document.getElementById(qrId), {
-      text: encodeURIComponent(
-        p.name + "|" + parseFloat(formatPrice(p.price)) + "GNF"
-      ),
-      width: 60,
-      height: 60
-    });
+    /* new QRCode(document.getElementById(qrId), {
+       text: encodeURIComponent(
+         p.name + "|" + parseFloat(formatPrice(p.price)) + "GNF"
+       ),
+       width: 60,
+       height: 60
+     });*/
+
+    new QRCode(
+      document.getElementById(qrId),
+      {
+        text: p.barcode,
+        width: 60,
+        height: 60
+      }
+    );
 
   });
+
 
   // ✅ 6. Affichage pagination
   renderPagination(filtered.length);

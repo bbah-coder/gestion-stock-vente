@@ -133,6 +133,8 @@ function saveProduct() {
         wholesalePrice: wholesalePrice, //prix gros
         wholesaleMinQty: wholesaleMinQty, //seuil prix gros
         stock: stock,
+        //barcode: crypto.randomUUID(), //Ajout QR-CODE
+        barcode: "PRD-" + Date.now().toString().slice(-6), //Ajout QR-CODE
         image: e.target.result,
         category: category || "Autre"
       };
@@ -152,6 +154,7 @@ function saveProduct() {
       wholesalePrice: wholesalePrice, //prix gros
       wholesaleMinQty: wholesaleMinQty, //seuil prix gros
       stock: stock,
+      barcode: crypto.randomUUID(), //Ajout QR-CODE
       category: category || "Autre"
     };
 
@@ -186,7 +189,8 @@ function saveFinal(product) {
 
     // ✅ stock modifié
     existing.stock = product.stock;
-
+    //barCode
+    existing.barcode = existing.barcode || product.barcode;
     // ✅ NE PAS TOUCHER AUX VENTES
     const sold = existing.sold || 0;
 

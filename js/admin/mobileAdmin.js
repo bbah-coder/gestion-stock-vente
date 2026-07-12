@@ -241,6 +241,7 @@ function renderCards(productsList) {
   <div class="card-footer">
      <!--<button class="btn-edit" onclick="editProduct(${realIndex})">Modifier️</button>-->
      <button class="btn-add" onclick="openStockMovement(${realIndex})">📦 Mouvement</button>
+     <button class="btn-qr" onclick="showProductQr(${realIndex})">🧾 QR </button>
      <button class="btn-history" onclick="showProductHistory('${p.name}')">📜 Historique </button>
      <!--<button class="btn-add" onclick="addStock(${realIndex})">➕ Ajouter du stock</button>-->
      <!--<button onclick="archiveProduct(${realIndex})">📦</button>-->
@@ -585,3 +586,75 @@ function renderArchivedCards(listData) {
   });
 
 }
+
+//FONCTION AFFICHAGE QR
+function showProductQr(index) {
+
+  const product = products[index];
+
+  document.getElementById(
+    "qrProductModal"
+  ).style.display = "flex";
+
+  document.getElementById(
+    "productQrName"
+  ).innerHTML = `
+  <h3>${product.name}</h3>
+
+  <div class="qr-code-id">
+    ${product.barcode}
+  </div>
+`;
+
+  const container =
+    document.getElementById(
+      "productQrContainer"
+    );
+
+  container.innerHTML = "";
+
+  new QRCode(container, {
+
+    text: product.barcode,
+
+    width: 220,
+
+    height: 220
+
+  });
+
+}
+
+//FONTION FERMETURE 
+function closeProductQr() {
+
+  document.getElementById(
+    "qrProductModal"
+  ).style.display = "none";
+
+}
+
+//FONCTION IMPRESSION
+function printProductQr() {
+
+  window.print();
+
+}
+
+//CODE MIGRATION
+/*products.forEach((p, index) => {
+
+  if (!p.barcode ||
+    p.barcode.includes("-")) {
+
+    p.barcode =
+      `PRD-${String(index + 1).padStart(4, "0")}`;
+
+  }
+
+});
+
+localStorage.setItem(
+  "products",
+  JSON.stringify(products)
+);*/
