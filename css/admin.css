@@ -1380,18 +1380,18 @@ td:last-child {
 }
 
 #productQrContainer {
-
   display: flex;
   justify-content: center;
   display: flex;
 
+  justify-content: center;
+  display: flex;
   justify-content: center;
   margin: 10px 0;
 
 }
 
 .qr-code-id {
-
   text-align: center;
   font-size: 13px;
   color: #666;
@@ -1419,13 +1419,4 @@ td:last-child {
 .card-footer button.btn-history {
   height: 36px;
   font-size: 13px;
-  ==============>>>>>>>5039a62e74fa9fd13860f9dcc530953a7e70cf2f text-align: center;
-
-  font-size: 13px;
-
-  color: #666;
-
-  margin-top: 8px;
-
-  <<<<<<< HEAD>>>>>>>5039a62e74fa9fd13860f9dcc530953a7e70cf2f=======>>>>>>>5039a62e74fa9fd13860f9dcc530953a7e70cf2f
 }

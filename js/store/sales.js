@@ -266,7 +266,32 @@ function vendreWithQty(index, btn) {
 // ✅ RECHERCHE PRODUIT PAR QR
 //-------------------------------------
 
+/*function addProductByBarcode(code) {
 
+  const index =
+    products.findIndex(
+      p => p.barcode === code
+    );
+
+  if (index === -1) {
+
+    showToast(
+      "❌ Produit introuvable"
+    );
+
+    return;
+
+  }
+
+  vendreWithQty(index, null);
+  renderProducts();
+
+  renderCart();
+
+  updateCartBadge();
+  updateFloatingCart();
+  updateCartMobileBtn();
+}*/
 function addProductByBarcode(code) {
 
   const index = products.findIndex(
@@ -406,20 +431,13 @@ function openQrScanner() {
   );
 
   qrScanner.start(
-
     { facingMode: "environment" },
-
-    { facingMode: "environment" },
-
-    { facingMode: "environment" },
-
     {
       fps: 10,
       qrbox: 250
     },
 
     (decodedText) => {
-
       // ✅ évite les doubles scans
       if (
         decodedText === lastScanned &&
@@ -427,7 +445,6 @@ function openQrScanner() {
       ) {
         return;
       }
-
       lastScanned = decodedText;
       lastScanTime = Date.now();
 
@@ -441,7 +458,6 @@ function openQrScanner() {
         decodedText.trim()
       );
 
-      // ✅ feedback
       showToast(
         "✅ Produit ajouté"
       );
@@ -455,42 +471,38 @@ function openQrScanner() {
         "Erreur caméra :",
         err
       );
-
       showToast(
         "❌ Impossible d'accéder à la caméra"
       );
-
     });
 
 }
 
 
 function closeQrScanner() {
+
   if (!qrScanner) {
-    document.getElementById("qrScannerModal").style.display = "none";
+    document.getElementById(
+      "qrScannerModal"
+    ).style.display = "none";
     return;
   }
-
-  qrScanner
-    .stop()
+  qrScanner.stop()
     .then(() => {
       qrScanner.clear();
       qrScanner = null;
+      document.getElementById(
+        "qrScannerModal"
+      ).style.display = "none";
 
-      document.getElementById("qrScannerModal").style.display = "none";
     })
-    .catch((err) => {
-      console.error("Erreur fermeture scanner :", err);
+    .catch(console.error);
 
-      qrScanner = null;
-      document.getElementById("qrScannerModal").style.display = "none";
-    });
 }
 
 //--------------------------------------
 // ✅ AJOUT MANUEL SI SCAN PAS OK
 //-------------------------------------
-
 function searchBarcodeManual() {
 
   const code = document
@@ -508,17 +520,6 @@ function searchBarcodeManual() {
 
 }
 
-/*function openQrScanner() {
-
-  const code = prompt(
-    "Code QR"
-  );
-
-  if (!code) return;
-
-  addProductByBarcode(code);
-
-}*/
 
 function changeQty(index, delta) {
 
