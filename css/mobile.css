@@ -1583,3 +1583,16 @@ body::before {
   cursor: pointer;
   margin-left: 150px;
 }*/
+
+/*CSS PRIX DETAIL ET GROS*/
+.cart-wholesale {
+
+  color: #2563eb;
+
+  font-size: 12px;
+
+  font-weight: 600;
+
+  margin-top: 2px;
+
+}

@@ -228,7 +228,12 @@
 
       <input id="category" placeholder="Catégorie (ex: Aliment de base, Boisson)">
       <input id="name" placeholder="Nom">
-      <input id="price" type="number" placeholder="Prix">
+      <label>Prix détail</label>
+      <input id="price" type="number" placeholder="Prix détail">
+      <label>Prix gros</label>
+      <input id="wholesalePrice" type="number" placeholder="Prix gros">
+      <label>Seuil prix gros</label>
+      <input type="number" id="wholesaleMinQty" min="1" placeholder="Ex : 12">
       <input id="stock" type="number" placeholder="Stock">
       <div class="file-upload">
         <!-- ✅ input caché -->

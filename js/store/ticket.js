@@ -239,46 +239,6 @@ function renderTickets() {
 
       list.appendChild(header);
 
-      /*group.tickets.forEach(t => {
-
-        const card = document.createElement("div");
-        card.className = "ticket-card";
-
-        const dateObj = new Date(t.date);
-        const time = dateObj.toLocaleTimeString([], {
-          hour: '2-digit',
-          minute: '2-digit'
-        });
-
-        card.innerHTML = `
-      <div class="ticket-header">
-            <span class="ticket-title">📄 Ticket</span>
-            <span class="ticket-date-right">
-           ${dateObj.toLocaleDateString('fr-FR', { day: '2-digit', month: 'long' })}
-           </span>
-      </div>
-
-     <div class="ticket-time">
-       ${dateObj.toLocaleDateString()} • ${time}
-     </div>
-
-     <div class="ticket-payment">
-        Paiement : ${getPaymentLabel(t.payment)}
-      </div>
-
-      <div class="ticket-total">
-        💰 ${formatPrice(t.total)} GNF
-      </div>
-
-      <div class="ticket-actions">
-        <button onclick="showTicketDetail('${t.id}')">Voir</button>
-        <button onclick="exportTicketPDF(${t.id})">PDF</button>
-      </div>
-    `;
-
-        list.appendChild(card);
-      });*/
-
       const dayGroups = {};
 
       group.tickets.forEach(t => {
@@ -329,12 +289,20 @@ function renderTickets() {
                 second: "2-digit"
               });
 
+            const hasWholesale = t.items?.some(
+              item => item.isWholesale
+            );
+
             card.innerHTML = `
         <div class="ticket-header">
 
-          <span class="ticket-title">
+         <span class="ticket-title">
             📄 Ticket
-          </span>
+                 ${hasWholesale
+                ? `<span class="ticket-gros">📦 Gros</span>`
+                : `<span class="ticket-detail">🛒 Détail</span>`
+              }
+         </span>
 
           <span class="ticket-date-right">
             ${time}
@@ -408,6 +376,8 @@ function showTicketDetail(id) {
 
     t.items.forEach(item => {
 
+      console.log(item);
+
       const qty = item.quantity || item.qty || 0;
       const price = item.price || 0;
       const subtotal = qty * price;
@@ -416,6 +386,13 @@ function showTicketDetail(id) {
 
       // ✅ NOUVEAU FORMAT PRO
       text += `${item.name} x ${qty}\n`;
+      if (item.isWholesale) {
+        text += `📦 Tarif gros appliqué\n`;
+        text += `Prix gros : ${formatPrice(item.wholesalePrice)} GNF\n`;
+      } else {
+        text += `🛒 Tarif détail appliqué\n`;
+        text += `Prix détail : ${formatPrice(item.detailPrice)} GNF\n`;
+      }
       text += `${qty} x ${formatPrice(price)} GNF = ${formatPrice(subtotal)} GNF\n\n`;
 
     });
@@ -567,13 +544,43 @@ function exportTicketPDF(id) {
     y += 4;
 
     // ✅ DETAIL
+    if (item.isWholesale) {
+
+      doc.text(
+        cleanText(
+          `📦 Prix gros  : ${formatPrice(item.wholesalePrice)} GNF`
+        ),
+        5,
+        y
+      );
+
+    } else {
+
+      doc.text(
+        cleanText(
+          `🛒 Prix detail : ${formatPrice(item.detailPrice)} GNF`
+        ),
+        5,
+        y
+      );
+
+    }
+
+    y += 4;
     doc.text(
+      cleanText(
+        `${qty} x ${formatPrice(price)} GNF = ${formatPrice(subtotal)} GNF`
+      ),
+      5,
+      y
+    );
+    /*doc.text(
       cleanText(`${qty} x ${formatPrice(price)} GNF = ${formatPrice(subtotal)} GNF`),
       5,
       y
     );
 
-    y += 5;
+    y += 5; */
   });
 
   // ✅ LIGNE
@@ -700,10 +707,14 @@ function sendTicketWhatsApp(id) {
 
     totalBrut += subtotal;
 
-    articles +=
-      `${item.name} x ${qty}
-${qty} x ${formatPrice(price)} GNF = ${formatPrice(subtotal)} GNF
+    articles += `
+       ${item.name} x ${qty}
+       ${item.isWholesale
+        ? `Prix gros : ${formatPrice(item.wholesalePrice)} GNF`
+        : `Prix détail : ${formatPrice(item.detailPrice)} GNF`
+      }
 
+     ${qty} x ${formatPrice(price)} GNF = ${formatPrice(subtotal)} GNF
 `;
 
   });
@@ -715,30 +726,30 @@ ${qty} x ${formatPrice(price)} GNF = ${formatPrice(subtotal)} GNF
   let message =
     `${store.name || "MON SHOP"}
 
-Tel : ${store.phone || ""}
+    Tel: ${store.phone || ""}
 
 ${store.address || ""}
 
---------------------------------
+    --------------------------------
 
-Ticket #${t.id}
+      Ticket #${t.id}
 
 ${date.toLocaleDateString()} ${date.toLocaleTimeString()}
 
 ${getPaymentLabelPDF(t.payment)}
 
---------------------------------
+    --------------------------------
 
-${articles}
---------------------------------
+      ${articles}
+    --------------------------------
 
-Total brut : ${formatPrice(totalBrut)} GNF
+      Total brut: ${formatPrice(totalBrut)} GNF
 `;
 
   // ✅ remise
   if (remise > 0) {
     message +=
-      `Remise : -${formatPrice(remise)} GNF
+      `Remise: -${formatPrice(remise)} GNF
 `;
   }
 
@@ -752,26 +763,26 @@ Total brut : ${formatPrice(totalBrut)} GNF
 
     if (encaisse > 0) {
       message +=
-        `Payé : ${formatPrice(encaisse)} GNF
+        `Payé: ${formatPrice(encaisse)} GNF
 `;
     }
 
     if (remaining > 0) {
       message +=
-        `Reste à payer : ${formatPrice(remaining)} GNF
+        `Reste à payer: ${formatPrice(remaining)} GNF
 `;
     }
 
     if (remaining <= 0) {
       message +=
         `Crédit soldé
-`;
+      `;
     }
   }
 
   message +=
     `
-TOTAL : ${formatPrice(totalNet)} GNF
+    TOTAL: ${formatPrice(totalNet)} GNF
 
 Merci pour votre achat`;
 

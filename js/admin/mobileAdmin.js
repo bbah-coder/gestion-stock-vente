@@ -110,11 +110,18 @@ function renderCards(productsList) {
   productsList.forEach((p) => {
 
     const promo = Number(p.promo) || 0;
-    const price = Number(p.price) || 0;
 
-    const finalPrice = promo > 0
-      ? price * (1 - promo / 100)
-      : price;
+    const detailPrice =
+      Number(p.price) || 0;
+
+    const wholesalePrice =
+      Number(p.wholesalePrice) || 0;
+
+    // ✅ Promo uniquement sur le détail
+    const finalDetailPrice =
+      promo > 0
+        ? detailPrice * (1 - promo / 100)
+        : detailPrice;
 
     const realIndex = products.indexOf(p);
 
@@ -141,13 +148,44 @@ function renderCards(productsList) {
       }
          </div>
          
-      <div class="card-price">${promo > 0 ? `
-          <span class="price-old">${formatPrice(price)} GNF</span>
-          <span class="price-new">${formatPrice(finalPrice)} GNF</span>
-        `
-        : `${formatPrice(price)} GNF`
+      <div class="card-price">
+     
+       <div>🛒 Détail :
+       ${promo > 0
+        ? `
+        <span class="price-old">
+          ${formatPrice(detailPrice)} GNF
+        </span>
+
+        <span class="price-new">
+          ${formatPrice(finalDetailPrice)} GNF
+        </span>
+      `
+        : `
+        <span class="price-new">
+          ${formatPrice(detailPrice)} GNF
+        </span>
+      `
       }
       </div>
+
+     ${(wholesalePrice || 0) > 0
+        ? `
+      <div class="price-wholesale">
+        📦 Gros :
+        <span class="price-gros">
+          ${formatPrice(wholesalePrice)} GNF
+        </span>
+        <div class="price-threshold">
+         📦 Dès ${p.wholesaleMinQty || 0} unités
+        </div>
+
+      </div>
+    `
+        : ""
+      }
+
+   </div>
 
      <div class="card-stock">
      <!--div>Stock initial : ${p.initialStock}</div> -->
@@ -226,11 +264,18 @@ function renderInactiveCards(listData) {
   listData.forEach(p => {
 
     const promo = Number(p.promo) || 0;
-    const price = Number(p.price) || 0;
 
-    const finalPrice = promo > 0
-      ? price * (1 - promo / 100)
-      : price;
+    const detailPrice =
+      Number(p.price) || 0;
+
+    const wholesalePrice =
+      Number(p.wholesalePrice) || 0;
+
+    // ✅ Promo uniquement sur le détail
+    const finalDetailPrice =
+      promo > 0
+        ? detailPrice * (1 - promo / 100)
+        : detailPrice;
 
     const card = document.createElement("div");
     card.className = "product-card";
@@ -258,22 +303,93 @@ function renderInactiveCards(listData) {
       }
          </div>
             
-
-            <div class="card-price">
-              ${promo > 0
+      <div class="card-price">
+     
+       <div>🛒 Détail :
+       ${promo > 0
         ? `
-                  <span class="price-old">${formatPrice(price)} GNF</span>
-                  <span class="price-new">${formatPrice(finalPrice)} GNF</span>
-                `
-        : `${formatPrice(price)} GNF`
-      }
-            </div>
+        <span class="price-old">
+          ${formatPrice(detailPrice)} GNF
+        </span>
 
+        <span class="price-new">
+          ${formatPrice(finalDetailPrice)} GNF
+        </span>
+      `
+        : `
+        <span class="price-new">
+          ${formatPrice(detailPrice)} GNF
+        </span>
+      `
+      }
+      </div>
+
+     ${(wholesalePrice || 0) > 0
+        ? `
+      <div class="price-wholesale">
+
+        📦 Gros :
+
+        <span class="price-gros">
+          ${formatPrice(wholesalePrice)} GNF
+        </span>
+
+      </div>
+    `
+        : ""
+      }
+
+   </div>
             <div class="card-stock">
-              <div> Vendu : ${p.sold}</div>
-              Stock restant : ${p.stock}
-              <div> Stock initial : ${p.initialStock}</div>
-            </div>
+     <!--div>Stock initial : ${p.initialStock}</div> -->
+
+     <div class="stock-real">
+       📦 Stock réel : ${p.stock || 0}  </div>
+      ${p.stock <= LOW_STOCK_THRESHOLD
+        ? `<span class="badge-danger">Faible</span>`
+        : ""
+      }
+
+     ${(p.entries || 0) > 0
+        ? `<div>📥 Entrées : ${p.entries}</div>`
+        : ""
+      }
+
+       ${(p.sold || 0) > 0
+        ? `<div>🛒 Vendu : ${p.sold}</div>`
+        : ""
+      }
+      
+     ${(p.broken || 0) > 0
+        ? `<div>🔨 Cassé : ${p.broken}</div>`
+        : ""
+      }
+
+     ${(p.expired || 0) > 0
+        ? `<div>⏰ Périmé : ${p.expired}</div>`
+        : ""
+      }
+
+    ${(p.lost || 0) > 0
+        ? `<div>❓ Perdu : ${p.lost}</div>`
+        : ""
+      }
+
+    ${(p.stolen || 0) > 0
+        ? `<div class="stock-loss">🚨 Vol : ${p.stolen}</div>`
+        : ""
+      }
+
+    ${(p.don || 0) > 0
+        ? `<div>🎁 Don : ${p.don}</div>`
+        : ""
+      }
+      
+     </div>
+
+     </div>
+
+    </div>
 
             <div class="card-meta inactive">
               ⚠️ ${p.days} jours sans vente
@@ -318,11 +434,18 @@ function renderArchivedCards(listData) {
   listData.forEach(p => {
 
     const promo = Number(p.promo) || 0;
-    const price = Number(p.price) || 0;
 
-    const finalPrice = promo > 0
-      ? price * (1 - promo / 100)
-      : price;
+    const detailPrice =
+      Number(p.price) || 0;
+
+    const wholesalePrice =
+      Number(p.wholesalePrice) || 0;
+
+    // ✅ Promo uniquement sur le détail
+    const finalDetailPrice =
+      promo > 0
+        ? detailPrice * (1 - promo / 100)
+        : detailPrice;
 
     const card = document.createElement("div");
     card.className = "product-card";
@@ -349,20 +472,94 @@ function renderArchivedCards(listData) {
       }
          </div>
 
-            <div class="card-price">
-              ${promo > 0
+             <div class="card-price">
+     
+       <div>🛒 Détail :
+       ${promo > 0
         ? `
-                  <span class="price-old">${formatPrice(price)} GNF</span>
-                  <span class="price-new">${formatPrice(finalPrice)} GNF</span>
-                `
-        : `${formatPrice(price)} GNF`
-      }
-            </div>
+        <span class="price-old">
+          ${formatPrice(detailPrice)} GNF
+        </span>
 
-            <div class="card-meta">
-              <div>Vendu : ${p.sold || 0}</div>
-              Stock restant : ${p.stock}
-              <div>Stock initial : ${p.initialStock || 0}</div>
+        <span class="price-new">
+          ${formatPrice(finalDetailPrice)} GNF
+        </span>
+      `
+        : `
+        <span class="price-new">
+          ${formatPrice(detailPrice)} GNF
+        </span>
+      `
+      }
+      </div>
+
+     ${(wholesalePrice || 0) > 0
+        ? `
+      <div class="price-wholesale">
+
+        📦 Gros :
+
+        <span class="price-gros">
+          ${formatPrice(wholesalePrice)} GNF
+        </span>
+
+      </div>
+    `
+        : ""
+      }
+
+   </div>
+            <div class="card-stock">
+     <!--div>Stock initial : ${p.initialStock}</div> -->
+
+     <div class="stock-real">
+       📦 Stock réel : ${p.stock || 0}  </div>
+      ${p.stock <= LOW_STOCK_THRESHOLD
+        ? `<span class="badge-danger">Faible</span>`
+        : ""
+      }
+
+     ${(p.entries || 0) > 0
+        ? `<div>📥 Entrées : ${p.entries}</div>`
+        : ""
+      }
+
+       ${(p.sold || 0) > 0
+        ? `<div>🛒 Vendu : ${p.sold}</div>`
+        : ""
+      }
+      
+     ${(p.broken || 0) > 0
+        ? `<div>🔨 Cassé : ${p.broken}</div>`
+        : ""
+      }
+
+     ${(p.expired || 0) > 0
+        ? `<div>⏰ Périmé : ${p.expired}</div>`
+        : ""
+      }
+
+    ${(p.lost || 0) > 0
+        ? `<div>❓ Perdu : ${p.lost}</div>`
+        : ""
+      }
+
+    ${(p.stolen || 0) > 0
+        ? `<div class="stock-loss">🚨 Vol : ${p.stolen}</div>`
+        : ""
+      }
+
+    ${(p.don || 0) > 0
+        ? `<div>🎁 Don : ${p.don}</div>`
+        : ""
+      }
+      
+     </div>
+
+     </div>
+
+    </div>
+
               <div style="font-size:12px;color:#555;">
                   Date d'archivage : ${p.deletedAt ? formatDate(p.deletedAt) : "-"}
                 </div>

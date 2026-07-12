@@ -20,7 +20,7 @@
  * ✅ renderTopTables()
  ************************************************************/
 
-function renderDesktopFull(stats, comparison, selectedDate){
+function renderDesktopFull(stats, comparison, selectedDate) {
 
   const kpiContainer = document.getElementById("historyKPI");
   const topContainer = document.getElementById("topProductsHistory");
@@ -50,9 +50,9 @@ function renderDesktopFull(stats, comparison, selectedDate){
  * - Mettre à jour la date affichée en haut
  ************************************************************/
 
-function renderHeader(dateStr){
+function renderHeader(dateStr) {
   const el = document.getElementById("detailDate");
-  if(el) el.innerText = dateStr;
+  if (el) el.innerText = dateStr;
 }
 
 /************************************************************
@@ -72,7 +72,7 @@ function renderHeader(dateStr){
  * ✅ Références
  ************************************************************/
 
-function renderKPIBlock(stats){
+function renderKPIBlock(stats) {
 
   const caNet = stats.totalBrut - stats.totalRemise;
   const nbProduits = Object.keys(stats.productStatsQty || {}).length;
@@ -86,7 +86,7 @@ function renderKPIBlock(stats){
       margin-bottom:10px;
     ">
       💰 CA brut : ${formatPrice(stats.totalBrut)} |
-      💸 Remise : ${stats.totalRemise > 0 ? `<span style="color:red;">- ${formatPrice(stats.totalRemise)} GNF</span>`  : "-"} |
+      💸 Remise : ${stats.totalRemise > 0 ? `<span style="color:red;">- ${formatPrice(stats.totalRemise)} GNF</span>` : "-"} |
       💰 CA net : ${formatPrice(caNet)} |
       ✅ CA encaissé : ${formatPrice(stats.totalCA)} |
       🟠 Crédit : ${formatPrice(stats.encours)} |
@@ -113,7 +113,7 @@ function renderKPIBlock(stats){
  * ✅ Évite division par zéro
  ************************************************************/
 
-function renderSalesComparisonTable(stats, comparison){  
+function renderSalesComparisonTable(stats, comparison) {
 
   const diff = comparison.diff || "—";
 
@@ -122,14 +122,14 @@ function renderSalesComparisonTable(stats, comparison){
   const lastTickets = comparison.lastTickets || 0;
 
   const safeDate = comparison.lastDate
-       ? formatDateFR(new Date(comparison.lastDate))
-       : "N/A";
+    ? formatDateFR(new Date(comparison.lastDate))
+    : "N/A";
 
   const hasComparison = comparison.lastDate && comparison.caYesterday > 0;
 
   const ticketDiff = hasComparison
-       ? calcDiff(stats.nbTickets, comparison.lastTickets)
-      : "—";
+    ? calcDiff(stats.nbTickets, comparison.lastTickets)
+    : "—";
 
   return `
     <h2>
@@ -217,7 +217,7 @@ function renderSalesComparisonTable(stats, comparison){
  * UX :
  * ✅ Couleur dynamique sur %
  ************************************************************/
-function renderCategoryTable(stats, dateStr){
+function renderCategoryTable(stats, dateStr) {
 
   let totalNet = 0;
 
@@ -240,7 +240,7 @@ function renderCategoryTable(stats, dateStr){
   Object.entries(stats.categoryStats).forEach(([cat, val]) => {
 
     const net = val.encaisse + val.credit;
-    const percent = totalNet ? ((net / totalNet)*100).toFixed(1) : 0;
+    const percent = totalNet ? ((net / totalNet) * 100).toFixed(1) : 0;
 
     html += `
       <tr>
@@ -284,15 +284,15 @@ function renderCategoryTable(stats, dateStr){
  * ✅ renderTopQtyTable()
  * ✅ renderTopCATable()
  ************************************************************/
-function renderTopTables(stats, dateStr){
+function renderTopTables(stats, dateStr) {
 
   const topQty = Object.entries(stats.productStatsQty)
-    .sort((a,b)=> b[1]-a[1])
-    .slice(0,10);
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 10);
 
   const topCA = Object.entries(stats.productStatsCA)
-    .sort((a,b)=> b[1].encaisse - a[1].encaisse)
-    .slice(0,10);
+    .sort((a, b) => b[1].encaisse - a[1].encaisse)
+    .slice(0, 10);
 
   return `
     <h2>🏆 Analyse des produits du jour : ${dateStr}</h2>
@@ -317,7 +317,7 @@ function renderTopTables(stats, dateStr){
  * ✅ Badge Top 3 (🥇🥈🥉)
  * ✅ Stock restant
  ************************************************************/
-function renderTopQtyTable(data){
+function renderTopQtyTable(data) {
 
   return `
     <div class="stats-card">
@@ -330,21 +330,21 @@ function renderTopQtyTable(data){
           <th>Stock</th>
         </tr>
 
-        ${data.map(([name,val], i)=>{
+        ${data.map(([name, val], i) => {
 
-          const stock = products.find(p => p.name === name)?.stock || "-";
+    const stock = products.find(p => p.name === name)?.stock || "-";
 
-          // ✅ BADGE TOP 3
-          let badge = "";
-          if(i === 0) badge = "🥇 ";
-          else if(i === 1) badge = "🥈 ";
-          else if(i === 2) badge = "🥉 ";
+    // ✅ BADGE TOP 3
+    let badge = "";
+    if (i === 0) badge = "🥇 ";
+    else if (i === 1) badge = "🥈 ";
+    else if (i === 2) badge = "🥉 ";
 
-          return `
+    return `
             <tr>
               <td>
                 <span class="price-cell">
-                  ${badge}${i+1}. ${name}
+                  ${badge}${i + 1}. ${name}
                 </span>
               </td>
 
@@ -353,7 +353,7 @@ function renderTopQtyTable(data){
               <td>${stock}</td>
             </tr>
           `;
-        }).join("")}
+  }).join("")}
 
       </table>
     </div>
@@ -375,7 +375,7 @@ function renderTopQtyTable(data){
  * ✅ Stock restant
  ************************************************************/
 
-function renderTopCATable(data){
+function renderTopCATable(data) {
 
   // ✅ total CA global (encaissé + crédit)
   let totalCA = 0;
@@ -399,29 +399,29 @@ function renderTopCATable(data){
           <th>Stock restant</th>
         </tr>
 
-        ${data.map(([name,val], i)=>{
+        ${data.map(([name, val], i) => {
 
-          const stock = products.find(p => p.name === name)?.stock || "-";
+    const stock = products.find(p => p.name === name)?.stock || "-";
 
-          // ✅ BADGE TOP 3
-          let badge = "";
-          if(i === 0) badge = "🥇 ";
-          else if(i === 1) badge = "🥈 ";
-          else if(i === 2) badge = "🥉 ";
+    // ✅ BADGE TOP 3
+    let badge = "";
+    if (i === 0) badge = "🥇 ";
+    else if (i === 1) badge = "🥈 ";
+    else if (i === 2) badge = "🥉 ";
 
-          // ✅ % CA
-          const net = val.encaisse + val.credit;
+    // ✅ % CA
+    const net = val.encaisse + val.credit;
 
-          const percent = totalCA
-            ? ((net / totalCA) * 100).toFixed(1)
-            : 0;
+    const percent = totalCA
+      ? ((net / totalCA) * 100).toFixed(1)
+      : 0;
 
-          return `
+    return `
             <tr>
 
               <td>
                 <span class="price-cell">
-                  ${badge}${i+1}. ${name}
+                  ${badge}${i + 1}. ${name}
                 </span>
               </td>
 
@@ -453,7 +453,7 @@ function renderTopCATable(data){
 
             </tr>
           `;
-        }).join("")}
+  }).join("")}
 
       </table>
     </div>
@@ -477,7 +477,7 @@ function renderTopCATable(data){
  * ✅ performance mobile
  ************************************************************/
 
-function renderMobileKPI(stats, comparison, selectedDate){
+function renderMobileKPI(stats, comparison, selectedDate) {
 
   const kpiContainer = document.getElementById("historyKPI");
   const topContainer = document.getElementById("topProductsHistory");
@@ -490,6 +490,12 @@ function renderMobileKPI(stats, comparison, selectedDate){
     totalCA,
     encours,
     nbTickets,
+    totalCADetail,
+    totalCAGros,
+    detailTickets,
+    wholesaleTickets,
+    detailArticles,
+    wholesaleArticles,
     totalItems,
     productStatsCA
   } = stats;
@@ -502,17 +508,37 @@ function renderMobileKPI(stats, comparison, selectedDate){
     : "N/A";
 
   const diff = comparison.diff || "—";
-  
+
   const displayDiff = diff === "—" ? "—" : diff;
 
-  
+  const amountDiff = totalCA - lastCA;
+
+  const displayAmountDiff =
+    amountDiff >= 0
+      ? `+${formatPrice(amountDiff)} GNF`
+      : `-${formatPrice(Math.abs(amountDiff))} GNF`;
+
   // ✅ TOP 3
   const top3 = Object.entries(productStatsCA || {})
-    .sort((a,b) => b[1].encaisse - a[1].encaisse)
-    .slice(0,3);
+    .sort((a, b) => b[1].encaisse - a[1].encaisse)
+    .slice(0, 3);
 
+  const medals = ["🥇", "🥈", "🥉"];
   const topHTML = top3.map((p, i) => {
-    return `<div>${i+1}. ${p[0]} — ${formatPrice(p[1].encaisse)} GNF</div>`;
+    return `
+    <div class="top-product">
+
+      <div class="top-product-name">
+        ${medals[i]} ${p[0]}
+      </div>
+
+      <div class="top-product-ca">
+        ${formatPrice(p[1].encaisse)} GNF
+      </div>
+
+    </div>
+  `;
+
   }).join("");
 
   let kpiHTML = `
@@ -524,9 +550,24 @@ function renderMobileKPI(stats, comparison, selectedDate){
 
       <div class="bloc">
         <div>Brut : <strong>${formatPrice(totalBrut)} GNF</strong></div>
+         ${totalRemise > 0 ? `
         <div style="color:red;">
           💸 Remise : - ${formatPrice(totalRemise)} GNF
         </div>
+         ` : ""}
+
+         ${totalCADetail > 0 ? `
+         <div>
+            🛒 CA Détail :
+              <strong>${formatPrice(totalCADetail)} GNF</strong>
+         </div>
+         ` : ""}
+       ${totalCAGros > 0 ? `
+       <div>
+        📦 CA Gros :
+       <strong>${formatPrice(totalCAGros)} GNF</strong>
+       </div>
+      ` : ""}
         <div>💰 CA Net : <strong>${formatPrice(caNet)} GNF</strong></div>
         <div>✅ Encaissé : <strong>${formatPrice(totalCA)} GNF</strong></div>
 
@@ -539,18 +580,36 @@ function renderMobileKPI(stats, comparison, selectedDate){
         🎟️ Tickets : <strong>${nbTickets}</strong>  
         📦 Articles : <strong>${totalItems}</strong>
       </div>
+        ${detailTickets > 0 ? `
+         <div>
+          🛒 Détail :
+            ${detailTickets} ticket(s) /
+            ${detailArticles} article(s)
+         </div>
+        ` : ""}
+
+        ${wholesaleTickets > 0 ? `
+        <div>
+          📦 Gros :
+         ${wholesaleTickets} ticket(s) /
+         ${wholesaleArticles} article(s)
+       </div>
+      ` : ""}
 
       <div class="bloc">
         📊 Vs ${lastDate} :
-
         <div>
           ${formatPrice(totalCA)} GNF vs ${formatPrice(lastCA)} GNF
+        </div>
+        <div style="color:${colorDiff(diff)}; font-weight:600;">
+            ${displayAmountDiff}
         </div>
 
         <strong style="color:${colorDiff(diff)}">
           ${displayDiff}
         </strong>
       </div>
+       
 
       <div class="bloc">
         🔥 Top 3 produits :
@@ -563,9 +622,9 @@ function renderMobileKPI(stats, comparison, selectedDate){
   kpiContainer.innerHTML = kpiHTML;
 
   // ✅ sécurité
-  if(topContainer) topContainer.innerHTML = "";
-  if(container) container.style.display = "none";
+  if (topContainer) topContainer.innerHTML = "";
+  if (container) container.style.display = "none";
 
   const detail = document.getElementById("detailProducts");
-  if(detail) detail.style.display = "none";
+  if (detail) detail.style.display = "none";
 }

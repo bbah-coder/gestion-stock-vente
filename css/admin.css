@@ -1361,3 +1361,15 @@ td:last-child {
     font-size: 14px;
   }
 }
+
+/*CSS PRIX DETAIL ET GROS */
+.price-wholesale {
+  color: #2563eb;
+  font-size: 13px;
+  font-weight: 600;
+  margin-top: 3px;
+}
+
+.price-gros {
+  color: #2563eb;
+}

@@ -290,13 +290,19 @@ function renderMobileProducts(products) {
 
   products.forEach(p => {
 
-    //Les produits en promo
     const promo = Number(p.promo) || 0;
-    const price = Number(p.price) || 0;
 
-    const finalPrice = promo > 0
-      ? price * (1 - promo / 100)
-      : price;
+    const detailPrice =
+      Number(p.price) || 0;
+
+    const wholesalePrice =
+      Number(p.wholesalePrice) || 0;
+
+    // ✅ Promo uniquement sur le détail
+    const finalDetailPrice =
+      promo > 0
+        ? detailPrice * (1 - promo / 100)
+        : detailPrice;
 
     container.innerHTML += `
       <div class="product-card">
@@ -327,15 +333,45 @@ function renderMobileProducts(products) {
       }
          </div>
 
-       <div class="product-price">
-          ${promo > 0
+       <div class="card-price">
+     
+       <div>🛒 Détail :
+       ${promo > 0
         ? `
-        <span class="price-old">${formatPrice(price)} GNF</span>
-        <span class="price-new">${formatPrice(finalPrice)} GNF</span>
-         `
-        : `${formatPrice(price)} GNF`
+        <span class="price-old">
+          ${formatPrice(detailPrice)} GNF
+        </span>
+
+        <span class="price-new">
+          ${formatPrice(finalDetailPrice)} GNF
+        </span>
+      `
+        : `
+        <span class="price-new">
+          ${formatPrice(detailPrice)} GNF
+        </span>
+      `
       }
+      </div>
+
+     ${(wholesalePrice || 0) > 0
+        ? `
+      <div class="price-wholesale">
+        📦 Gros :
+        <span class="price-gros">
+          ${formatPrice(wholesalePrice)} GNF
+        </span>
+        
+         <div class="price-threshold">
+         📦 Dès ${p.wholesaleMinQty || 0} unités
         </div>
+
+      </div>
+    `
+        : ""
+      }
+
+   </div>
 
 
        <div class="product-stock ${p.stock <= 5 ? 'stock-low' : ''}">

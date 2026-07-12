@@ -288,9 +288,22 @@ function renderCartMobile() {
         <div class="cart-info">
           <div class="cart-name">${item.name}</div>
 
-          <div class="cart-price">
+          <!--<div class="cart-price">
             ${formatPrice(item.price)} GNF
+          </div> -->
+
+          <div class="cart-price">
+               ${formatPrice(item.price)} GNF
           </div>
+
+         ${item.isWholesale
+        ? `
+             <div class="cart-wholesale">
+            📦 Tarif gros appliqué
+            </div>
+           `
+        : ""
+      }
 
           <!-- QTY -->
           <div class="cart-qty">
@@ -1028,9 +1041,11 @@ function renderHistoryMobile(data) {
 
         <div class="history-details">
           <div>Brut : ${formatPrice(day.caBrut)} GNF</div>
+          ${day.remise > 0 ? `
           <div style="color:red;">
             Remise : ${day.remise > 0 ? "- " + formatPrice(day.remise) : "-"} GNF
           </div>
+           ` : ""}
         </div>
 
         <button onclick="showDetail('${day.rawDate}')">

@@ -132,6 +132,43 @@ clearBtnCredit.addEventListener("click", () => {
   updateCartBadge();
 }*/
 
+/*GET PRODUCT PRICE*/
+function getProductPrice(product, quantity) {
+
+  const promo = Number(product.promo) || 0;
+
+  // ✅ Prix détail avec promo
+  const detailPrice = promo > 0
+    ? Number(product.price) * (1 - promo / 100)
+    : Number(product.price);
+
+  // ✅ Prix gros sans promo
+  const wholesalePrice =
+    Number(product.wholesalePrice) || 0;
+
+  const wholesaleMinQty =
+    Number(product.wholesaleMinQty) || 0;
+
+  if (
+    wholesalePrice > 0 &&
+    wholesaleMinQty > 0 &&
+    quantity >= wholesaleMinQty
+  ) {
+
+    return {
+      price: wholesalePrice,
+      isWholesale: true
+    };
+
+  }
+
+  return {
+    price: detailPrice,
+    isWholesale: false
+  };
+
+}
+
 /*Nouvelle version compatible Mobile*/
 function vendreWithQty(index, btn) {
 
@@ -154,12 +191,14 @@ function vendreWithQty(index, btn) {
     return;
   }
 
-  const promo = Number(produit.promo) || 0;
+  /*const promo = Number(produit.promo) || 0;
   const price = Number(produit.price) || 0;
 
   const finalPrice = promo > 0
     ? price * (1 - promo / 100)
     : price;
+    */
+  const pricing = getProductPrice(produit, q);
 
   const exist = cart.find(i => i.index === index);
 
@@ -182,8 +221,10 @@ function vendreWithQty(index, btn) {
     cart.push({
       index,
       name: produit.name,
-      price: parseFloat(finalPrice),
-      quantity: q
+      //price: parseFloat(finalPrice),
+      price: pricing.price,
+      quantity: q,
+      isWholesale: pricing.isWholesale
     });
   }
 
@@ -451,7 +492,7 @@ function updateRemise(index, value) {
 /************************************************************
  * 🔄 MODIFIER QUANTITÉ PANIER
  ************************************************************/
-function updateQty(i, val) {
+/*function updateQty(i, val) {
 
   let newQty = parseInt(val) || 1;
 
@@ -466,10 +507,6 @@ function updateQty(i, val) {
 
   cart[i].quantity = newQty;
 
-  // ✅ si quantité = 0 → supprimer
-  /*if(newQty === 0){
-    cart.splice(i, 1);
-  }*/
 
   localStorage.setItem("cart", JSON.stringify(cart));
 
@@ -477,6 +514,42 @@ function updateQty(i, val) {
   updateCartBadge();
   updateFloatingCart(); // ✅ important
   updateCartMobileBtn();
+}*/
+function updateQty(i, val) {
+
+  let newQty = parseInt(val) || 1;
+
+  const product = products[cart[i].index];
+  const max = product?.stock || 0;
+
+  // ✅ minimum bloqué à 1
+  if (newQty < 1) newQty = 1;
+
+  // ✅ maximum stock
+  if (newQty > max) newQty = max;
+
+  cart[i].quantity = newQty;
+
+  // ✅ Gestion automatique prix gros
+  const pricing = getProductPrice(
+    product,
+    newQty
+  );
+
+  cart[i].price = pricing.price;
+
+  cart[i].isWholesale = pricing.isWholesale;
+
+  localStorage.setItem(
+    "cart",
+    JSON.stringify(cart)
+  );
+
+  renderCart();
+  updateCartBadge();
+  updateFloatingCart();
+  updateCartMobileBtn();
+
 }
 
 /************************************************************
@@ -642,9 +715,15 @@ function validerPanier() {
     items: cart.map(item => ({
       name: item.name,
       quantity: item.quantity,
+      // ✅ prix réellement appliqué
       price: item.price,
+      // ✅ informations tarifaires
+      isWholesale: item.isWholesale || false,
+      detailPrice: products[item.index]?.price || 0,
+      wholesalePrice: products[item.index]?.wholesalePrice || 0,
       remise: item.remise || 0,
       total: (item.price * item.quantity) - (item.remise || 0)
+
     })),
 
     totalBrut,

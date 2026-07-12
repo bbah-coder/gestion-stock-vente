@@ -107,7 +107,11 @@ function saveProduct() {
 
   const category = document.getElementById("category").value.trim();
   const name = document.getElementById("name").value.trim();
-  const price = document.getElementById("price").value;
+  //const price = document.getElementById("price").value;
+  const price = Number(document.getElementById("price").value);
+  const wholesalePrice = Number(document.getElementById("wholesalePrice").value) || 0;
+  const wholesaleMinQty = Number(document.getElementById("wholesaleMinQty").value) || 0;
+
   const stock = parseInt(document.getElementById("stock").value);
 
   if (!name || !price || isNaN(stock)) {
@@ -125,7 +129,9 @@ function saveProduct() {
 
       const product = {
         name: name,
-        price: price,
+        price: price, //prix détail
+        wholesalePrice: wholesalePrice, //prix gros
+        wholesaleMinQty: wholesaleMinQty, //seuil prix gros
         stock: stock,
         image: e.target.result,
         category: category || "Autre"
@@ -142,7 +148,9 @@ function saveProduct() {
 
     const product = {
       name: name,
-      price: price,
+      price: price, //prix détail
+      wholesalePrice: wholesalePrice, //prix gros
+      wholesaleMinQty: wholesaleMinQty, //seuil prix gros
       stock: stock,
       category: category || "Autre"
     };
@@ -171,6 +179,9 @@ function saveFinal(product) {
 
     existing.name = product.name;
     existing.price = product.price;
+    existing.wholesalePrice = product.wholesalePrice || 0;
+    existing.wholesaleMinQty = product.wholesaleMinQty || 0;
+
     existing.category = product.category || "Autre";
 
     // ✅ stock modifié
@@ -241,6 +252,7 @@ function saveFinal(product) {
       // ✅ nouveau produit
       product.initialStock = product.stock; // ✅ stock initial
       product.sold = 0;                    // ✅ vendu
+      product.wholesalePrice ??= 0;
       product.createdAt = new Date().toISOString(); // ✅ DATE DE CREATION
 
       // ✅ auteur création
@@ -248,7 +260,6 @@ function saveFinal(product) {
       product.createdRole = localStorage.getItem("userRole");
 
       products.unshift(product);
-
 
     }
   }
@@ -350,7 +361,8 @@ function clearForm() {
   document.getElementById("name").value = "";
   document.getElementById("price").value = "";
   document.getElementById("stock").value = "";
-
+  document.getElementById("wholesalePrice").value = "";
+  document.getElementById("wholesaleMinQty").value = "";
 
   // ✅ reset input file
   const imageInput = document.getElementById("image");
@@ -406,9 +418,11 @@ function importCSV() {
 
       const name = parts[0].trim();
       const price = parseFloat(parts[1].trim());
-      const stock = parseInt(parts[2]);
-      const image = parts[3] ? parts[3].trim() : "";
-      const category = parts[4] ? parts[4].trim() : "Autre";
+      const wholesalePrice = parseFloat(parts[2].trim()) ? parseFloat(parts[2].trim()) : "";
+      const wholesaleMinQty = parseInt(parts[3]) ? parseInt(parts[3]) : "";
+      const stock = parseInt(parts[4]);
+      const image = parts[5] ? parts[5].trim() : "";
+      const category = parts[6] ? parts[6].trim() : "Autre";
 
       if (!name || isNaN(price) || isNaN(stock)) return;
 
@@ -487,15 +501,25 @@ function importCSV() {
         products.push({
           name,
           price,
+          wholesalePrice,
+          wholesaleMinQty,
           stock,
           initialStock: stock,
           sold: 0,
           image: image || null,
-          category: category
+          category: category,
+          // Date import
+          createAt: new Date().toLocaleString("fr-FR"),
+          //Utilisateur import
+          createdBy: localStorage.getItem("username"),
+          //Rôle utilisateur
+          createdRole: localStorage.getItem("userRole")
+
         });
 
         count++;
       }
+
 
     });
 

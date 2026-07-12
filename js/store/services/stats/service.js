@@ -6,290 +6,326 @@
    - NE PAS manipuler le DOM
    ========================================================= */
 
-function computeStatsData(sales, context){
+function computeStatsData(sales, context) {
 
-  /* =========================================================
-     CONTEXTE
-     ========================================================= */
-  const { monthValue, yearValue, isMonth, isYear } = context;
+   /* =========================================================
+      CONTEXTE
+      ========================================================= */
+   const { monthValue, yearValue, isMonth, isYear } = context;
 
-  /* =========================================================
-     KPI GLOBAL
-     ========================================================= */
-  let total = 0;
-  let totalBrut = 0;
-  let totalRemise = 0;
-  let encoursCurrent = 0;
-  let currentTickets = 0;
+   /* =========================================================
+      KPI GLOBAL
+      ========================================================= */
+   let total = 0;
+   let totalBrut = 0;
+   let totalRemise = 0;
+   let encoursCurrent = 0;
+   let currentTickets = 0;
 
-  /* =========================================================
-     COMPARAISONS
-     - Mois précédent
-     - Année N-1
-     ========================================================= */
-  let prevTotalCA = 0;
-  let prevTickets = 0;
-  let prevDaysSet = new Set();
+   let totalCADetail = 0;
+   let totalCAGros = 0;
 
-  let lastYearTotalCA = 0;
-  let lastYearTickets = 0;
-  let lastYearDaysSet = new Set();
+   let detailTickets = 0;
+   let wholesaleTickets = 0;
 
-  const lastYearMonthValue = getSameMonthLastYear(monthValue);
-  const prevMonthValue = getPreviousMonth(monthValue);
-  const prevYearValue = (Number(yearValue) - 1).toString();
+   let detailArticles = 0;
+   let wholesaleArticles = 0;
 
-  /* =========================================================
-     AGRÉGATS
-     ========================================================= */
+   /* =========================================================
+      COMPARAISONS
+      - Mois précédent
+      - Année N-1
+      ========================================================= */
+   let prevTotalCA = 0;
+   let prevTickets = 0;
+   let prevDaysSet = new Set();
 
-  // ✅ Catégories
-  const categoryMonth = {};
-  const categoryYear = {};
+   let lastYearTotalCA = 0;
+   let lastYearTickets = 0;
+   let lastYearDaysSet = new Set();
 
-  // ✅ Produits (Top 10)
-  const productStatsMonth = {};
-  const productStatsYear = {};
+   const lastYearMonthValue = getSameMonthLastYear(monthValue);
+   const prevMonthValue = getPreviousMonth(monthValue);
+   const prevYearValue = (Number(yearValue) - 1).toString();
 
-  // ✅ Jours ouverts (dynamique mois / année)
-  const daysSet = new Set();
+   /* =========================================================
+      AGRÉGATS
+      ========================================================= */
 
-  /* =========================================================
-     PARCOURS DES VENTES
-     ========================================================= */
-  sales.forEach(sale => {
+   // ✅ Catégories
+   const categoryMonth = {};
+   const categoryYear = {};
 
-    /* =========================
-       CALCUL TOTAL VENTE
-    ========================= */
-    const totalNet = (sale.items || []).reduce((sum, item) => {
-      const brut = item.price * item.quantity;
-      const remise = item.remise || 0;
-      return sum + (brut - remise);
-    }, 0);
+   // ✅ Produits (Top 10)
+   const productStatsMonth = {};
+   const productStatsYear = {};
 
-    /* =========================
-       ENCAISSÉ vs CRÉDIT
-    ========================= */
-    let totalPaid = 0;
+   // ✅ Jours ouverts (dynamique mois / année)
+   const daysSet = new Set();
 
-    if(sale.payment?.type === "credit"){
-      totalPaid = (sale.payment.payments || [])
-        .reduce((sum,p) => sum + Number(p.amount || 0), 0);
-    } else {
-      totalPaid = totalNet;
-    }
-
-    const remaining = Math.max(0, totalNet - totalPaid);
-
-    /* =========================
-       DATE
-    ========================= */
-    const d = new Date(sale.date);
-    const monthKey = d.toISOString().slice(0,7);
-    const yearKey = d.getFullYear().toString();
-    const dayKey = d.toISOString().split("T")[0];
-
-    /* =========================
-       FILTRE ACTIF (MOIS / ANNÉE)
-    ========================= */
-    const isInScope =
-      (isMonth && monthKey === monthValue) ||
-      (isYear && yearKey === yearValue);
-
-    /* =========================
-       KPI GLOBAL
-    ========================= */
-    if(isInScope){
-      currentTickets++;
-      daysSet.add(dayKey);
-    }
-
-    /* =========================
-       COMPARAISON MOIS PRÉCÉDENT
-    ========================= */
-    if(monthKey === prevMonthValue){
-      prevTotalCA += totalPaid;
-      prevTickets++;
-      prevDaysSet.add(dayKey);
-    }
-
-    /* =========================
-       COMPARAISON ANNÉE N-1
-    ========================= */
-    if(
-      (isMonth && monthKey === lastYearMonthValue) ||
-      (isYear && yearKey === prevYearValue)
-    ){
-      lastYearTotalCA += totalPaid;
-      lastYearTickets++;
-      lastYearDaysSet.add(dayKey);
-    }
-
-    /* =========================
-       SORTIE SI HORS FILTRE
-    ========================= */
-    if(!isInScope) return;
-
-    total += totalPaid;
-    encoursCurrent += remaining;
-
-    /* =========================================================
-       PARCOURS DES PRODUITS
-       ========================================================= */
-    (sale.items || []).forEach(item => {
+   /* =========================================================
+      PARCOURS DES VENTES
+      ========================================================= */
+   sales.forEach(sale => {
 
       /* =========================
-         CALCUL LIGNE (UNE SEULE FOIS)
+         CALCUL TOTAL VENTE
       ========================= */
-      const brut = item.price * item.quantity;
-      const net = item.total || brut;
-      const remise = brut - net;
+      const totalNet = (sale.items || []).reduce((sum, item) => {
+         const brut = item.price * item.quantity;
+         const remise = item.remise || 0;
+         return sum + (brut - remise);
+      }, 0);
 
       /* =========================
-         RATIO (répartition encaisse/crédit)
+         ENCAISSÉ vs CRÉDIT
       ========================= */
-      const ratio = totalNet > 0 ? (net / totalNet) : 0;
+      let totalPaid = 0;
 
-      totalBrut += brut;
-      totalRemise += remise;
+      if (sale.payment?.type === "credit") {
+         totalPaid = (sale.payment.payments || [])
+            .reduce((sum, p) => sum + Number(p.amount || 0), 0);
+      } else {
+         totalPaid = totalNet;
+      }
+
+      const remaining = Math.max(0, totalNet - totalPaid);
+
+      /* =========================
+         DATE
+      ========================= */
+      const d = new Date(sale.date);
+      const monthKey = d.toISOString().slice(0, 7);
+      const yearKey = d.getFullYear().toString();
+      const dayKey = d.toISOString().split("T")[0];
+
+      /* =========================
+         FILTRE ACTIF (MOIS / ANNÉE)
+      ========================= */
+      const isInScope =
+         (isMonth && monthKey === monthValue) ||
+         (isYear && yearKey === yearValue);
+
+      /* =========================
+         KPI GLOBAL
+      ========================= */
+      if (isInScope) {
+         currentTickets++;
+         daysSet.add(dayKey);
+
+         const hasWholesale =
+            sale.items?.some(item => item.isWholesale);
+
+         if (hasWholesale) {
+            wholesaleTickets++;
+         } else {
+            detailTickets++;
+         }
+      }
+
+      /* =========================
+         COMPARAISON MOIS PRÉCÉDENT
+      ========================= */
+      if (monthKey === prevMonthValue) {
+         prevTotalCA += totalPaid;
+         prevTickets++;
+         prevDaysSet.add(dayKey);
+      }
+
+      /* =========================
+         COMPARAISON ANNÉE N-1
+      ========================= */
+      if (
+         (isMonth && monthKey === lastYearMonthValue) ||
+         (isYear && yearKey === prevYearValue)
+      ) {
+         lastYearTotalCA += totalPaid;
+         lastYearTickets++;
+         lastYearDaysSet.add(dayKey);
+      }
+
+      /* =========================
+         SORTIE SI HORS FILTRE
+      ========================= */
+      if (!isInScope) return;
+
+      total += totalPaid;
+      encoursCurrent += remaining;
 
       /* =========================================================
-         PRODUITS (TOP 10)
+         PARCOURS DES PRODUITS
          ========================================================= */
-      const productTarget = isMonth
-        ? productStatsMonth
-        : productStatsYear;
+      (sale.items || []).forEach(item => {
 
-      productTarget[item.name] ??= {
-        quantity: 0,
-        brut: 0,
-        remise: 0,
-        encaisse: 0,
-        credit: 0
-      };
+         /* =========================
+            CALCUL LIGNE (UNE SEULE FOIS)
+         ========================= */
+         const brut = item.price * item.quantity;
+         const net = item.total || brut;
+         const remise = brut - net;
 
-      productTarget[item.name].quantity += item.quantity;
-      productTarget[item.name].brut += brut;
-      productTarget[item.name].remise += remise;
+         /* =========================
+            RATIO (répartition encaisse/crédit)
+         ========================= */
+         const ratio = totalNet > 0 ? (net / totalNet) : 0;
 
-      // ✅ encaisse RÉEL (important)
-      productTarget[item.name].encaisse += totalPaid * ratio;
-      productTarget[item.name].credit += remaining * ratio;
+         totalBrut += brut;
+         totalRemise += remise;
 
-      /* =========================================================
-         CATÉGORIES
-         ========================================================= */
-      const product = products.find(p => p.name === item.name);
-      const category = product?.category || "Autre";
+         if (item.isWholesale) {
+            totalCAGros += net;
+            wholesaleArticles += item.quantity;
+         } else {
 
-      const categoryTarget = isMonth
-           ? categoryMonth
-          : categoryYear;
+            totalCADetail += net;
+            detailArticles += item.quantity;
+         }
 
-      if(categoryTarget){
+         /* =========================================================
+            PRODUITS (TOP 10)
+            ========================================================= */
+         const productTarget = isMonth
+            ? productStatsMonth
+            : productStatsYear;
 
-        categoryTarget[category] ??= {
-          brut: 0,
-          remise: 0,
-          encaisse: 0,
-          credit: 0
-        };
+         productTarget[item.name] ??= {
+            quantity: 0,
+            brut: 0,
+            remise: 0,
+            encaisse: 0,
+            credit: 0
+         };
 
-        categoryTarget[category].brut += brut;
-        categoryTarget[category].remise += remise;
-        categoryTarget[category].encaisse += net;
-        categoryTarget[category].credit += remaining * ratio;
-        // ✅ calcul % (on fera total plus bas)
-        categoryTarget[category].percent = 0;
-        categoryTarget[category].color = "";
-        }
+         productTarget[item.name].quantity += item.quantity;
+         productTarget[item.name].brut += brut;
+         productTarget[item.name].remise += remise;
 
-    });
+         // ✅ encaisse RÉEL (important)
+         productTarget[item.name].encaisse += totalPaid * ratio;
+         productTarget[item.name].credit += remaining * ratio;
 
-  });
+         /* =========================================================
+            CATÉGORIES
+            ========================================================= */
+         const product = products.find(p => p.name === item.name);
+         const category = product?.category || "Autre";
 
-  /* =========================================================
-     CALCULS DERIVÉS (POUR VIEW PROPRE)
-     ========================================================= */
-     
-  const caNet = totalBrut - totalRemise;
+         const categoryTarget = isMonth
+            ? categoryMonth
+            : categoryYear;
 
-  const nbDays = daysSet.size;
-  const lastYearDays = lastYearDaysSet.size;
+         if (categoryTarget) {
 
-  const perDayCurrent = nbDays ? total / nbDays : 0;
-  const perDayPrev = lastYearDays ? lastYearTotalCA / lastYearDays : 0;
- 
+            categoryTarget[category] ??= {
+               brut: 0,
+               remise: 0,
+               encaisse: 0,
+               credit: 0
+            };
 
-  const calcDiff = (current, prev) => {
-    if(!prev) return "0%";
-    return ((current - prev) / prev * 100).toFixed(1) + "%";
-  };
+            categoryTarget[category].brut += brut;
+            categoryTarget[category].remise += remise;
+            categoryTarget[category].encaisse += net;
+            categoryTarget[category].credit += remaining * ratio;
+            // ✅ calcul % (on fera total plus bas)
+            categoryTarget[category].percent = 0;
+            categoryTarget[category].color = "";
+         }
 
-  const evolutionCA = calcDiff(total, lastYearTotalCA);
-  const evolutionTickets = calcDiff(currentTickets, lastYearTickets);
-  const evolutionPerDay = calcDiff(perDayCurrent, perDayPrev);
+      });
 
-  const applyCategoryMetrics = (categories) => {
+   });
+
+   /* =========================================================
+      CALCULS DERIVÉS (POUR VIEW PROPRE)
+      ========================================================= */
+
+   const caNet = totalBrut - totalRemise;
+
+   const nbDays = daysSet.size;
+   const lastYearDays = lastYearDaysSet.size;
+
+   const perDayCurrent = nbDays ? total / nbDays : 0;
+   const perDayPrev = lastYearDays ? lastYearTotalCA / lastYearDays : 0;
+
+
+   const calcDiff = (current, prev) => {
+      if (!prev) return "0%";
+      return ((current - prev) / prev * 100).toFixed(1) + "%";
+   };
+
+   const evolutionCA = calcDiff(total, lastYearTotalCA);
+   const evolutionTickets = calcDiff(currentTickets, lastYearTickets);
+   const evolutionPerDay = calcDiff(perDayCurrent, perDayPrev);
+
+   const applyCategoryMetrics = (categories) => {
 
       const totalEncaisse = Object.values(categories)
-          .reduce((sum, v) => sum + v.encaisse, 0);
+         .reduce((sum, v) => sum + v.encaisse, 0);
 
       Object.values(categories).forEach(v => {
 
-          const percent = totalEncaisse > 0
-               ? (v.encaisse / totalEncaisse) * 100
-               : 0;
+         const percent = totalEncaisse > 0
+            ? (v.encaisse / totalEncaisse) * 100
+            : 0;
 
-          v.percent = percent.toFixed(1);
+         v.percent = percent.toFixed(1);
 
-          v.color =
-              percent >= 50 ? "#16a34a" :
-              percent >= 20 ? "#f59e0b" :
-              "#ef4444";
+         v.color =
+            percent >= 50 ? "#16a34a" :
+               percent >= 20 ? "#f59e0b" :
+                  "#ef4444";
       });
-  };
+   };
 
-  // ✅ appliquer sur les 2
-  applyCategoryMetrics(categoryMonth);
-  applyCategoryMetrics(categoryYear);
+   // ✅ appliquer sur les 2
+   applyCategoryMetrics(categoryMonth);
+   applyCategoryMetrics(categoryYear);
 
 
-  /* =========================================================
-     RETURN FINAL
-     ========================================================= */
-  return {
-    total,
-    totalBrut,
-    totalRemise,
-    encoursCurrent,
-    currentTickets,
+   /* =========================================================
+      RETURN FINAL
+      ========================================================= */
+   return {
+      total,
+      totalBrut,
+      totalRemise,
+      encoursCurrent,
+      currentTickets,
 
-    categoryMonth,
-    categoryYear,
+      categoryMonth,
+      categoryYear,
 
-    productStatsMonth,
-    productStatsYear,
+      productStatsMonth,
+      productStatsYear,
 
-    nbDays,
+      nbDays,
 
-    lastYearTotalCA,
-    lastYearTickets,
-    lastYearDays,
+      lastYearTotalCA,
+      lastYearTickets,
+      lastYearDays,
 
-    prevTotalCA,
-    prevTickets,
-    prevDays: prevDaysSet.size,
+      prevTotalCA,
+      prevTickets,
+      prevDays: prevDaysSet.size,
 
-    // ✅ nouveaux champs (VIEW PROPRE)
-    perDayCurrent,
-    perDayPrev,
-    evolutionCA,
-    evolutionTickets,
-    evolutionPerDay,
-    caNet
-  };
+      // ✅ nouveaux champs (VIEW PROPRE)
+      perDayCurrent,
+      perDayPrev,
+      evolutionCA,
+      evolutionTickets,
+      evolutionPerDay,
+      caNet,
+      //CA && TICKET Ventes détails/Gros
+      totalCADetail,
+      totalCAGros,
+
+      detailTickets,
+      wholesaleTickets,
+
+      detailArticles,
+      wholesaleArticles
+   };
 }
 
 

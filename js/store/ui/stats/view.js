@@ -56,7 +56,7 @@ function renderGlobalKPI(stats, context) {
         💸 <strong>Remise :</strong>
         ${totalRemise > 0 ? "- " + formatPrice(totalRemise) : "-"}
       </div>
-
+      
       <div>
         📊 <strong>CA net :</strong>
         ${formatPrice(caNet)} GNF
@@ -75,7 +75,6 @@ function renderGlobalKPI(stats, context) {
       <div>
         🧾 <strong>Tickets :</strong> ${currentTickets}
       </div>
-
       <div>
         📅 <strong>Jours ouverts :</strong> ${nbDays}
       </div>
@@ -109,7 +108,15 @@ function renderStatsMobile(stats, context) {
     lastYearTotalCA,
     productStatsMonth,
     productStatsYear,
-    caNet
+    caNet,
+    totalCADetail,
+    totalCAGros,
+
+    detailTickets,
+    wholesaleTickets,
+
+    detailArticles,
+    wholesaleArticles
   } = stats;
 
   const {
@@ -124,15 +131,49 @@ function renderStatsMobile(stats, context) {
     ? stats.productStatsMonth
     : stats.productStatsYear;
 
+  const referenceCA =
+    isMonth
+      ? prevTotalCA
+      : lastYearTotalCA;
+
+  const amountDiff =
+    total - referenceCA;
+
+  const displayAmountDiff =
+    `${amountDiff >= 0 ? "+" : "-"}${formatPrice(Math.abs(amountDiff))} GNF`;
+
+
+  const evolutionValue =
+    referenceCA > 0
+      ? ((total - referenceCA) / referenceCA) * 100
+      : 0;
+
+  const evolutionColor =
+    evolutionValue >= 0
+      ? "#16a34a"   // vert
+      : "#ef4444";  // rouge
+
   const top3 = Object.entries(sourceProducts || {})
     .sort((a, b) => b[1].encaisse - a[1].encaisse)
     .slice(0, 3);
 
-  const topHTML = top3.map((p, i) =>
-    `<div>${i + 1}. ${p[0]} — ${formatPrice(p[1].encaisse)} GNF</div>`
-  ).join("");
+  const medals = ["🥇", "🥈", "🥉"];
+  const topHTML = top3.map((p, i) => {
+    return `
+    <div class="top-product">
 
+      <div class="top-product-name">
+        ${medals[i]} ${p[0]}
+      </div>
 
+      <div class="top-product-ca">
+        ${formatPrice(p[1].encaisse)} GNF
+      </div>
+
+    </div>
+  `;
+
+  }).join("");
 
   const labelCompare = isMonth
     ? formatMonthLabel(prevMonthValue)
@@ -150,6 +191,19 @@ function renderStatsMobile(stats, context) {
         <span style="color:red;">
           💸 Remise : - ${formatPrice(totalRemise)} GNF
         </span><br>
+         ${totalCADetail > 0 ? `
+         <div>
+            🛒 CA Détail :
+              <strong>${formatPrice(totalCADetail)} GNF</strong>
+         </div>
+         ` : ""}
+       ${totalCAGros > 0 ? `
+       <div>
+        📦 CA Gros :
+       <strong>${formatPrice(totalCAGros)} GNF</strong>
+       </div>
+      ` : ""}
+
         📊 Net : <strong>${formatPrice(caNet)} GNF</strong><br>
         ✅ Encaissé : <strong>${formatPrice(total)} GNF</strong><br>
         🟠 Crédit : <strong>${formatPrice(encoursCurrent)} GNF</strong>
@@ -157,6 +211,22 @@ function renderStatsMobile(stats, context) {
 
       <div class="bloc">
         🧾 Tickets : ${currentTickets || 0}<br>
+         ${detailTickets > 0 ? `
+         <div>
+          🛒 Détail :
+            ${detailTickets} ticket(s) /
+            ${detailArticles} article(s)
+         </div>
+        ` : ""}
+
+        ${wholesaleTickets > 0 ? `
+        <div>
+          📦 Gros :
+         ${wholesaleTickets} ticket(s) /
+         ${wholesaleArticles} article(s)
+       </div>
+      ` : ""}
+
         📅 Jours ouverts : ${stats.nbDays}
       </div>
 
@@ -164,16 +234,20 @@ function renderStatsMobile(stats, context) {
         📊 Vs ${labelCompare} :
 
         <div>
-          ${formatPrice(total)} GNF vs ${isMonth ? formatPrice(prevTotalCA) : formatPrice(lastYearTotalCA)
-    } GNF
+          ${formatPrice(total)} GNF vs ${isMonth ? formatPrice(prevTotalCA) : formatPrice(lastYearTotalCA)} GNF
+        </div>
+        <div style="
+            color:${amountDiff >= 0 ? '#16a34a' : '#ef4444'};
+            font-weight:600;">
+          ${displayAmountDiff}
         </div>
 
-        <strong>
-          ${getEvolution(
-      total,
-      isMonth ? prevTotalCA : lastYearTotalCA
-    )}
-        </strong>
+        <strong style="color:${evolutionColor}">
+        ${getEvolution(
+    total,
+    isMonth ? prevTotalCA : lastYearTotalCA
+  )}
+     </strong>
       </div>
 
       <div class="bloc">

@@ -1069,3 +1069,55 @@ td:first-child {
 
   border-left: 4px solid #3498db;
 }
+
+/*CSS PRIX DETAIL ET GROS */
+.price-wholesale {
+  color: #2563eb;
+  font-size: 13px;
+  font-weight: 600;
+  margin-top: 3px;
+}
+
+.price-gros {
+  color: #2563eb;
+}
+
+/*CSS TICKETS GROS ET DETAIL*/
+.ticket-gros {
+  margin-left: 8px;
+  background: #dbeafe;
+  color: #2563eb;
+  padding: 2px 6px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.ticket-detail {
+  margin-left: 8px;
+  background: #dcfce7;
+  color: #16a34a;
+  padding: 2px 6px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+/*CSS TOP3 PRODUIT MOBILE */
+.top-product {
+  padding: 8px;
+  margin-top: 6px;
+  border-radius: 8px;
+  background: #f8f9fa;
+}
+
+.top-product-name {
+  font-weight: 600;
+  color: #333;
+}
+
+.top-product-ca {
+  color: #16a34a;
+  font-weight: bold;
+  margin-top: 3px;
+}

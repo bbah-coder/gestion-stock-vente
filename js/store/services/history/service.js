@@ -11,7 +11,7 @@
  * → tableau filtré des ventes du jour
  ************************************************************/
 
-function getSalesByDate(date){
+function getSalesByDate(date) {
   return sales.filter(s =>
     new Date(s.date).toISOString().split("T")[0] === date
   );
@@ -41,7 +41,7 @@ function getSalesByDate(date){
  * → objet "stats"
  ************************************************************/
 
-function computeSalesStats(daySales, selectedCategory, search){
+function computeSalesStats(daySales, selectedCategory, search) {
 
   let totalCA = 0;
   let encours = 0;
@@ -49,6 +49,16 @@ function computeSalesStats(daySales, selectedCategory, search){
   let totalBrut = 0;
   let totalRemise = 0;
   let nbTickets = 0;
+
+  let totalCADetail = 0;
+  let totalCAGros = 0;
+
+  //Compteur tickets détail/gros et articles
+  let detailTickets = 0;
+  let wholesaleTickets = 0;
+
+  let detailArticles = 0;
+  let wholesaleArticles = 0;
 
   const productStatsQty = {};
   const productStatsCA = {};
@@ -58,12 +68,23 @@ function computeSalesStats(daySales, selectedCategory, search){
 
     nbTickets++;
 
+    //Competeur tickets gros/detail
+    const hasWholesale =
+      sale.items?.some(
+        item => item.isWholesale
+      );
+    if (hasWholesale) {
+      wholesaleTickets++;
+    } else {
+      detailTickets++;
+    }
+
     const saleTotal = sale.payment?.total || sale.total || 0;
     let totalPaid = 0;
 
     if (sale.payment?.type === "credit") {
       totalPaid = (sale.payment.payments || [])
-        .reduce((sum,p)=> sum + (p.amount||0),0);
+        .reduce((sum, p) => sum + (p.amount || 0), 0);
 
       totalCA += totalPaid;
       encours += (saleTotal - totalPaid);
@@ -74,53 +95,83 @@ function computeSalesStats(daySales, selectedCategory, search){
 
     sale.items.forEach(item => {
 
-      if(search && !item.name.toLowerCase().includes(search)) return;
+      if (search && !item.name.toLowerCase().includes(search)) return;
 
       const product = products.find(p =>
         p.name.toLowerCase().trim() === item.name.toLowerCase().trim()
       );
 
       const category = product?.category || "Autre";
-      if(selectedCategory !== "all" && category !== selectedCategory) return;
+      if (selectedCategory !== "all" && category !== selectedCategory) return;
 
       const brut = item.price * item.quantity;
       const net = item.total || brut;
       const remise = brut - net;
 
+      // ✅ CA détail / gros
+      if (item.isWholesale) {
+        totalCAGros += net;
+      } else {
+        totalCADetail += net;
+      }
+
       totalItems += item.quantity;
+      //Compteur Articles(détail/gros)
+      if (item.isWholesale) {
+        wholesaleArticles += item.quantity;
+      } else {
+        detailArticles += item.quantity;
+      }
+
       totalBrut += brut;
       totalRemise += remise;
 
       const ratio = saleTotal ? totalPaid / saleTotal : 0;
 
       // ✅ CATEGORY
-      categoryStats[category] ??= { brut:0, remise:0, encaisse:0, credit:0 };
+      categoryStats[category] ??= { brut: 0, remise: 0, encaisse: 0, credit: 0 };
 
       categoryStats[category].brut += brut;
       categoryStats[category].remise += remise;
       categoryStats[category].encaisse += net * ratio;
-      categoryStats[category].credit += net * (1-ratio);
+      categoryStats[category].credit += net * (1 - ratio);
 
       // ✅ QTY
       productStatsQty[item.name] =
         (productStatsQty[item.name] || 0) + item.quantity;
 
       // ✅ CA
-      productStatsCA[item.name] ??= { brut:0, remise:0, encaisse:0, credit:0 };
+      productStatsCA[item.name] ??= { brut: 0, remise: 0, encaisse: 0, credit: 0 };
 
       productStatsCA[item.name].brut += brut;
       productStatsCA[item.name].remise += remise;
       productStatsCA[item.name].encaisse += net * ratio;
-      productStatsCA[item.name].credit += net * (1-ratio);
+      productStatsCA[item.name].credit += net * (1 - ratio);
 
     });
 
   });
 
   return {
-    totalCA, encours, totalItems,
-    totalBrut, totalRemise, nbTickets,
-    productStatsQty, productStatsCA, categoryStats
+    totalCA,
+    encours,
+    totalItems,
+    totalBrut,
+    totalRemise,
+    nbTickets,
+
+    totalCADetail,
+    totalCAGros,
+
+    detailTickets,
+    wholesaleTickets,
+
+    detailArticles,
+    wholesaleArticles,
+
+    productStatsQty,
+    productStatsCA,
+    categoryStats
   };
 }
 
@@ -145,17 +196,17 @@ function computeSalesStats(daySales, selectedCategory, search){
  * → objet "comparison"
  ************************************************************/
 
-function computeComparison(selectedDate, totalCA){
+function computeComparison(selectedDate, totalCA) {
 
   let lastDate = null;
 
   // ✅ 1. TRI DESC (important)
   const sorted = [...sales].sort(
-    (a,b) => new Date(b.date) - new Date(a.date)
+    (a, b) => new Date(b.date) - new Date(a.date)
   );
 
   // ✅ 2. TROUVER DERNIER JOUR ACTIF
-  for (let sale of sorted){
+  for (let sale of sorted) {
 
     const d = new Date(sale.date).toISOString().split("T")[0];
 
@@ -165,21 +216,21 @@ function computeComparison(selectedDate, totalCA){
 
     let totalPaid = 0;
 
-    if(sale.payment?.type === "credit"){
+    if (sale.payment?.type === "credit") {
       totalPaid = (sale.payment.payments || [])
-        .reduce((sum,p)=> sum + (p.amount||0),0);
+        .reduce((sum, p) => sum + (p.amount || 0), 0);
     } else {
       totalPaid = saleTotal;
     }
 
-    if (totalPaid > 0){
+    if (totalPaid > 0) {
       lastDate = d;
       break;
     }
   }
 
   // ✅ 3. SI RIEN TROUVÉ → RETURN N/A
-  if (!lastDate){
+  if (!lastDate) {
     return {
       lastDate: null,
       caYesterday: 0,
@@ -206,10 +257,10 @@ function computeComparison(selectedDate, totalCA){
 
     let totalPaid = 0;
 
-    if(s.payment?.type === "credit"){
+    if (s.payment?.type === "credit") {
 
       totalPaid = (s.payment.payments || [])
-        .reduce((sum,p)=> sum + (p.amount||0),0);
+        .reduce((sum, p) => sum + (p.amount || 0), 0);
 
       lastCA += totalPaid;
       lastEncours += (saleTotal - totalPaid);
