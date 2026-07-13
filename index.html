@@ -16,6 +16,7 @@
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.23/jspdf.plugin.autotable.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html5-qrcode/2.3.8/html5-qrcode.min.js"></script>
   <!--Supabase-->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
 
@@ -101,6 +102,9 @@
       <button data-section="products" onclick="showPromo()">🔥 Promo</button>
       <button data-section="credit" onclick="showSection('credit')">📋 Crédit clients</button>
       <button data-section="tickets" onclick="showSection('tickets')">🎟️ Tickets</button>
+      <button onclick="openQrScanner()">📷 Scanner</button>
+
+
 
       <!--<button onclick="fixSales()">Corriger CA ⚙️</button>-->
     </section>
@@ -145,6 +149,44 @@
         🛒 Panier
         <span id="cartBadge">0</span>
       </button>
+
+      <button onclick="openQrScanner()">📷 Scanner</button>
+
+    </section>
+
+    <!--SECTION SCANNER PRODUITS-->
+    <section>
+
+      <div id="qrScannerModal" class="modal">
+
+        <div class="modal-content">
+
+          <h3>📷 Scanner produit</h3>
+
+          <div id="qr-reader"></div>
+
+          <div class="qr-manual">
+
+            <div class="scan-separator">
+              ou saisir le code produit
+            </div>
+
+            <input type="text" id="manualBarcode" class="scan-input" placeholder="Ex : PRD-0005"
+              onkeydown="if(event.key==='Enter')searchBarcodeManual()">
+
+            <div class="scan-actions">
+
+              <button class="btn-scan-add" onclick="searchBarcodeManual()">
+                🔎 Ajouter
+              </button>
+
+              <button class="btn-scan-close" onclick="closeQrScanner()">
+                Fermer
+              </button>
+
+            </div>
+
+          </div>
 
     </section>
 

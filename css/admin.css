@@ -1373,3 +1373,65 @@ td:last-child {
 .price-gros {
   color: #2563eb;
 }
+
+/*CSS QR MODAL*/
+#qrProductModal {
+  display: none;
+}
+
+#productQrContainer {
+<<<<<<< HEAD
+  display: flex;
+  justify-content: center;
+=======
+
+  display: flex;
+
+  justify-content: center;
+
+>>>>>>> 5039a62e74fa9fd13860f9dcc530953a7e70cf2f
+  margin: 10px 0;
+
+}
+
+.qr-code-id {
+<<<<<<< HEAD
+  text-align: center;
+  font-size: 13px;
+  color: #666;
+  margin-top: 8px;
+
+}
+
+/*CSS CART FOOTER*/
+.card-footer {
+  display: grid !important;
+  grid-template-columns: 1fr 1fr !important;
+  gap: 8px;
+}
+
+.card-footer button {
+  width: 100%;
+  margin: 0;
+}
+
+.card-footer button {
+  height: 40px;
+}
+
+.card-footer button.btn-qr,
+.card-footer button.btn-history {
+  height: 36px;
+  font-size: 13px;
+=======
+
+  text-align: center;
+
+  font-size: 13px;
+
+  color: #666;
+
+  margin-top: 8px;
+
+>>>>>>> 5039a62e74fa9fd13860f9dcc530953a7e70cf2f
+}

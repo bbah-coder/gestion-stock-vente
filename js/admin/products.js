@@ -133,6 +133,8 @@ function saveProduct() {
         wholesalePrice: wholesalePrice, //prix gros
         wholesaleMinQty: wholesaleMinQty, //seuil prix gros
         stock: stock,
+        //barcode: crypto.randomUUID(), //Ajout QR-CODE
+        barcode: "PRD-" + Date.now().toString().slice(-6), //Ajout QR-CODE
         image: e.target.result,
         category: category || "Autre"
       };
@@ -152,6 +154,11 @@ function saveProduct() {
       wholesalePrice: wholesalePrice, //prix gros
       wholesaleMinQty: wholesaleMinQty, //seuil prix gros
       stock: stock,
+<<<<<<< HEAD
+      barcode: "PRD-" + Date.now().toString().slice(-6), //Ajout QR-CODE
+=======
+      barcode: crypto.randomUUID(), //Ajout QR-CODE
+>>>>>>> 5039a62e74fa9fd13860f9dcc530953a7e70cf2f
       category: category || "Autre"
     };
 
@@ -186,7 +193,8 @@ function saveFinal(product) {
 
     // ✅ stock modifié
     existing.stock = product.stock;
-
+    //barCode
+    existing.barcode = existing.barcode || product.barcode;
     // ✅ NE PAS TOUCHER AUX VENTES
     const sold = existing.sold || 0;
 
@@ -297,7 +305,21 @@ function editProduct(index) {
 
   document.getElementById("name").value = p.name;
   document.getElementById("price").value = p.price;
-  document.getElementById("stock").value = p.stock;
+  document.getElementById("wholesalePrice").value = p.wholesalePrice || 0;
+  document.getElementById("wholesaleMinQty").value = p.wholesaleMinQty || 0;
+  document.getElementById("stockLabel").innerHTML = 'Stock <small style="color:#e67e22">📦 Le stock se modifie via Mouvement</small>';
+
+  const stockInput = document.getElementById("stock");
+
+
+  stockInput.value = p.stock || 0;
+  stockInput.readOnly = true;
+
+  const categoryEl = document.getElementById("category");
+
+  if (categoryEl) {
+    categoryEl.value = p.category || "Autre";
+  }
 
   editIndex = index;
 
@@ -363,6 +385,8 @@ function clearForm() {
   document.getElementById("stock").value = "";
   document.getElementById("wholesalePrice").value = "";
   document.getElementById("wholesaleMinQty").value = "";
+
+  document.getElementById("stock").readOnly = false;
 
   // ✅ reset input file
   const imageInput = document.getElementById("image");
@@ -505,6 +529,7 @@ function importCSV() {
           wholesaleMinQty,
           stock,
           initialStock: stock,
+          barcode: "PRD-" + Date.now().toString().slice(-6), //Ajout QR-CODE
           sold: 0,
           image: image || null,
           category: category,
@@ -513,7 +538,7 @@ function importCSV() {
           //Utilisateur import
           createdBy: localStorage.getItem("username"),
           //Rôle utilisateur
-          createdRole: localStorage.getItem("userRole")
+          createdRole: localStorage.getItem("userRole"),
 
         });
 

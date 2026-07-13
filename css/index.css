@@ -1121,3 +1121,86 @@ td:first-child {
   font-weight: bold;
   margin-top: 3px;
 }
+
+/*CSS SCANNER PRODUIT*/
+#qrScannerModal {
+  display: none;
+}
+
+.qr-manual {
+  margin-top: 15px;
+}
+
+.scan-separator {
+  text-align: center;
+  color: #666;
+  font-size: 13px;
+  margin-bottom: 12px;
+  position: relative;
+}
+
+.scan-separator::before,
+.scan-separator::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  width: 30%;
+  height: 1px;
+  background: #ddd;
+}
+
+.scan-separator::before {
+  left: 0;
+}
+
+.scan-separator::after {
+  right: 0;
+}
+
+.scan-input {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #dcdcdc;
+  border-radius: 10px;
+  font-size: 15px;
+  box-sizing: border-box;
+}
+
+.scan-input:focus {
+  outline: none;
+  border-color: #3498db;
+  box-shadow: 0 0 4px rgba(52, 152, 219, 0.3);
+}
+
+.scan-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.btn-scan-add,
+.btn-scan-close {
+  flex: 1;
+  border: none;
+  border-radius: 10px;
+  padding: 10px;
+  cursor: pointer;
+  font-weight: 600;
+  color: white;
+}
+
+.btn-scan-add {
+  background: #16a34a;
+}
+
+.btn-scan-add:hover {
+  background: #15803d;
+}
+
+.btn-scan-close {
+  background: #e74c3c;
+}
+
+.btn-scan-close:hover {
+  background: #c0392b;
+}

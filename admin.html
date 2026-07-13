@@ -225,8 +225,9 @@
     <!-- ========= FORMULAIRE ========= -->
     <section id="formSection" class="card" style="display:none">
       <h2 id="formTitle">➕ Ajouter un produit</h2>
-
+      <label>Catégorie</label>
       <input id="category" placeholder="Catégorie (ex: Aliment de base, Boisson)">
+      <label>Nom</label>
       <input id="name" placeholder="Nom">
       <label>Prix détail</label>
       <input id="price" type="number" placeholder="Prix détail">
@@ -234,6 +235,7 @@
       <input id="wholesalePrice" type="number" placeholder="Prix gros">
       <label>Seuil prix gros</label>
       <input type="number" id="wholesaleMinQty" min="1" placeholder="Ex : 12">
+      <label id="stockLabel" for="stock"> Stock </label>
       <input id="stock" type="number" placeholder="Stock">
       <div class="file-upload">
         <!-- ✅ input caché -->
@@ -449,6 +451,28 @@
               Fermer
             </button>
           </div>
+
+        </div>
+
+      </div>
+
+    </section>
+
+    <!--SECTION MODAL QR-->
+    <section>
+      <div id="qrProductModal" class="modal">
+
+        <div class="modal-content">
+
+          <h3>🧾 QR Produit</h3>
+
+          <div id="productQrContainer"></div>
+
+          <div id="productQrName"></div>
+          <button onclick="printProductQr()">🖨️ Imprimer </button>
+          <button onclick="closeProductQr()">
+            Fermer
+          </button>
 
         </div>
 

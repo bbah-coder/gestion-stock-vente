@@ -382,6 +382,7 @@ function renderCartMobile() {
   console.log("cart =", cart);
 }
 
+
 function getRemisePercent(item) {
 
   const price = Number(item.price) || 0;

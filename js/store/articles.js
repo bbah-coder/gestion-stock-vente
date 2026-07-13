@@ -266,11 +266,19 @@ function renderDesktopProducts(data) {
         price: Number(p.price)
       });
 
-      new QRCode(qrEl, {
+      /*new QRCode(qrEl, {
         text: encodeURIComponent(qrData),
         width: 60,
         height: 60
-      });
+      });*/
+      new QRCode(
+        document.getElementById(qrId),
+        {
+          text: p.barcode,
+          width: 60,
+          height: 60
+        }
+      );
     }
 
   });

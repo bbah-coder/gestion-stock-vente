@@ -209,7 +209,17 @@ function vendreWithQty(index, btn) {
       return;
     }
 
+    //exist.quantity += q;
     exist.quantity += q;
+
+    const pricing =
+      getProductPrice(
+        produit,
+        exist.quantity
+      );
+
+    exist.price = pricing.price;
+    exist.isWholesale = pricing.isWholesale;
 
   } else {
 
@@ -252,15 +262,358 @@ function vendreWithQty(index, btn) {
   updateFloatingCart(); // ✅ important pour mobile
 }
 
+//--------------------------------------
+// ✅ RECHERCHE PRODUIT PAR QR
+//-------------------------------------
+
+<<<<<<< HEAD
+/*function addProductByBarcode(code) {
+=======
+function addProductByBarcode(code) {
+>>>>>>> 5039a62e74fa9fd13860f9dcc530953a7e70cf2f
+
+  const index =
+    products.findIndex(
+      p => p.barcode === code
+    );
+
+  if (index === -1) {
+
+    showToast(
+      "❌ Produit introuvable"
+    );
+
+    return;
+
+  }
+
+  vendreWithQty(index, null);
+<<<<<<< HEAD
+  renderProducts();
+
+  renderCart();
+
+  updateCartBadge();
+  updateFloatingCart();
+  updateCartMobileBtn();
+}*/
+function addProductByBarcode(code) {
+
+  const index = products.findIndex(
+    p => p.barcode === code
+  );
+
+  if (index === -1) {
+    showToast("❌ Produit introuvable");
+    return;
+  }
+
+  const produit = products[index];
+
+
+  const exist = cart.find(
+    i => i.index === index
+  );
+
+  if (
+    exist &&
+    exist.quantity >= produit.stock
+  ) {
+
+    if (
+      lastScanned !== `STOCK-${produit.barcode}`
+    ) {
+
+      lastScanned =
+        `STOCK-${produit.barcode}`;
+
+      alert(
+        `❌ Plus de stock disponible\n\nProduit : ${produit.name}\nStock disponible : ${produit.stock}`
+      );
+
+      return;
+    }
+
+    return;
+  }
+
+  if (exist) {
+    exist.quantity++;
+
+    const pricing =
+      getProductPrice(
+        produit,
+        exist.quantity
+      );
+
+    exist.price = pricing.price;
+    exist.isWholesale =
+      pricing.isWholesale;
+
+  } else {
+    const pricing =
+      getProductPrice(
+        produit,
+        1
+      );
+
+    cart.push({
+      index,
+      name: produit.name,
+      quantity: 1,
+      price: pricing.price,
+      isWholesale:
+        pricing.isWholesale
+    });
+
+  }
+
+  localStorage.setItem(
+    "cart",
+    JSON.stringify(cart)
+  );
+
+  renderCart();
+  updateCartBadge();
+  updateFloatingCart();
+  updateCartMobileBtn();
+=======
+>>>>>>> 5039a62e74fa9fd13860f9dcc530953a7e70cf2f
+
+}
+
+// OUVERTURE SCANNER
+
+/*function openQrScanner() {
+
+  document.getElementById(
+    "qrScannerModal"
+  ).style.display = "flex";
+
+  qrScanner = new Html5Qrcode(
+    "qr-reader"
+  );
+
+  qrScanner.start(
+
+    { facingMode: "environment" },
+
+    {
+      fps: 10,
+      qrbox: 250
+    },
+
+    (decodedText) => {
+
+      console.log(
+        "QR détecté :",
+        decodedText
+      );
+
+    },
+
+    () => { }
+
+  )
+    .catch(err => {
+      console.error(
+        "Erreur caméra :",
+        err
+      );
+    });
+
+}*/
+let qrScanner = null;
+
+let lastScanned = "";
+let lastScanTime = 0;
+
+function openQrScanner() {
+
+  document.getElementById(
+    "qrScannerModal"
+  ).style.display = "flex";
+
+  qrScanner = new Html5Qrcode(
+    "qr-reader"
+  );
+
+  qrScanner.start(
+<<<<<<< HEAD
+    { facingMode: "environment" },
+=======
+
+    { facingMode: "environment" },
+
+>>>>>>> 5039a62e74fa9fd13860f9dcc530953a7e70cf2f
+    {
+      fps: 10,
+      qrbox: 250
+    },
+
+    (decodedText) => {
+<<<<<<< HEAD
+=======
+
+>>>>>>> 5039a62e74fa9fd13860f9dcc530953a7e70cf2f
+      // ✅ évite les doubles scans
+      if (
+        decodedText === lastScanned &&
+        Date.now() - lastScanTime < 1000
+      ) {
+        return;
+      }
+<<<<<<< HEAD
+=======
+
+>>>>>>> 5039a62e74fa9fd13860f9dcc530953a7e70cf2f
+      lastScanned = decodedText;
+      lastScanTime = Date.now();
+
+      console.log(
+        "QR détecté :",
+        decodedText
+      );
+
+      // ✅ ajout produit
+      addProductByBarcode(
+        decodedText.trim()
+      );
+
+<<<<<<< HEAD
+      showToast(
+        "✅ Produit ajouté"
+      );
+=======
+      // ✅ feedback
+      showToast(
+        "✅ Produit ajouté"
+      );
+
+>>>>>>> 5039a62e74fa9fd13860f9dcc530953a7e70cf2f
+    },
+
+    () => { }
+
+  )
+    .catch(err => {
+<<<<<<< HEAD
+=======
+
+>>>>>>> 5039a62e74fa9fd13860f9dcc530953a7e70cf2f
+      console.error(
+        "Erreur caméra :",
+        err
+      );
+<<<<<<< HEAD
+      showToast(
+        "❌ Impossible d'accéder à la caméra"
+      );
+=======
+
+      showToast(
+        "❌ Impossible d'accéder à la caméra"
+      );
+
+>>>>>>> 5039a62e74fa9fd13860f9dcc530953a7e70cf2f
+    });
+
+}
+
+
+function closeQrScanner() {
+
+  if (!qrScanner) {
+<<<<<<< HEAD
+    document.getElementById(
+      "qrScannerModal"
+    ).style.display = "none";
+    return;
+  }
+  qrScanner.stop()
+    .then(() => {
+      qrScanner.clear();
+      qrScanner = null;
+=======
+
+    document.getElementById(
+      "qrScannerModal"
+    ).style.display = "none";
+
+    return;
+
+  }
+
+  qrScanner.stop()
+
+    .then(() => {
+
+      qrScanner.clear();
+
+      qrScanner = null;
+
+>>>>>>> 5039a62e74fa9fd13860f9dcc530953a7e70cf2f
+      document.getElementById(
+        "qrScannerModal"
+      ).style.display = "none";
+
+    })
+<<<<<<< HEAD
+=======
+
+>>>>>>> 5039a62e74fa9fd13860f9dcc530953a7e70cf2f
+    .catch(console.error);
+
+}
+
+//--------------------------------------
+<<<<<<< HEAD
+// ✅ AJOUT MANUEL SI SCAN PAS OK
+//-------------------------------------
+=======
+// ✅ TEST MANUEL Scanner
+//-------------------------------------
+
+>>>>>>> 5039a62e74fa9fd13860f9dcc530953a7e70cf2f
+function searchBarcodeManual() {
+
+  const code = document
+    .getElementById("manualBarcode")
+    .value
+    .trim();
+
+  if (!code) return;
+
+  addProductByBarcode(code);
+
+  document.getElementById(
+    "manualBarcode"
+  ).value = "";
+
+}
+<<<<<<< HEAD
+
+=======
+/*function openQrScanner() {
+
+  const code = prompt(
+    "Code QR"
+  );
+
+  if (!code) return;
+
+  addProductByBarcode(code);
+
+}*/
+>>>>>>> 5039a62e74fa9fd13860f9dcc530953a7e70cf2f
+
 
 function changeQty(index, delta) {
 
   let el = document.getElementById(`qty-mobile-${index}`);
-
   if (!el) {
     el = document.getElementById(`qty-${index}`);
   }
-
   if (!el) {
     console.warn("❌ qty introuvable:", index);
     return;
@@ -328,8 +681,6 @@ function changeQty(index, delta) {
   updateCartMobileBtn();
   //localStorage.setItem("cart", JSON.stringify(cart));
 }
-
-
 
 /************************************************************
  * 🛒 AFFICHAGE PANIER
