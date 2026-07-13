@@ -266,37 +266,7 @@ function vendreWithQty(index, btn) {
 // ✅ RECHERCHE PRODUIT PAR QR
 //-------------------------------------
 
-<<<<<<< HEAD
-/*function addProductByBarcode(code) {
-=======
-function addProductByBarcode(code) {
->>>>>>> 5039a62e74fa9fd13860f9dcc530953a7e70cf2f
 
-  const index =
-    products.findIndex(
-      p => p.barcode === code
-    );
-
-  if (index === -1) {
-
-    showToast(
-      "❌ Produit introuvable"
-    );
-
-    return;
-
-  }
-
-  vendreWithQty(index, null);
-<<<<<<< HEAD
-  renderProducts();
-
-  renderCart();
-
-  updateCartBadge();
-  updateFloatingCart();
-  updateCartMobileBtn();
-}*/
 function addProductByBarcode(code) {
 
   const index = products.findIndex(
@@ -377,9 +347,6 @@ function addProductByBarcode(code) {
   updateCartBadge();
   updateFloatingCart();
   updateCartMobileBtn();
-=======
->>>>>>> 5039a62e74fa9fd13860f9dcc530953a7e70cf2f
-
 }
 
 // OUVERTURE SCANNER
@@ -439,23 +406,20 @@ function openQrScanner() {
   );
 
   qrScanner.start(
-<<<<<<< HEAD
-    { facingMode: "environment" },
-=======
 
     { facingMode: "environment" },
 
->>>>>>> 5039a62e74fa9fd13860f9dcc530953a7e70cf2f
+    { facingMode: "environment" },
+
+    { facingMode: "environment" },
+
     {
       fps: 10,
       qrbox: 250
     },
 
     (decodedText) => {
-<<<<<<< HEAD
-=======
 
->>>>>>> 5039a62e74fa9fd13860f9dcc530953a7e70cf2f
       // ✅ évite les doubles scans
       if (
         decodedText === lastScanned &&
@@ -463,10 +427,7 @@ function openQrScanner() {
       ) {
         return;
       }
-<<<<<<< HEAD
-=======
 
->>>>>>> 5039a62e74fa9fd13860f9dcc530953a7e70cf2f
       lastScanned = decodedText;
       lastScanTime = Date.now();
 
@@ -480,101 +441,56 @@ function openQrScanner() {
         decodedText.trim()
       );
 
-<<<<<<< HEAD
-      showToast(
-        "✅ Produit ajouté"
-      );
-=======
       // ✅ feedback
       showToast(
         "✅ Produit ajouté"
       );
-
->>>>>>> 5039a62e74fa9fd13860f9dcc530953a7e70cf2f
     },
 
     () => { }
 
   )
     .catch(err => {
-<<<<<<< HEAD
-=======
-
->>>>>>> 5039a62e74fa9fd13860f9dcc530953a7e70cf2f
       console.error(
         "Erreur caméra :",
         err
       );
-<<<<<<< HEAD
-      showToast(
-        "❌ Impossible d'accéder à la caméra"
-      );
-=======
 
       showToast(
         "❌ Impossible d'accéder à la caméra"
       );
 
->>>>>>> 5039a62e74fa9fd13860f9dcc530953a7e70cf2f
     });
 
 }
 
 
 function closeQrScanner() {
-
   if (!qrScanner) {
-<<<<<<< HEAD
-    document.getElementById(
-      "qrScannerModal"
-    ).style.display = "none";
+    document.getElementById("qrScannerModal").style.display = "none";
     return;
   }
-  qrScanner.stop()
+
+  qrScanner
+    .stop()
     .then(() => {
       qrScanner.clear();
       qrScanner = null;
-=======
 
-    document.getElementById(
-      "qrScannerModal"
-    ).style.display = "none";
-
-    return;
-
-  }
-
-  qrScanner.stop()
-
-    .then(() => {
-
-      qrScanner.clear();
-
-      qrScanner = null;
-
->>>>>>> 5039a62e74fa9fd13860f9dcc530953a7e70cf2f
-      document.getElementById(
-        "qrScannerModal"
-      ).style.display = "none";
-
+      document.getElementById("qrScannerModal").style.display = "none";
     })
-<<<<<<< HEAD
-=======
+    .catch((err) => {
+      console.error("Erreur fermeture scanner :", err);
 
->>>>>>> 5039a62e74fa9fd13860f9dcc530953a7e70cf2f
-    .catch(console.error);
-
+      qrScanner = null;
+      document.getElementById("qrScannerModal").style.display = "none";
+    });
 }
 
 //--------------------------------------
-<<<<<<< HEAD
 // ✅ AJOUT MANUEL SI SCAN PAS OK
 //-------------------------------------
-=======
-// ✅ TEST MANUEL Scanner
-//-------------------------------------
 
->>>>>>> 5039a62e74fa9fd13860f9dcc530953a7e70cf2f
 function searchBarcodeManual() {
 
   const code = document
@@ -591,9 +507,7 @@ function searchBarcodeManual() {
   ).value = "";
 
 }
-<<<<<<< HEAD
 
-=======
 /*function openQrScanner() {
 
   const code = prompt(
@@ -605,8 +519,6 @@ function searchBarcodeManual() {
   addProductByBarcode(code);
 
 }*/
->>>>>>> 5039a62e74fa9fd13860f9dcc530953a7e70cf2f
-
 
 function changeQty(index, delta) {
 

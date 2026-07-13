@@ -1380,22 +1380,18 @@ td:last-child {
 }
 
 #productQrContainer {
-<<<<<<< HEAD
+
   display: flex;
   justify-content: center;
-=======
-
   display: flex;
 
   justify-content: center;
-
->>>>>>> 5039a62e74fa9fd13860f9dcc530953a7e70cf2f
   margin: 10px 0;
 
 }
 
 .qr-code-id {
-<<<<<<< HEAD
+
   text-align: center;
   font-size: 13px;
   color: #666;
@@ -1423,9 +1419,7 @@ td:last-child {
 .card-footer button.btn-history {
   height: 36px;
   font-size: 13px;
-=======
-
-  text-align: center;
+  ==============>>>>>>>5039a62e74fa9fd13860f9dcc530953a7e70cf2f text-align: center;
 
   font-size: 13px;
 
@@ -1433,5 +1427,5 @@ td:last-child {
 
   margin-top: 8px;
 
->>>>>>> 5039a62e74fa9fd13860f9dcc530953a7e70cf2f
+  <<<<<<< HEAD>>>>>>>5039a62e74fa9fd13860f9dcc530953a7e70cf2f=======>>>>>>>5039a62e74fa9fd13860f9dcc530953a7e70cf2f
 }

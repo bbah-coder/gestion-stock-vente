@@ -154,11 +154,7 @@ function saveProduct() {
       wholesalePrice: wholesalePrice, //prix gros
       wholesaleMinQty: wholesaleMinQty, //seuil prix gros
       stock: stock,
-<<<<<<< HEAD
       barcode: "PRD-" + Date.now().toString().slice(-6), //Ajout QR-CODE
-=======
-      barcode: crypto.randomUUID(), //Ajout QR-CODE
->>>>>>> 5039a62e74fa9fd13860f9dcc530953a7e70cf2f
       category: category || "Autre"
     };
 
