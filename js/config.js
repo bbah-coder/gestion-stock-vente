@@ -15,7 +15,7 @@ let currentPageToday = 1;
 let currentPageHistoryStock = 1;
 
 // 👉 nombre de produits par page
-const itemsPerPage = 20; 
+const itemsPerPage = 20;
 const itemsPerPageDetail = 20;
 const itemsPerPageHistory = 20;
 const itemsPerPageToday = 20;
@@ -23,27 +23,27 @@ const itemsPerPageHistoryStock = 20;
 
 
 /* Fonction Générique pour responsive Mobile */
-function renderResponsive(config){
+function renderResponsive(config) {
 
-  const isMobile = window.matchMedia("(max-width: 768px)").matches;
+  const isMobile = window.matchMedia("(max-width: 1025px)").matches;
 
   const tableBody = document.querySelector(config.tableSelector);
   const table = tableBody ? tableBody.closest("table") : null;
   const mobile = document.querySelector(config.mobileSelector);
 
-  if(isMobile){
-    if(table) table.style.display = "none";   // ✅ cache TABLE complet
-    if(mobile) mobile.style.display = "flex";
+  if (isMobile) {
+    if (table) table.style.display = "none";   // ✅ cache TABLE complet
+    if (mobile) mobile.style.display = "flex";
 
-    if(config.mobileRender){
+    if (config.mobileRender) {
       config.mobileRender();
     }
 
-  }else{
-    if(table) table.style.display = "table";  // ✅ réaffiche TABLE
-    if(mobile) mobile.style.display = "none";
+  } else {
+    if (table) table.style.display = "table";  // ✅ réaffiche TABLE
+    if (mobile) mobile.style.display = "none";
 
-    if(config.desktopRender){
+    if (config.desktopRender) {
       config.desktopRender();
     }
   }

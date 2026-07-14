@@ -1420,3 +1420,81 @@ td:last-child {
   height: 36px;
   font-size: 13px;
 }
+
+/*CSS BOUTON ARCHIVE FORM EDIT*/
+.form-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 8px;
+  margin-top: 15px;
+}
+
+.form-actions button {
+  height: 42px;
+  border: none;
+  border-radius: 10px;
+  color: white;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+#saveBtn {
+  background: #3498db;
+}
+
+.btn-archive {
+  background: #e67e22;
+}
+
+.btn-cancel {
+  background: #95a5a6;
+}
+
+#archiveBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 120px;
+  height: 42px;
+  padding: 0 15px;
+  vertical-align: middle;
+  margin: 0 8px;
+  background: #e67e22;
+  color: white;
+  border: none;
+  border-radius: 10px;
+  font-weight: 600;
+  cursor: pointer;
+
+}
+
+@media (min-width: 768px) {
+
+  #saveBtn,
+  #archiveBtn,
+  button[onclick="cancelEdit()"] {
+    width: 100%;
+    margin: 0;
+
+  }
+
+}
+
+/*CSS BOUTON SUPPRESSION*/
+.btn-delete-product {
+  width: 100%;
+  background: #e74c3c;
+  color: white;
+  border: none;
+  border-radius: 10px;
+  padding: 12px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.btn-delete-product:hover {
+  background: #c0392b;
+
+}

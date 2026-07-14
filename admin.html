@@ -60,7 +60,7 @@
     <button id="btnRegister" onclick="showRegister(); closeMobileMenu()" class="btn secondary">➕ Créer un
       compte</button>
     <button id="btnStore" onclick="showStoreInfo(); closeMobileMenu()" class="btn secondary">🏪 Info Magasin</button>
-    <button id="btnManageShops" onclick="showShops()" style="display:none;">🏪 Magasins</button>
+    <button id="btnManageShops" onclick="showShops(); closeMobileMenu()" style="display:none;">🏪 Magasins</button>
     <button onclick="showUsers(); closeMobileMenu()">👤 Utilisateurs</button>
     <button onclick="switchUser()">🔁 Changer de compte</button>
     <button onclick="logout()" class="logout">🔌 Déconnexion</button>
@@ -245,8 +245,14 @@
         <!-- ✅ nom fichier -->
         <span id="fileName">Aucune image sélectionnée</span>
       </div>
-      <button id="saveBtn" onclick="saveProduct()">Enregistrer</button>
-      <button onclick="cancelEdit()" style="background:#95a5a6">Annuler</button>
+      <div class="form-actions">
+        <button id="saveBtn" onclick="saveProduct()">Enregistrer </button>
+        <button id="archiveBtn" class="btn-archive" style="display:none;" onclick="archiveProduct(editIndex)">
+          Archiver
+        </button>
+        <button class="btn-cancel" onclick="cancelEdit()"> Annuler </button>
+
+      </div>
     </section>
 
 
@@ -309,12 +315,14 @@
 
         <div class="header-actions">
 
-
           <!-- MENU -->
-          <button onclick="showAdminSection('form')" class="tooltip btn-form">
+          <button onclick="openAddProduct()" class="tooltip btn-form">
             ➕ Ajouter
-            <!--<span class="tooltiptext">Ajouter ou modifier un produit</span> -->
           </button>
+          <!--<button onclick="showAdminSection('form')" class="tooltip btn-form">
+            ➕ Ajouter -->
+          <!--<span class="tooltiptext">Ajouter ou modifier un produit</span> -->
+          <!--< /button> -->
 
           <button onclick="showAdminSection('import')" class="tooltip btn-import">
             📥 Importer
@@ -516,6 +524,7 @@
       <div id="paginationHistoryStock" class="pagination-container"></div>
 
     </section>
+
 
     <!-- ========= PROMOTION ========= -->
     <section id="promoModal" class="modal" style="display:none;">

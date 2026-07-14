@@ -296,33 +296,35 @@ function renderMobileProducts(products) {
 
   container.innerHTML = "";
 
-  products.forEach(p => {
+  products
+    .filter(p => (p.stock || 0) >= 1) // Stock minimum =1
+    .forEach(p => {
 
-    const promo = Number(p.promo) || 0;
+      const promo = Number(p.promo) || 0;
 
-    const detailPrice =
-      Number(p.price) || 0;
+      const detailPrice =
+        Number(p.price) || 0;
 
-    const wholesalePrice =
-      Number(p.wholesalePrice) || 0;
+      const wholesalePrice =
+        Number(p.wholesalePrice) || 0;
 
-    // ✅ Promo uniquement sur le détail
-    const finalDetailPrice =
-      promo > 0
-        ? detailPrice * (1 - promo / 100)
-        : detailPrice;
+      // ✅ Promo uniquement sur le détail
+      const finalDetailPrice =
+        promo > 0
+          ? detailPrice * (1 - promo / 100)
+          : detailPrice;
 
-    container.innerHTML += `
+      container.innerHTML += `
       <div class="product-card">
 
         <!-- ✅ IMAGE -->
         <div class="product-img">
           <div class="img-container">
             ${p.image
-        ? `<img src="${p.image}" 
+          ? `<img src="${p.image}" 
                    onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">`
-        : ""
-      }
+          : ""
+        }
             <div class="default-icon" style="${p.image ? 'display:none' : 'display:flex'}">
               📦
             </div>
@@ -336,16 +338,16 @@ function renderMobileProducts(products) {
          
           <div class="product-name">${p.name}
             ${promo > 0
-        ? `<span class="promo-badge">(-${promo}%)</span>`
-        : ""
-      }
+          ? `<span class="promo-badge">(-${promo}%)</span>`
+          : ""
+        }
          </div>
 
        <div class="card-price">
      
        <div>🛒 Détail :
        ${promo > 0
-        ? `
+          ? `
         <span class="price-old">
           ${formatPrice(detailPrice)} GNF
         </span>
@@ -354,16 +356,16 @@ function renderMobileProducts(products) {
           ${formatPrice(finalDetailPrice)} GNF
         </span>
       `
-        : `
+          : `
         <span class="price-new">
           ${formatPrice(detailPrice)} GNF
         </span>
       `
-      }
+        }
       </div>
 
      ${(wholesalePrice || 0) > 0
-        ? `
+          ? `
       <div class="price-wholesale">
         📦 Gros :
         <span class="price-gros">
@@ -376,8 +378,8 @@ function renderMobileProducts(products) {
 
       </div>
     `
-        : ""
-      }
+          : ""
+        }
 
    </div>
 
@@ -402,7 +404,7 @@ function renderMobileProducts(products) {
 
       </div>
     `;
-  });
+    });
   updateAddToCartButton();
 }
 

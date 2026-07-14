@@ -243,8 +243,6 @@ function renderCards(productsList) {
      <button class="btn-add" onclick="openStockMovement(${realIndex})">📦 Mouvement</button>
      <button class="btn-qr" onclick="showProductQr(${realIndex})">🧾 QR </button>
      <button class="btn-history" onclick="showProductHistory('${p.name}')">📜 Historique </button>
-     <!--<button class="btn-add" onclick="addStock(${realIndex})">➕ Ajouter du stock</button>-->
-     <!--<button onclick="archiveProduct(${realIndex})">📦</button>-->
   </div>
 `;
 
@@ -579,6 +577,10 @@ function renderArchivedCards(listData) {
           🔄 Restaurer le produit
         </button>
 
+        <button class="btn-delete-product" onclick="deletePhysicalProduct(${products.indexOf(p)})">
+          🗑 Supprimer le produit
+        </button>
+        
       </div>
     `;
 

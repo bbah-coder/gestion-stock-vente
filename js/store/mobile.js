@@ -649,8 +649,6 @@ function renderSalesMobile() {
       </div>
     `;
 
-
-
       container.appendChild(card);
     });
 }

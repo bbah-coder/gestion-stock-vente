@@ -122,260 +122,141 @@ function render() {
 
   hideAllSections();
 
-  // ✅ RÉAFFICHER
+  // ✅ Réaffichage
   document.getElementById("searchContainer").style.display = "block";
   document.getElementById("pdfContainer").style.display = "flex";
 
   document.getElementById("tableCard").style.display = "block";
-  document.getElementById("historyCard").style.display = "block";
+  document.getElementById("historyCard").style.display = "none";
 
   document.getElementById("filterCategoryAdmin").style.display = "inline-block";
   document.getElementById("pagination").style.display = "flex";
+
   document.getElementById("archivedHeader").style.display = "none";
 
+  // ✅ Catégorie sélectionnée
+  const selectedCategory =
+    document.getElementById("filterCategoryAdmin")?.value || "all";
 
-  const selectedCategory = document.getElementById("filterCategoryAdmin")?.value || "all";
-  const list = document.getElementById("list");
-
-  document.getElementById("tableHead").innerHTML = `
-  <tr>
-     <th>QR Code</th>
-     <th>Image</th>
-     <th>Nom</th>
-     <th>Prix</th>
-	 <th>Promo(%)</th>
-     <th>Stock Restant</th>
-     <th>Stock initial</th>
-     <th>Vendu</th>
-     <th>Action</th>
-  </tr>`;
-
-  list.innerHTML = "";
-
-  // ✅ 1. Recherche
-
-  const inputDesktop = document.getElementById("searchInput");
-  const inputMobile = document.getElementById("searchInputAdmin");
-
+  // ✅ Recherche desktop + mobile
   const search = (
-    inputDesktop?.value?.trim() ||
-    inputMobile?.value?.trim() ||
-    "").toLowerCase();
+    document.getElementById("searchInput")?.value?.trim() ||
+    document.getElementById("searchInputAdmin")?.value?.trim() ||
+    ""
+  ).toLowerCase();
 
-  /*const search = document.getElementById("searchInput")
-    .value
-    .toLowerCase()
-    .trim();*/
-
-  // ✅ 2. Filtre
+  // ✅ Filtre produits
   const filtered = products.filter(p => {
 
-    // ✅ sécurisation
     const name = (p.name || "").toLowerCase();
-    const price = (p.price || 0).toString();
-    const stock = (p.stock ?? 0).toString();
-    const category = (p.category || "Autre");
-    //const promo = Number(p.promo) || 0;
+    const price = String(p.price || 0);
+    const stock = String(p.stock || 0);
 
-    // ✅ recherche (UTILISE les variables sécurisées ✅)
     const matchSearch =
       name.includes(search) ||
       price.includes(search) ||
       stock.includes(search);
 
-    /*const matchSearch =
-      p.name.toLowerCase().includes(search) ||
-      p.price.toString().includes(search) ||
-      p.stock.toString().includes(search);*/
-
     const matchCategory =
       selectedCategory === "all" ||
       (p.category || "Autre") === selectedCategory;
 
-    return matchSearch && matchCategory && p.active !== false;
+    return (
+      matchSearch &&
+      matchCategory &&
+      p.active !== false
+    );
+
   });
 
-  // ✅ ✅ TRI PAR PROMO EN HAUT / STOCK FAIBLE
+  // ✅ TRI PROMOS + STOCK FAIBLE
   filtered.sort((a, b) => {
 
-    const aPromo = (Number(a.promo) || 0) > 0;
-    const bPromo = (Number(b.promo) || 0) > 0;
+    const aPromo =
+      (Number(a.promo) || 0) > 0;
 
-    // ✅ 1. Priorité promo
+    const bPromo =
+      (Number(b.promo) || 0) > 0;
+
+    // 1. Promotions en premier
     if (aPromo !== bPromo) {
       return bPromo - aPromo;
     }
 
-    // ✅ 2. Si promo → trier par % décroissant
+    // 2. Pourcentage promo décroissant
     if (aPromo && bPromo) {
       return (b.promo || 0) - (a.promo || 0);
     }
 
-    const aLow = a.stock <= LOW_STOCK_THRESHOLD;
-    const bLow = b.stock <= LOW_STOCK_THRESHOLD;
+    const aLow =
+      (a.stock || 0) <= LOW_STOCK_THRESHOLD;
 
-    // ✅ 3. Priorité stock faible
+    const bLow =
+      (b.stock || 0) <= LOW_STOCK_THRESHOLD;
+
+    // 3. Stock faible prioritaire
     if (aLow !== bLow) {
       return bLow - aLow;
     }
 
-    // ✅ 4. Stock faible → du plus critique au moins critique
+    // 4. Du plus critique au moins critique
     if (aLow && bLow) {
-      return a.stock - b.stock;
+      return (a.stock || 0) - (b.stock || 0);
     }
 
-    // ✅ 5. RESTE → trier par stock croissant ✅ (CORRECTION CLÉ)
-    return a.stock - b.stock;
+    // 5. Reste trié par stock croissant
+    return (a.stock || 0) - (b.stock || 0);
 
   });
 
-  // ✅ 3. Pagination
-  const totalPages = Math.ceil(filtered.length / itemsPerPage) || 1;
+  // ✅ Pagination
+  const totalPages =
+    Math.max(
+      1,
+      Math.ceil(filtered.length / itemsPerPage)
+    );
 
   if (currentPage > totalPages) {
     currentPage = totalPages;
   }
 
-  const start = (currentPage - 1) * itemsPerPage;
-  const paginated = filtered.slice(start, start + itemsPerPage);
+  const start =
+    (currentPage - 1) * itemsPerPage;
 
-  // ✅ 4. Aucun résultat
-  if (paginated.length === 0) {
-    list.innerHTML = "<tr><td colspan='8'>Aucun produit trouvé 🔍</td></tr>";
-    return;
-  }
-
-  // ✅ switch mobile / desktop
-  //const isMobile = window.innerWidth <= 768 && window.outerWidth === window.innerWidth;
-  //const isMobile = window.innerWidth <= 768;
-  const isMobileOrTablet = window.matchMedia("(max-width: 1024px)").matches;
-
-  if (isMobileOrTablet) {
-
-    document.getElementById("tableStock").style.display = "none";   // ✅ cache table
-    document.getElementById("mobileList").style.display = "block";  // ✅ affiche cards
-
-    renderCards(paginated);
-
-    renderPagination(filtered.length);
-    renderStockHistory();
-    populateCategories();
-
-    return;
-  }
-  else {
-    document.getElementById("tableStock").style.display = "table";
-    document.getElementById("mobileList").style.display = "none";
-  }
-
-
-  // ✅ 5. Affichage + QR
-  paginated.forEach((p) => {
-
-    const promo = Number(p.promo) || 0;
-    const price = Number(p.price) || 0;
-
-    const finalPrice = promo > 0
-      ? price * (1 - promo / 100)
-      : price;
-
-    const realIndex = products.indexOf(p); // ✅ clé
-    const row = document.createElement("tr");
-    const qrId = "qr_" + realIndex;
-
-    row.innerHTML = `
-      <td><div id="${qrId}"></div></td>
-	  <td>${p.image ? `<div class="img-container"><img src="${p.image}"></div> ` : `<div class="no-image">📦</div>`}</td>
-
-      <td>
-        ${p.name}
-        ${promo > 0
-        ? `<span style="color:red;font-size:12px;"> (-${promo}%)</span>`
-        : ""
-      }
-      </td>
-      <td>
-        ${promo > 0
-        ? `
-          <span class="price-old">
-            ${formatPrice(price)} GNF
-          </span><br>
-          <span class="price-new">
-            ${formatPrice(finalPrice)} GNF
-          </span>
-        `
-        : `${formatPrice(price)} GNF`
-      }
-      </td>
-	  <td>
-        ${promo > 0
-        ? `<span style="color:#e74c3c;font-weight:bold;">-${promo}%</span>`
-        : `—`
-      }
-      </td>
-      <td> ${p.stock} 
-           ${p.stock <= LOW_STOCK_THRESHOLD
-        ? '<span style="background:red;color:white;padding:2px 6px;border-radius:5px;margin-left:5px;">Faible</span>'
-        : ''
-      }
-      </td>
-
-	  <td>${p.initialStock || p.stock}</td>
-      <td>${p.sold || 0}</td>
-     <td>
-  <div class="action-buttons">
-    
-    <button class="btn-edit tooltip" onclick="editProduct(${realIndex})">
-      ✏️
-      <span class="tooltiptext">Modifier</span>
-    </button>
-
-    <button class="btn-add tooltip" onclick="addStock(${realIndex})">
-      ➕
-      <span class="tooltiptext">Ajouter stock</span>
-    </button>
-
-    <button class="btn-delete tooltip" onclick="archiveProduct(${realIndex})">
-      📦
-      <span class="tooltiptext">Archiver</span>
-    </button>
-
-  </div>
-
-    </td>`;
-
-    // ✅ STOCK FAIBLE → couleur
-    if (p.stock <= LOW_STOCK_THRESHOLD) {
-      //row.style.background = "#f8d7da";   // rouge clair
-      row.style.fontWeight = "bold";
-    }
-
-
-    list.appendChild(row);
-
-    /* new QRCode(document.getElementById(qrId), {
-       text: encodeURIComponent(
-         p.name + "|" + parseFloat(formatPrice(p.price)) + "GNF"
-       ),
-       width: 60,
-       height: 60
-     });*/
-
-    new QRCode(
-      document.getElementById(qrId),
-      {
-        text: p.barcode,
-        width: 60,
-        height: 60
-      }
+  const paginated =
+    filtered.slice(
+      start,
+      start + itemsPerPage
     );
 
-  });
+  // ✅ Toujours afficher la vue cartes
+  document.getElementById("tableStock").style.display = "none";
+  document.getElementById("mobileList").style.display = "block";
 
+  // ✅ Aucun résultat
+  if (paginated.length === 0) {
 
-  // ✅ 6. Affichage pagination
+    document.getElementById("mobileList").innerHTML = `
+      <div style="
+        text-align:center;
+        padding:20px;
+      ">
+        Aucun produit trouvé 🔍
+      </div>
+    `;
+
+    renderPagination(0);
+
+    return;
+  }
+
+  // ✅ Affichage cartes
+  renderCards(paginated);
+
+  // ✅ Pagination
   renderPagination(filtered.length);
-  renderStockHistory();
+
+  // ✅ Catégories
   populateCategories();
 
 }
@@ -391,6 +272,9 @@ async function showRegister() {
 
   document.getElementById("registerForm").style.display = "block";
   document.getElementById("formRegister").style.display = "block";
+  document.getElementById("pdfContainer").style.display = "block";
+  document.getElementById("formSection").style.display = "none";
+
 
   //CHARGER LES MAGASIN
   await populateShopsSelect();
@@ -798,74 +682,6 @@ async function toggleUser(userId) {
 }
 /*SUPPRIMER UN USER*/
 
-/*async function deleteUser(userId) {
-
-  console.log("🗑 Suppression userId:", userId);
-
-  const currentShop = getCurrentShop();
-
-  if (!currentShop?.id) {
-    showToast("❌ Magasin introuvable");
-    return;
-  }
-
-  // ✅ empêcher l'auto-suppression
-  const currentUserId = localStorage.getItem("userId");
-
-  if (currentUserId === userId) {
-
-    showToast(
-      "⚠️ Impossible de supprimer votre propre compte"
-    );
-
-    return;
-  }
-
-  // ✅ sécurité id
-  if (!userId || userId === "undefined") {
-    console.warn("⚠️ ID invalide, suppression ignorée");
-    showToast("Utilisateur déjà supprimé ou invalide");
-    return;
-  }
-
-  if (!confirm("Supprimer cet utilisateur ?")) return;
-
-  try {
-
-    const { data, error } = await supabaseClient
-      .from("profiles")
-      .delete()
-      .eq("id", userId)
-      .eq("shop_id", currentShop.id)
-      .select(); // ✅ important pour voir résultat réel
-
-    if (error) {
-      console.error("❌ Supabase delete error:", error);
-      showToast("❌ Erreur suppression");
-      return;
-    }
-
-    // ✅ cas où rien n’est supprimé
-    if (!data || data.length === 0) {
-      console.warn("⚠️ Aucun user supprimé (déjà supprimé)");
-    } else {
-      console.log("✅ Supabase supprimé:", data);
-    }
-
-    let users = JSON.parse(localStorage.getItem("users") || "[]");
-
-    users = users.filter(u => u.id !== userId);
-
-    localStorage.setItem("users", JSON.stringify(users));
-
-    // ✅ sync UI
-    renderUsers();
-
-  } catch (err) {
-    console.error("❌ ERROR:", err);
-    showToast("❌ Erreur réseau");
-  }
-}*/
 async function deleteUser(userId) {
 
   console.log("🗑 Suppression userId:", userId);
@@ -1010,7 +826,10 @@ async function deleteUser(userId) {
 function showUsers() {
   //CACHER LES AUTRES SECTIONS
   hideAllSectionsForms();
+
+  document.getElementById("formSection").style.display = "none";
   document.getElementById("usersSection").style.display = "block";
+  document.getElementById("pdfContainer").style.display = "block";
 
   renderUsers(); // ✅ recharge la liste
 }
@@ -1024,6 +843,7 @@ function hideAllSectionsForms() {
   document.getElementById("infoShop").style.display = "none";
   document.getElementById("formRegister").style.display = "none";
   document.getElementById("usersSection").style.display = "none";
+  document.getElementById("shopsSection").style.display = "none";
 }
 
 /************************************************************
@@ -1036,6 +856,8 @@ function showStoreInfo() {
   hideAllSectionsForms();
   // ✅ afficher la section magasin
   document.getElementById("infoShop").style.display = "block";
+  document.getElementById("pdfContainer").style.display = "block";
+  document.getElementById("formSection").style.display = "none";
 
   loadStoreForm();
 
@@ -1214,26 +1036,6 @@ async function saveStoreInfo() {
 }
 
 /*CHANGER LE MAGASIN EXISTANT */
-/*function loadStoreForm() {
-
-  const store = JSON.parse(
-    localStorage.getItem("storeInfo") || "{}"
-  );
-
-  if (!store.name) return;
-
-  currentShopId = store.id || null;
-
-  document.getElementById("storeName").value =
-    store.name || "";
-
-  document.getElementById("storePhone").value =
-    store.phone || "";
-
-  document.getElementById("storeAddress").value =
-    store.address || "";
-
-}*/
 function loadStoreForm() {
 
   const store = JSON.parse(
@@ -1308,9 +1110,9 @@ async function showShops() {
 
   hideAllSectionsForms();
 
-  document.getElementById(
-    "shopsSection"
-  ).style.display = "block";
+  document.getElementById("shopsSection").style.display = "block";
+  document.getElementById("formSection").style.display = "none";
+  document.getElementById("pdfContainer").style.display = "block";
 
   await renderShops();
 }

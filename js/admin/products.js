@@ -296,8 +296,9 @@ function editProduct(index) {
 
   const p = products[index];
 
-  document.getElementById("saveBtn").innerText = "Modifier ✅";
+  document.getElementById("saveBtn").innerText = "Modifier";
   document.getElementById("formTitle").innerText = "✏️ Modifier le produit";
+  document.getElementById("archiveBtn").style.display = "inline-block";
 
   document.getElementById("name").value = p.name;
   document.getElementById("price").value = p.price;
@@ -331,6 +332,8 @@ function editProduct(index) {
   form.style.border = "2px solid #f39c12";
 }
 
+/*Suppression logique d'un produit sans vente*/
+
 function deleteProduct(index) {
 
   // ✅ Popup confirmation
@@ -357,16 +360,56 @@ function deleteProduct(index) {
   // ✅ Rafraîchir affichage
   render();
 }
+/*Suppression physique d'un produit sans vente*/
+function deletePhysicalProduct(index) {
+
+  const p = products[index];
+
+  if (!p) return;
+
+  if ((p.sold || 0) > 0) {
+
+    alert(
+      "❌ Impossible de supprimer un produit ayant déjà des ventes.\n\nUtilisez Archiver."
+    );
+
+    return;
+  }
+
+  const confirmDelete = confirm(
+    `⚠️ Supprimer définitivement "${p.name}" ?`
+  );
+
+  if (!confirmDelete) {
+    return;
+  }
+
+  products.splice(index, 1);
+
+  localStorage.setItem(
+    "products",
+    JSON.stringify(products)
+  );
+
+  localStorage.setItem(
+    "products_updated_at",
+    Date.now() + "_" + Math.random()
+  );
+
+  render();
+
+}
 
 function cancelEdit() {
 
   clearForm();
 
   document.getElementById("formTitle").innerText = "➕ Ajouter un produit";
-
+  render();
   document.getElementById("tableCard").scrollIntoView({
     behavior: "smooth"
   });
+
 }
 
 
@@ -375,12 +418,16 @@ function cancelEdit() {
 //--------------------------------------
 
 function clearForm() {
+
   document.getElementById("category").value = "";
   document.getElementById("name").value = "";
   document.getElementById("price").value = "";
   document.getElementById("stock").value = "";
   document.getElementById("wholesalePrice").value = "";
   document.getElementById("wholesaleMinQty").value = "";
+
+  document.getElementById("stockLabel").innerHTML = 'Stock';
+
 
   document.getElementById("stock").readOnly = false;
 
@@ -398,7 +445,27 @@ function clearForm() {
   document.getElementById("formSection").style.border = "none";
 }
 
+function openAddProduct() {
 
+  editIndex = null;
+
+  clearForm();
+
+  document.getElementById("saveBtn").innerText = "Enregistrer";
+
+  document.getElementById("formTitle").innerText = "➕ Ajouter un produit";
+
+  document.getElementById("formSection").style.border = "none";
+
+  document.getElementById("stock").readOnly = false;
+
+  document.getElementById("stockLabel").innerHTML = "Stock";
+
+  document.getElementById("archiveBtn").style.display = "none";
+
+  showAdminSection("form");
+
+}
 //--------------------------------------
 // ✅ IMPORT
 //-------------------------------------

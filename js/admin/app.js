@@ -303,14 +303,14 @@ function showAdminSection(section) {
 
   // ✅ afficher la bonne section
   if (section === "form") {
+    hideAllSectionsForms();
     form.style.display = "block";
-    document.getElementById("pdfContainer").style.display = "none";
-  }
+    // ✅ scroll vers formulaire
+    form.scrollIntoView({ behavior: "smooth" });
 
-  /* if(section === "import"){
-     importBox.style.display = "block";
-     document.getElementById("pdfContainer").style.display = "none";
-   }*/
+    document.getElementById("pdfContainer").style.display = "none";
+    document.getElementById("infoShop").style.display = "none";
+  }
 
   if (section === "import") {
 

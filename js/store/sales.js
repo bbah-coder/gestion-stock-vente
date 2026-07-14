@@ -266,32 +266,6 @@ function vendreWithQty(index, btn) {
 // ✅ RECHERCHE PRODUIT PAR QR
 //-------------------------------------
 
-/*function addProductByBarcode(code) {
-
-  const index =
-    products.findIndex(
-      p => p.barcode === code
-    );
-
-  if (index === -1) {
-
-    showToast(
-      "❌ Produit introuvable"
-    );
-
-    return;
-
-  }
-
-  vendreWithQty(index, null);
-  renderProducts();
-
-  renderCart();
-
-  updateCartBadge();
-  updateFloatingCart();
-  updateCartMobileBtn();
-}*/
 function addProductByBarcode(code) {
 
   const index = products.findIndex(
@@ -305,6 +279,15 @@ function addProductByBarcode(code) {
 
   const produit = products[index];
 
+  // ✅ Aucun stock disponible
+  if ((produit.stock || 0) <= 0) {
+
+    alert(
+      `❌ Plus de stock disponible\n\nProduit : ${produit.name}`
+    );
+
+    return;
+  }
 
   const exist = cart.find(
     i => i.index === index
@@ -1222,7 +1205,7 @@ function renderDashboard() {
 
   // ✅ ✅ ✅ MOBILE (PLACÉ AU BON ENDROIT 🔥)
   //const isMobile = window.innerWidth <= 768 && window.outerWidth === window.innerWidth;
-  const isMobile = window.innerWidth <= 768;
+  const isMobile = window.innerWidth <= 1025;
   //const isMobileOrTablet  = window.matchMedia("(max-width: 1024px)").matches;
 
   if (isMobile) {
