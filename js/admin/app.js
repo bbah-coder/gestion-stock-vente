@@ -314,6 +314,8 @@ function showAdminSection(section) {
 
   if (section === "import") {
 
+    hideAllSectionsForms();
+
     importBox.style.display = "block";
 
     // ✅ cacher la date PDF
@@ -347,7 +349,9 @@ function showAdminSection(section) {
   }
 }
 
-
+/************************************************************
+ * LA vue paramètres
+ ************************************************************/
 function showSettings() {
 
   // ✅ cacher parties principales
@@ -361,6 +365,9 @@ function showSettings() {
 
 }
 
+/************************************************************
+ * CACHE LES SECTIONS
+ ************************************************************/
 function hideAllSections() {
   const ids = [
     "tableCard",
@@ -377,8 +384,6 @@ function hideAllSections() {
     if (el) el.style.display = "none";
   });
 }
-
-
 
 /************************************************************
  * 🖼️ INPUT IMAGE
@@ -436,38 +441,29 @@ channel.onmessage = (event) => {
   }
 };
 
+
 /************************************************************
- * Footer 
- ************************************************************
-document.getElementById("footerDate").innerText =
-  formatDateFR(new Date());
+ * FUNCTION : GESTION AFFICHAGE MENU DEROULANT DESKTOP
+ ************************************************************/
+function toggleGestionMenu(event) {
+  event.stopPropagation();
 
-document.getElementById("year").innerText =
-  new Date().getFullYear();
+  const menu = document.getElementById("gestionMenu");
 
-// optionnel si tu gères les users
-const user = JSON.parse(localStorage.getItem("currentUser") || "{}");
-document.getElementById("footerUser").innerText =
-  user.role || "Utilisateur"; */
+  menu.classList.toggle("show");
+}
+
+function closeGestionMenu() {
+  document.getElementById("gestionMenu")
+    ?.classList.remove("show");
+}
+
+// Fermer au clic à l'extérieur
+document.addEventListener("click", closeGestionMenu);
 
 /************************************************************
  * Gestion de rôle
  ************************************************************/
-
-/*document.addEventListener("DOMContentLoaded", () => {
-
-  const role = localStorage.getItem("userRole");
-
-  if(role === "vendeur"){
-
-    const btnHistory = document.getElementById("btnHistory");
-    const btnStats = document.getElementById("btnStats");
-
-    if(btnHistory) btnHistory.style.display = "none";
-    if(btnStats) btnStats.style.display = "none";
-  }
-
-});*/
 
 document.addEventListener("DOMContentLoaded", () => {
 

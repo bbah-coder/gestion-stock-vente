@@ -102,7 +102,6 @@ function populateCategories() {
 // ✅ CRUD
 //--------------------------------------
 
-
 function saveProduct() {
 
   const category = document.getElementById("category").value.trim();
@@ -166,6 +165,9 @@ function saveProduct() {
   }
 }
 
+//--------------------------------------------------------------------
+// ✅ FUNCTION Enregistrement du Produit depuis le formulaire d'ajout
+//--------------------------------------------------------------------
 function saveFinal(product) {
 
   const normalizedName = product.name.toLowerCase().trim();
@@ -273,8 +275,6 @@ function saveFinal(product) {
   localStorage.setItem("products", JSON.stringify(products));
   localStorage.setItem("products_updated_at", Date.now() + "_" + Math.random());
 
-
-
   // ✅ refresh tableau
   render();
 
@@ -292,6 +292,9 @@ function saveFinal(product) {
   document.getElementById("formSection").style.border = "none";
 }
 
+//--------------------------------------------------------------------
+// ✅ FUNCTION : Permet d'editer un produit (en mode modification)
+//--------------------------------------------------------------------
 function editProduct(index) {
 
   const p = products[index];
@@ -332,7 +335,9 @@ function editProduct(index) {
   form.style.border = "2px solid #f39c12";
 }
 
-/*Suppression logique d'un produit sans vente*/
+//--------------------------------------------------------------------
+// ✅ FUNCTION : Suppression logique d'un produit sans vente
+//--------------------------------------------------------------------
 
 function deleteProduct(index) {
 
@@ -360,7 +365,11 @@ function deleteProduct(index) {
   // ✅ Rafraîchir affichage
   render();
 }
-/*Suppression physique d'un produit sans vente*/
+
+//--------------------------------------------------------------------
+// ✅ FUNCTION : Suppression physique d'un produit sans vente
+//--------------------------------------------------------------------
+
 function deletePhysicalProduct(index) {
 
   const p = products[index];
@@ -400,6 +409,9 @@ function deletePhysicalProduct(index) {
 
 }
 
+//--------------------------------------------------------------------
+// ✅ FUNCTION : Annulation d'un ajout ou modification d'un produit
+//--------------------------------------------------------------------
 function cancelEdit() {
 
   clearForm();
@@ -413,9 +425,9 @@ function cancelEdit() {
 }
 
 
-//--------------------------------------
-// ✅ FORM
-//--------------------------------------
+//---------------------------------------------------------------------------------
+// ✅ FUNCTION : Netteyage des champs du formulaire aprés un ajout ou modification
+//---------------------------------------------------------------------------------
 
 function clearForm() {
 
@@ -445,6 +457,9 @@ function clearForm() {
   document.getElementById("formSection").style.border = "none";
 }
 
+//--------------------------------------------------------------------
+// ✅ FUNCTION : Affichage du formulaire d'ajout d'un produit
+//--------------------------------------------------------------------
 function openAddProduct() {
 
   editIndex = null;
@@ -466,9 +481,9 @@ function openAddProduct() {
   showAdminSection("form");
 
 }
-//--------------------------------------
-// ✅ IMPORT
-//-------------------------------------
+//--------------------------------------------------------------------
+// ✅ FUNCTION : Charegement des produits depuis un fichier CSV
+//--------------------------------------------------------------------
 
 function importCSV() {
 
@@ -637,9 +652,9 @@ function importCSV() {
 }
 
 
-//--------------------------------------
-// ✅ PROMO
-//--------------------------------------
+//--------------------------------------------------------------------
+// ✅ FUNCTION : Application d'une promo sur un produit
+//--------------------------------------------------------------------
 
 function openPromoPopup(index, currentValue) {
 
@@ -657,7 +672,9 @@ function openPromoPopup(index, currentValue) {
 
   document.getElementById("promoModal").style.display = "flex";
 }
-
+//--------------------------------------------------------------------
+// ✅ FUNCTION : Mise à jour d'une promo
+//--------------------------------------------------------------------
 function updatePromo(index, value) {
 
   let promo = parseInt(value);
@@ -678,6 +695,9 @@ function updatePromo(index, value) {
   updateInactiveProducts();
 }
 
+//--------------------------------------------------------------------
+// ✅ FUNCTION : Confirmation du promo lors d'une édition
+//--------------------------------------------------------------------
 function confirmPromo() {
 
   let value = parseInt(document.getElementById("promoInput").value);
@@ -699,14 +719,17 @@ function confirmPromo() {
   updateInactiveProducts(); // ✅ refresh UI
 }
 
+//--------------------------------------------------------------------
+// ✅ FUNCTION : Fermeture du modal promo
+//--------------------------------------------------------------------
 function closePromoPopup() {
   document.getElementById("promoModal").style.display = "none";
 }
 
 
-//--------------------------------------
-// ✅ ARCHIVE
-//--------------------------------------
+//--------------------------------------------------------------------------------------
+// ✅ FUNCTION : Permet d'archiver un produit inactif (sans vente depuis un certain jour)
+//---------------------------------------------------------------------------------------
 
 function archiveProduct(index) {
 
@@ -722,6 +745,9 @@ function archiveProduct(index) {
   render();
 }
 
+//--------------------------------------------------------------------
+// ✅ FUNCTION : Reactive un produit archivé
+//--------------------------------------------------------------------
 function restoreProduct(index) {
 
   const confirmAction = confirm("Réactiver ce produit ?");
@@ -736,7 +762,336 @@ function restoreProduct(index) {
   render();
 }
 
+//--------------------------------------------------------------------
+// ✅ FUNCTION : La vue des produits archivés
+//--------------------------------------------------------------------
 function showArchived() {
+
+  const list = document.getElementById("list");
+  const mobileList = document.getElementById("mobileList");
+  const header = document.getElementById("archivedHeader");
+
+  mobileList.innerHTML = "";
+
+  // ✅ HEADER
+  header.innerHTML = `
+    <strong>🗂️ Produits archivés</strong>
+    <button onclick="render()">⬅️ Retour</button>
+  `;
+  header.style.display = "flex";
+
+  document.getElementById("pagination").style.display = "none";
+  document.getElementById("filterCategoryAdmin").style.display = "none";
+
+  const archived = products.filter(p => p.active === false);
+
+  // ✅ AUCUN RESULTAT
+  if (archived.length === 0) {
+    mobileList.innerHTML = "<p>✅ Aucun produit archivé</p>";
+    return;
+  }
+
+  // ✅ ✅ ✅ MODE MOBILE + DESKTOP (NOUVEAU PROPRE)
+  renderArchivedCards(archived);
+
+}
+
+//--------------------------------------------------------------------
+// ✅ FUNCTION : Réinitiliser les ventes
+//--------------------------------------------------------------------
+function resetSalesOnly() {
+
+  const step1 = confirm("Réinitialiser la vente en cours ?");
+
+  if (!step1) return;
+
+  const step2 = confirm("🚨 DERNIÈRE confirmation ?");
+  if (!step2) return;
+
+  cart = [];
+
+  // ❌ ON NE SUPPRIME PLUS sales
+  localStorage.removeItem("cart");
+
+  renderCart();
+  updateCartBadge();
+
+  alert("✅ Panier réinitialisé");
+}
+
+//--------------------------------------------------------------------
+// ✅ FUNCTION : Réinitialiser les stocks (Mettre à zero tous les stocks des produits)
+//--------------------------------------------------------------------
+function resetStockOnly() {
+
+  const step1 = confirm("Réinitialiser les stocks ?");
+
+  if (!step1) return;
+
+  const step2 = confirm("🚨 DERNIÈRE confirmation ?");
+  if (!step2) return;
+
+  products.forEach(p => {
+
+    // ✅ on force un fallback fiable
+    if (!p.initialStock || isNaN(p.initialStock)) {
+      p.initialStock = p.stock + (p.sold || 0);
+    }
+
+    // ✅ reset propre
+    p.stock = Number(p.initialStock);
+    p.sold = 0;
+  });
+
+  localStorage.setItem("products", JSON.stringify(products));
+  localStorage.setItem("products_updated_at", Date.now() + "_" + Math.random());
+
+
+  render();
+
+  alert("✅ Stocks réinitialisés");
+}
+
+//--------------------------------------------------------------------
+// ✅ FUNCTION : Réinitialisation glable (Stock+vente)
+//--------------------------------------------------------------------
+function resetAll() {
+
+  const step1 = confirm("⚠️ Reset stock + panier ?");
+  if (!step1) return;
+
+  const step2 = confirm("🚨 DERNIÈRE confirmation ?");
+  if (!step2) return;
+
+  products.forEach(p => {
+
+    if (!p.initialStock) {
+      p.initialStock = p.stock + (p.sold || 0);
+    }
+
+    p.stock = Number(p.initialStock);
+    p.sold = 0;
+  });
+
+  // ✅ on garde l'historique
+  // ❌ ne pas supprimer sales
+
+  cart = [];
+  localStorage.removeItem("cart");
+
+  localStorage.setItem("products", JSON.stringify(products));
+  localStorage.setItem("products_updated_at", Date.now() + "_" + Math.random());
+
+
+  render();
+  updateCartBadge();
+
+  alert("✅ Stock réinitialisé + historique conservé");
+}
+
+//--------------------------------------------------------------------
+// ✅ FUNCTION : Suppression physique des produits
+//--------------------------------------------------------------------
+function resetProducts() {
+
+  const step1 = confirm("⚠️ Supprimer tous les produits ?\nLa boutique sera vide");
+  if (!step1) return;
+
+  const step2 = confirm("🚨 DERNIÈRE confirmation ?");
+  if (!step2) return;
+
+  // ✅ vider produits
+  products = [];
+
+  // ✅ nettoyer stockage
+  localStorage.removeItem("products");
+  localStorage.setItem("products_updated_at", Date.now() + "_" + Math.random());
+
+  render();
+
+  alert("✅ Tous les produits supprimés");
+}
+
+//--------------------------------------------------------------------
+// ✅ FUNCTION : Desavtiver un produitS
+//--------------------------------------------------------------------
+function updateInactiveProducts() {
+
+  const days = parseInt(document.getElementById("inactiveDays").value);
+  const list = document.getElementById("list");
+
+  const inactive = getInactiveProducts(days);
+
+  const mobileList = document.getElementById("mobileList");
+
+  mobileList.innerHTML = "";
+
+
+  // ✅ aucun résultat
+  if (inactive.length === 0) {
+    mobileList.innerHTML = "<p>✅ Aucun produit inactif</p>";
+    return;
+  }
+
+  renderInactiveCards(inactive);
+
+}
+
+/************************************************************
+ * FUNCTION : La vue des produits inactifs
+ *************************************************************/
+function showInactiveProducts() {
+
+  const list = document.getElementById("list");
+  const header = document.getElementById("archivedHeader");
+
+  const defaultDays = 7;
+
+  header.innerHTML = `
+  <div class="inactive-header">
+
+    <div class="inactive-left">
+      <span class="inactive-title">
+        ⚠️ Produits sans vente depuis
+      </span>
+
+      <div class="inactive-input-group">
+
+   <button onclick="changeDays(-1)" class="btn-step">−</button>
+
+  <input type="number"
+         id="inactiveDays"
+         value="7"
+         min="1"
+         readonly>
+
+  <button onclick="changeDays(1)" class="btn-step">+</button>
+
+  <span>jours</span>
+
+</div>
+
+    <button class="btn-back" onclick="render()">
+      ⬅️ Retour
+    </button>
+
+  </div>
+`;
+
+  header.style.display = "flex";
+
+  document.getElementById("filterCategoryAdmin").style.display = "none";
+  document.getElementById("pagination").style.display = "none";
+
+
+  // ✅ Affichage MOBILE ET DESKTOP
+  document.getElementById("mobileList").style.display = "block";
+  document.getElementById("tableStock").style.display = "none";
+
+  updateInactiveProducts();
+}
+
+/************************************************************
+ * FUNCTION : RENDER INCTIF PRODUCT
+ *************************************************************/
+function getInactiveProducts(days) {
+
+  const today = new Date();
+
+  return products
+    .filter(p => p.active !== false) // ✅ EXCLURE ARCHIVÉS
+    .map(p => {
+
+
+      let lastSaleDate = null;
+
+      // ✅ chercher la dernière vente
+      sales.forEach(sale => {
+
+        sale.items.forEach(item => {
+
+          if (item.name.toLowerCase().trim() === p.name.toLowerCase().trim()) {
+
+            const saleDate = new Date(sale.date);
+
+            if (!lastSaleDate || saleDate > lastSaleDate) {
+              lastSaleDate = saleDate;
+            }
+
+          }
+
+        });
+
+      });
+
+      let diffDays = 0;
+
+      // ✅ CAS 1 : produit déjà vendu
+      if (lastSaleDate) {
+
+        diffDays = Math.floor(
+          (today - lastSaleDate) / (1000 * 60 * 60 * 24)
+        );
+
+      }
+
+      // ✅ CAS 2 : jamais vendu → utiliser date création
+      else {
+
+        const createdDate = new Date(p.createdAt);
+
+        diffDays = Math.floor(
+          (today - createdDate) / (1000 * 60 * 60 * 24)
+        );
+      }
+
+      let label = "";
+
+      if (lastSaleDate) {
+        label = diffDays + " jours sans vente";
+      } else {
+        label = "Jamais vendu (" + diffDays + " jours)";
+      }
+
+
+      return {
+        ...p,
+        index: products.indexOf(p), // ✅ OBLIGATOIRE
+        days: diffDays,
+        label: label
+      };
+
+
+
+    })
+    .filter(p => p.days >= days) // ✅ filtre dynamique
+    .sort((a, b) => b.days - a.days); // ✅ tri du pire au meilleur
+}
+
+//---------------------------------------------------------
+// ✅ FUNCTION : Modofication jours
+//---------------------------------------------------------
+
+function changeDays(delta) {
+
+  const input = document.getElementById("inactiveDays");
+
+  let value = parseInt(input.value) || 1;
+
+  value += delta;
+
+  if (value < 1) value = 1;
+
+  input.value = value;
+
+  updateInactiveProducts(); // ✅ refresh auto
+}
+
+
+//------------------------------------------------
+// ✅ FONCTION DESACTIVE (MODE MOBILE ET DESKTOP)
+//------------------------------------------------
+/*function showArchived() {
 
   //const isMobile = window.innerWidth <= 768;
   const isMobileOrTablet = window.matchMedia("(max-width: 1200px)").matches;
@@ -779,8 +1134,8 @@ function showArchived() {
 
   // ✅ ✅ ✅ MODE MOBILE (NOUVEAU PROPRE)
   if (isMobileOrTablet) {
-    renderArchivedCards(archived);
-    return;
+  renderArchivedCards(archived);
+  return;
   }
 
   // ✅ ✅ ✅ MODE DESKTOP (ton code amélioré)
@@ -857,122 +1212,12 @@ function showArchived() {
 
     list.appendChild(row);
   });
-}
+}*/
 
-//--------------------------------------
-// ✅ REINITIALISATION
-//--------------------------------------
-function resetSalesOnly() {
-
-  const step1 = confirm("Réinitialiser la vente en cours ?");
-
-  if (!step1) return;
-
-  const step2 = confirm("🚨 DERNIÈRE confirmation ?");
-  if (!step2) return;
-
-  cart = [];
-
-  // ❌ ON NE SUPPRIME PLUS sales
-  localStorage.removeItem("cart");
-
-  renderCart();
-  updateCartBadge();
-
-  alert("✅ Panier réinitialisé");
-}
-
-
-function resetStockOnly() {
-
-  const step1 = confirm("Réinitialiser les stocks ?");
-
-  if (!step1) return;
-
-  const step2 = confirm("🚨 DERNIÈRE confirmation ?");
-  if (!step2) return;
-
-  products.forEach(p => {
-
-    // ✅ on force un fallback fiable
-    if (!p.initialStock || isNaN(p.initialStock)) {
-      p.initialStock = p.stock + (p.sold || 0);
-    }
-
-    // ✅ reset propre
-    p.stock = Number(p.initialStock);
-    p.sold = 0;
-  });
-
-  localStorage.setItem("products", JSON.stringify(products));
-  localStorage.setItem("products_updated_at", Date.now() + "_" + Math.random());
-
-
-  render();
-
-  alert("✅ Stocks réinitialisés");
-}
-
-function resetAll() {
-
-  const step1 = confirm("⚠️ Reset stock + panier ?");
-  if (!step1) return;
-
-  const step2 = confirm("🚨 DERNIÈRE confirmation ?");
-  if (!step2) return;
-
-  products.forEach(p => {
-
-    if (!p.initialStock) {
-      p.initialStock = p.stock + (p.sold || 0);
-    }
-
-    p.stock = Number(p.initialStock);
-    p.sold = 0;
-  });
-
-  // ✅ on garde l'historique
-  // ❌ ne pas supprimer sales
-
-  cart = [];
-  localStorage.removeItem("cart");
-
-  localStorage.setItem("products", JSON.stringify(products));
-  localStorage.setItem("products_updated_at", Date.now() + "_" + Math.random());
-
-
-  render();
-  updateCartBadge();
-
-  alert("✅ Stock réinitialisé + historique conservé");
-}
-
-function resetProducts() {
-
-  const step1 = confirm("⚠️ Supprimer tous les produits ?\nLa boutique sera vide");
-  if (!step1) return;
-
-  const step2 = confirm("🚨 DERNIÈRE confirmation ?");
-  if (!step2) return;
-
-  // ✅ vider produits
-  products = [];
-
-  // ✅ nettoyer stockage
-  localStorage.removeItem("products");
-  localStorage.setItem("products_updated_at", Date.now() + "_" + Math.random());
-
-
-  render();
-
-  alert("✅ Tous les produits supprimés");
-}
-
-//--------------------------------------
-// ✅ PRODUITS INACTIFS
-//--------------------------------------
-
-function updateInactiveProducts() {
+//---------------------------------------------------------
+// ✅ PRODUITS INACTIFS (DESACTIVEE MODE MOBILE ET DESKTOP)
+//---------------------------------------------------------
+/*function updateInactiveProducts() {
 
   //const isMobile = window.innerWidth <= 768;
   const isMobileOrTablet = window.matchMedia("(max-width: 1200px)").matches;
@@ -1082,85 +1327,11 @@ function updateInactiveProducts() {
 
     list.appendChild(row);
   });
-}
+}*/
 
 
-function getInactiveProducts(days) {
-
-  const today = new Date();
-
-  return products
-    .filter(p => p.active !== false) // ✅ EXCLURE ARCHIVÉS
-    .map(p => {
-
-
-      let lastSaleDate = null;
-
-      // ✅ chercher la dernière vente
-      sales.forEach(sale => {
-
-        sale.items.forEach(item => {
-
-          if (item.name.toLowerCase().trim() === p.name.toLowerCase().trim()) {
-
-            const saleDate = new Date(sale.date);
-
-            if (!lastSaleDate || saleDate > lastSaleDate) {
-              lastSaleDate = saleDate;
-            }
-
-          }
-
-        });
-
-      });
-
-      let diffDays = 0;
-
-      // ✅ CAS 1 : produit déjà vendu
-      if (lastSaleDate) {
-
-        diffDays = Math.floor(
-          (today - lastSaleDate) / (1000 * 60 * 60 * 24)
-        );
-
-      }
-
-      // ✅ CAS 2 : jamais vendu → utiliser date création
-      else {
-
-        const createdDate = new Date(p.createdAt);
-
-        diffDays = Math.floor(
-          (today - createdDate) / (1000 * 60 * 60 * 24)
-        );
-      }
-
-      let label = "";
-
-      if (lastSaleDate) {
-        label = diffDays + " jours sans vente";
-      } else {
-        label = "Jamais vendu (" + diffDays + " jours)";
-      }
-
-
-      return {
-        ...p,
-        index: products.indexOf(p), // ✅ OBLIGATOIRE
-        days: diffDays,
-        label: label
-      };
-
-
-
-    })
-    .filter(p => p.days >= days) // ✅ filtre dynamique
-    .sort((a, b) => b.days - a.days); // ✅ tri du pire au meilleur
-}
-
-
-function showInactiveProducts() {
+//FUNCTION DESACTIVEE
+/*function showInactiveProducts() {
 
   //const isMobile = window.innerWidth <= 768;
   const isMobileOrTablet = window.matchMedia("(max-width: 1200px)").matches;
@@ -1214,8 +1385,8 @@ function showInactiveProducts() {
     document.getElementById("tableStock").style.display = "none";
     document.getElementById("mobileList").style.display = "block";
   } else {
-    document.getElementById("tableStock").style.display = "table";
-    document.getElementById("mobileList").style.display = "none";
+    document.getElementById("tableStock").style.display = "none";
+    document.getElementById("mobileList").style.display = "block";
 
     // ✅ header table desktop
     document.getElementById("tableHead").innerHTML = `
@@ -1234,23 +1405,7 @@ function showInactiveProducts() {
   }
 
   updateInactiveProducts();
-}
-
-
-function changeDays(delta) {
-
-  const input = document.getElementById("inactiveDays");
-
-  let value = parseInt(input.value) || 1;
-
-  value += delta;
-
-  if (value < 1) value = 1;
-
-  input.value = value;
-
-  updateInactiveProducts(); // ✅ refresh auto
-}
+}*/
 
 
 

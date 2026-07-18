@@ -1,8 +1,6 @@
 /************************************************************
  * MOBILE HEADER APP JS
  ************************************************************/
-
-
 function toggleMenu() {
   const menu = document.getElementById("mobileMenu");
 
@@ -13,7 +11,9 @@ function toggleMenu() {
   }
 }
 
-
+/************************************************************
+ * FUNTION : La barre de recherche
+ ************************************************************/
 function openSearch() {
   const bar = document.getElementById("searchBar");
   const input = document.getElementById("searchInputAdmin");
@@ -34,7 +34,9 @@ function openSearch() {
   }
 }
 
-
+/************************************************************
+ * FUNCTION : Cache la barre de recherche
+ ************************************************************/
 function closeSearch() {
   const overlay = document.getElementById("searchOverlay");
   overlay.classList.remove("active");
@@ -43,6 +45,9 @@ function closeSearch() {
   render(); // reset
 }
 
+/************************************************************
+ * FUNCTION : Le bouton clean form recherche
+ ************************************************************/
 function toggleClearBtn() {
   const input = document.getElementById("searchInputAdmin");
   const btn = document.querySelector(".clear-btn-mobile-admin");
@@ -54,6 +59,9 @@ function toggleClearBtn() {
   }
 }
 
+/************************************************************
+ * FUNCTION : Clean barre de recherche
+ ************************************************************/
 function clearSearchMobile() {
   const input = document.getElementById("searchInputAdmin");
 
@@ -63,6 +71,9 @@ function clearSearchMobile() {
   input.focus();      // reste actif
 }
 
+/************************************************************
+ * FUNCTION : Fermer le menu
+ ************************************************************/
 function closeMobileMenu() {
   const menu = document.getElementById("mobileMenu");
   if (menu) {
@@ -254,6 +265,9 @@ function renderCards(productsList) {
 
 
 /* PRODUIT INACTIF MOBILE */
+/************************************************************
+ * FUNCTION : Render Produits inactifs
+ ************************************************************/
 
 function renderInactiveCards(listData) {
 
@@ -424,7 +438,10 @@ function renderInactiveCards(listData) {
   });
 }
 
-/*Produit archivé */
+
+/************************************************************
+ * FUNCTION : Render produits archivés
+ ************************************************************/
 function renderArchivedCards(listData) {
 
   const container = document.getElementById("mobileList");
@@ -589,7 +606,10 @@ function renderArchivedCards(listData) {
 
 }
 
-//FONCTION AFFICHAGE QR
+
+/************************************************************
+ * FUNCTION : QR-code produit
+ ************************************************************/
 function showProductQr(index) {
 
   const product = products[index];
@@ -627,7 +647,9 @@ function showProductQr(index) {
 
 }
 
-//FONTION FERMETURE 
+/************************************************************
+ * FUNCTION : Fermer la fenêtre QR-Code
+ ************************************************************/
 function closeProductQr() {
 
   document.getElementById(
@@ -636,7 +658,9 @@ function closeProductQr() {
 
 }
 
-//FONCTION IMPRESSION
+/************************************************************
+ * FUNCTION : Bouton pour imprimer le QR-CODE
+ ************************************************************/
 function printProductQr() {
 
   window.print();

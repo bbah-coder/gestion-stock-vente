@@ -930,15 +930,9 @@ td:last-child {
 
 .auth-box {
   width: 100%;
-  max-width: 420px;
-
   box-sizing: border-box;
-  /* ✅ TRÈS IMPORTANT */
-
   background: #ffffff;
   padding: 16px;
-
-
   border-radius: 16px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
 
@@ -1025,11 +1019,11 @@ td:last-child {
 }
 
 /* ✅ DESKTOP */
-@media (min-width: 1024px) {
+/*@media (min-width: 1024px) {
   .auth-box {
     max-width: 500px;
   }
-}
+}*/
 
 .hidden {
   display: none;
@@ -1497,4 +1491,85 @@ td:last-child {
 .btn-delete-product:hover {
   background: #c0392b;
 
+}
+
+/* CSS MENU GESTION*/
+
+.dropdown-gestion {
+  position: relative;
+}
+
+.dropdown-toggle {
+  background: linear-gradient(135deg, #3498db, #2980b9);
+  color: #fff;
+  border: none;
+  border-radius: 20px;
+  padding: 0 18px;
+  height: 38px;
+  min-width: 130px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+
+  transition: all 0.2s ease;
+}
+
+.dropdown-toggle:hover {
+  background: linear-gradient(135deg, #2980b9, #2471a3);
+}
+
+.dropdown-menu {
+  display: none;
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+
+  min-width: 220px;
+
+  background: #fff;
+  border-radius: 12px;
+
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+
+  overflow: hidden;
+  z-index: 1000;
+}
+
+.dropdown-menu.show {
+  display: block;
+}
+
+.dropdown-menu button {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+
+  padding: 14px 16px;
+
+  background: #fff;
+  border: none;
+  border-bottom: 1px solid #f0f0f0;
+
+  cursor: pointer;
+  text-align: left;
+
+  font-size: 14px;
+  color: #2c3e50;
+
+  transition: background 0.2s;
+}
+
+.dropdown-menu button:last-child {
+  border-bottom: none;
+}
+
+.dropdown-menu button:hover {
+  background: #f8f9fa;
 }

@@ -1,13 +1,16 @@
 /************************************************************
  * 📊 STOCK / HISTORIQUE
  ************************************************************/
-//CREET MOUVEMENTS STOCK
+//CREE  MOUVEMENTS STOCK
 let stockMovements = JSON.parse(
   localStorage.getItem("stockMovements") || "[]"
 );
 
 let currentMovementProductIndex = null;
 
+/************************************************************
+ * FUNCTION : ajout stock
+ ************************************************************/
 function addStock(index) {
 
   const p = products[index];
@@ -57,6 +60,9 @@ function addStock(index) {
 
 }
 
+/************************************************************
+ * FUNCTION : Historique des mouvements
+ ************************************************************/
 function renderStockHistory() {
 
   const container = document.getElementById("stockHistory");
@@ -121,6 +127,9 @@ function renderStockHistory() {
   renderPaginationHistoryStock(filteredLogs.length);
 }
 
+/************************************************************
+ * FUNCTION : Pagination historique mouvement de stock
+ ************************************************************/
 function renderPaginationHistoryStock(totalItems) {
 
   const container = document.getElementById("paginationHistoryStock");
@@ -188,6 +197,9 @@ function clearHistory() {
   alert("✅ Historique vidé");
 }
 
+/************************************************************
+ * FUNCTION : Gestion des mouvement de stock (nouvelle version)
+ ************************************************************/
 function openStockMovement(index) {
 
   currentMovementProductIndex = index;
@@ -214,7 +226,10 @@ function openStockMovement(index) {
 
 }
 
-// FERMER LA FENETRE
+
+/************************************************************
+ * FUNCTION : Fermer le modal mouvements de stock
+ ************************************************************/
 function closeStockMovement() {
 
   document.getElementById(
@@ -230,6 +245,9 @@ document
   .getElementById("movementType")
   .addEventListener("change", updateReasons);
 
+/************************************************************
+* FUNCTION : Gestion des motifs du mouvement de stock
+************************************************************/
 function updateReasons() {
 
   const type =
@@ -281,49 +299,9 @@ function updateReasons() {
 
 }
 
-//SAUVEGARDE LE MOUVEMENT 
-function saveStockMovement() {
-
-  const quantity = parseInt(
-    document.getElementById(
-      "movementQuantity"
-    ).value
-  );
-
-  if (
-    isNaN(quantity) ||
-    quantity <= 0
-  ) {
-
-    showToast(
-      "Quantité invalide"
-    );
-
-    return;
-  }
-
-  const type =
-    document.getElementById(
-      "movementType"
-    ).value;
-
-  const reason =
-    document.getElementById(
-      "movementReason"
-    ).value;
-
-  applyStockMovement(
-    currentMovementProductIndex,
-    type,
-    quantity,
-    reason
-  );
-
-  closeStockMovement();
-
-}
-
-//SAVE MOUVEMENT STOCK 
+/************************************************************
+ * FUNCTION : Enregistre le mouvement
+ ************************************************************/
 function saveStockMovement() {
 
   const quantity = parseInt(
@@ -357,8 +335,9 @@ function saveStockMovement() {
   closeStockMovement();
 }
 
-
-//FONCTION QUI PERMET D'APPLIQUER LE MOUVEMENT
+/************************************************************
+ * FUNCTION : PERMET D'APPLIQUER LE MOUVEMENT
+ ************************************************************/
 function applyStockMovement(
   index,
   type,
@@ -462,8 +441,10 @@ function applyStockMovement(
   showToast("✅ Mouvement enregistré");
 }
 
-//HISTORIQUE DES MOUVEMENTS DE STOCK
 
+/************************************************************
+ * FUNCTION : La vue des mouvements de stock
+ ************************************************************/
 function showProductHistory(productName) {
 
   const historyList =
@@ -533,8 +514,6 @@ function showProductHistory(productName) {
       )
     );
 
-
-
   /*if (product.name === "Coca") {
     product.sold = 3;
 
@@ -545,8 +524,6 @@ function showProductHistory(productName) {
   }
 
   render();*/
-
-
 
   // TRIE DES DATES DES VENTES
   salesMovements.sort(
@@ -756,7 +733,9 @@ function formatReason(reason) {
   return labels[reason] || reason;
 }
 
-
+/************************************************************
+ * FUNCTION : Le label des rôles
+ ************************************************************/
 function formatRole(role) {
 
   const labels = {

@@ -60,7 +60,7 @@
     <button id="btnRegister" onclick="showRegister(); closeMobileMenu()" class="btn secondary">➕ Créer un
       compte</button>
     <button id="btnStore" onclick="showStoreInfo(); closeMobileMenu()" class="btn secondary">🏪 Info Magasin</button>
-    <button id="btnManageShops" onclick="showShops(); closeMobileMenu()" style="display:none;">🏪 Magasins</button>
+    <button class="btnManageShops" onclick="showShops(); closeMobileMenu()" style="display:none;">🏪 Magasins</button>
     <button onclick="showUsers(); closeMobileMenu()">👤 Utilisateurs</button>
     <button onclick="switchUser()">🔁 Changer de compte</button>
     <button onclick="logout()" class="logout">🔌 Déconnexion</button>
@@ -70,10 +70,41 @@
     <div class="header-left">
       <h1 class="page-title">📦 Admin Produits</h1>
     </div>
+
+    <!-- ========= SEARCH ========= -->
+    <!--<section class="search-container" id="searchContainer">-->
+    <div class="header-center" id="searchContainer">
+      <div class="search-box">
+        <input id="searchInput" placeholder="🔍 Rechercher produit..." oninput="currentPage=1; render()">
+
+        <span class="clear-btn" onclick="clearSearch()">✕</span>
+      </div>
+    </div>
+    <!--</section>-->
+
     <div class="header-right">
       <button id="btnSettings" onclick="showSettings()" class="btn-settings">⚙️ Paramètres</button>
-      <button id="btnSettings" onclick="showRegister(); closeMobileMenu()" class="btn secondary">🆕 Créer un compte
-      </button>
+      <!--MENU déroulant GESTION USERS ET MAGASIN-->
+      <div class="dropdown-gestion">
+        <button class="btn secondary dropdown-toggle" onclick="toggleGestionMenu(event)">
+          ⚙️ Gestion ▼
+        </button>
+        <div id="gestionMenu" class="dropdown-menu">
+          <button id="btnRegister" onclick="showRegister(); closeMobileMenu()">
+            ➕ Créer un compte
+          </button>
+          <button id="btnStore" onclick="showStoreInfo(); closeMobileMenu()">
+            🏪 Info Magasin
+          </button>
+          <button class="btnManageShops" onclick="showShops(); closeMobileMenu()" style="display:none;">🏪
+            Magasins</button>
+          </button>
+
+          <button onclick="showUsers(); closeMobileMenu()">
+            👥 Utilisateurs
+          </button>
+        </div>
+      </div>
       <div id="userBar">
         <span id="userInfo"></span>
         <button onclick="switchUser()" class="btn-switch">🔁 Changer de compte</button>
@@ -283,16 +314,6 @@
         Format : nom, prix, stock, image (optionnelle), catégorie
       </p>
 
-    </section>
-
-    <!-- ========= SEARCH ========= -->
-    <section class="search-container" id="searchContainer">
-      <div class="search-box">
-        <input id="searchInput" placeholder="🔍 Rechercher produit par : Nom, prix ou stock..."
-          oninput="currentPage=1; render()">
-
-        <span class="clear-btn" onclick="clearSearch()">✕</span>
-      </div>
     </section>
 
     <!-- ========= DATE PDF ========= -->

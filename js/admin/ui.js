@@ -20,7 +20,9 @@ function updateUserInfo() {
   }
 }
 
-
+/************************************************************
+ * FUNCTION : GESTION VUE USER
+ ************************************************************/
 function updateUserUI() {
 
   const username = localStorage.getItem("username");
@@ -42,15 +44,8 @@ function updateUserUI() {
     }
   }
   //✅ AFFICHER LE MENU MAGASIN UNIQUEMENT POUR LE SUPER-ADMIN
-  const shopsBtn =
-    document.getElementById("btnManageShops");
-
-  if (shopsBtn) {
-
-    shopsBtn.style.display =
-      isSuperAdmin() ? "block" : "none";
-
-  }
+  const display = isSuperAdmin() ? "block" : "none";
+  document.querySelectorAll(".btnManageShops").forEach(btn => btn.style.display = display);
 
   // ✅ FOOTER USER
   const footerUser = document.getElementById("footerUser");
@@ -74,6 +69,9 @@ function updateUserUI() {
   }
 }
 
+/************************************************************
+ * FUNCTION : Changement utilisateur
+ ************************************************************/
 function switchUser() {
 
   if (!confirm("Voulez-vous changer de compte ?")) return;
@@ -84,6 +82,9 @@ function switchUser() {
   window.location.href = "login.html";
 }
 
+/************************************************************
+ * FUNCTION : Section menu paramétre
+ ************************************************************/
 function updateUI() {
 
   const btn = document.getElementById("btnSettings");
@@ -97,6 +98,9 @@ function updateUI() {
   }
 }
 
+/************************************************************
+ * FUNCTION : Date pour l'export du PDF (Synthése vente jounaliére)
+ ************************************************************/
 function initPDFDate() {
 
   const pdfInput = document.getElementById("pdfDate");
@@ -265,10 +269,13 @@ function render() {
  * SECTION USER ET INFO MAGASIN
  ***********************************************************/
 
-/*AFFICHER LE FORMULAIRE DE CREATION DE USER COMPTE*/
+/************************************************************
+ * FUNCTION : Affiche la vue formulaire de création user compte
+ ************************************************************/
 async function showRegister() {
   //CACHER LES AUTRES SECTIONS
   hideAllSectionsForms();
+  document.getElementById("importSection").style.display = "none";
 
   document.getElementById("registerForm").style.display = "block";
   document.getElementById("formRegister").style.display = "block";
@@ -280,15 +287,19 @@ async function showRegister() {
   await populateShopsSelect();
 }
 
-/*CACHE LE FORMULAIRE DE CREATION DE USER COMPTE*/
+/************************************************************
+ * FUNCTION : CACHE LE FORMULAIRE DE CREATION DE USER COMPTE
+ ************************************************************/
 function hideRegister() {
 
   document.getElementById("registerForm").style.display = "none";
   document.getElementById("formRegister").style.display = "none";
 }
 
-/*CREATION USER*/
 
+/************************************************************
+ * FUNCTION : Création user
+ ************************************************************/
 async function createAccount() {
 
   const usernameEl = document.getElementById("newUsername");
@@ -442,7 +453,9 @@ async function createAccount() {
   }
 }
 
-/*AFFICHER LES USERS*/
+/************************************************************
+ * FUNCTION : La vue liste des users
+ ************************************************************/
 function displayUsers(users) {
 
   const container = document.getElementById("usersList");
@@ -480,7 +493,10 @@ function displayUsers(users) {
   });
 }
 
-/*LISTE USERS*/
+
+/************************************************************
+ * FUNCTION : La liste des users
+ ************************************************************/
 async function renderUsers() {
   console.log("✅ renderUsers appelé");
 
@@ -555,8 +571,9 @@ async function renderUsers() {
   }
 }
 
-/*ACTIVER/DESACTIVER USER*/
-
+/************************************************************
+ * FUNCTION : Activer/Desactiver un user
+ ************************************************************/
 async function toggleUser(userId) {
 
   console.log("✅ toggleUser appelé avec:", userId);
@@ -680,8 +697,11 @@ async function toggleUser(userId) {
 
   await renderUsers();
 }
-/*SUPPRIMER UN USER*/
 
+
+/************************************************************
+ * FUNCTION : Supprimer un user
+ ************************************************************/
 async function deleteUser(userId) {
 
   console.log("🗑 Suppression userId:", userId);
@@ -821,11 +841,13 @@ async function deleteUser(userId) {
 
   await renderUsers();
 }
-
-/*SECTION USERS*/
+/************************************************************
+ * FUNCTION : USERS
+ ************************************************************/
 function showUsers() {
   //CACHER LES AUTRES SECTIONS
   hideAllSectionsForms();
+  document.getElementById("importSection").style.display = "none";
 
   document.getElementById("formSection").style.display = "none";
   document.getElementById("usersSection").style.display = "block";
@@ -833,7 +855,10 @@ function showUsers() {
 
   renderUsers(); // ✅ recharge la liste
 }
-/*CACHER LA SECTION USER*/
+
+/************************************************************
+ * FUNCTION : CACHER LA SECTION USER
+ ************************************************************/
 function hideUsers() {
   //document.getElementById("usersSection").classList.add("hidden");
   document.getElementById("usersSection").style.display = "none";
@@ -854,10 +879,12 @@ function showStoreInfo() {
   // ✅ cacher les autres sections si besoin
 
   hideAllSectionsForms();
+
   // ✅ afficher la section magasin
   document.getElementById("infoShop").style.display = "block";
   document.getElementById("pdfContainer").style.display = "block";
   document.getElementById("formSection").style.display = "none";
+  document.getElementById("importSection").style.display = "none";
 
   loadStoreForm();
 
@@ -1035,7 +1062,10 @@ async function saveStoreInfo() {
 
 }
 
-/*CHANGER LE MAGASIN EXISTANT */
+
+/************************************************************
+ * FUNCTION : CHARGER LE MAGASIN EXISTANT
+ ************************************************************/
 function loadStoreForm() {
 
   const store = JSON.parse(
@@ -1070,7 +1100,9 @@ function closeStoreInfo() {
   document.getElementById("infoShop").style.display = "none";
 }
 
-
+/************************************************************
+ * FUNCTION : Charge le magasin courant
+ ************************************************************/
 function getCurrentShop() {
 
   return JSON.parse(
@@ -1112,12 +1144,15 @@ async function showShops() {
 
   document.getElementById("shopsSection").style.display = "block";
   document.getElementById("formSection").style.display = "none";
+  document.getElementById("importSection").style.display = "none";
   document.getElementById("pdfContainer").style.display = "block";
 
   await renderShops();
 }
 
-//CHARGE LES MAGASINS
+/************************************************************
+ * FUNCTION : CHARGE LES MAGASINS
+ ************************************************************/
 async function renderShops() {
 
   const container =
@@ -1172,7 +1207,10 @@ async function renderShops() {
   displayShops(shopsWithStats);
 }
 
-//AFFICHAGE DES MAGASINS V1
+/************************************************************
+ * FUNCTION : Liste des magasins abonnés
+ ************************************************************/
+
 function displayShops(shops) {
 
   const container =
@@ -1247,6 +1285,9 @@ function displayShops(shops) {
 }
 
 //DESACTIVER UN MAGASIN
+/************************************************************
+ * FUNCTION : Activer/désactiver un magasin
+ ************************************************************/
 async function toggleShop(
   shopId,
   currentStatus
