@@ -8,37 +8,41 @@
 }
 
 /* Mobile + tel en paysage*/
-@media (max-width: 1200px){
+@media (max-width: 1200px) {
 
   .desktop-view {
-    display: none;   /* ✅ cache table */
+    display: none;
+    /* ✅ cache table */
   }
-  
+
   .mobile-view {
-    display: block;  /* ✅ affiche cards */
+    display: block;
+    /* ✅ affiche cards */
   }
 
 }
 
 .mobile-view {
   display: grid;
-  
+
   grid-template-columns: 1fr;
   gap: 12px;
 }
 
 /* ✅ tablette */
-@media (min-width: 712px) and (max-width: 1200px){
+@media (min-width: 712px) and (max-width: 1200px) {
   .mobile-view {
     grid-template-columns: repeat(2, 1fr);
     gap: 14px;
   }
 
 }
-@media (min-width: 712px) and (max-width: 1200px){
+
+@media (min-width: 712px) and (max-width: 1200px) {
 
   .mobile-header {
-    display: flex; /* ✅ visible uniquement mobile */
+    display: flex;
+    /* ✅ visible uniquement mobile */
     align-items: center;
     justify-content: space-between;
 
@@ -48,25 +52,29 @@
     background: white;
     border-radius: 12px;
 
-    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-    
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+
     position: relative;
     z-index: 5;
 
   }
 
   .header {
-    display: none; /* ✅ cache desktop */
+    display: none;
+    /* ✅ cache desktop */
   }
-  
- 
+
+
   .header-left,
   .header-right {
-    display: none;  /* ✅ cache seulement les boutons */
+    display: none;
+    /* ✅ cache seulement les boutons */
 
   }
-    .header-center {
-    display: block !important;  /* ✅ rendre visible */
+
+  .header-center {
+    display: block !important;
+    /* ✅ rendre visible */
     width: 100%;
     padding: 10px 15px;
   }
@@ -81,7 +89,7 @@
 }
 
 /* ✅ CARD */
-.mobile-view > div {
+.mobile-view>div {
   display: flex;
   align-items: center;
 
@@ -89,7 +97,7 @@
   background: white;
   border-radius: 15px;
 
-  box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
 
   gap: 10px;
 }
@@ -104,7 +112,7 @@
 }
 
 /* ✅ TEXTE (TOUT CE QUI N’EST PAS IMAGE OU ACTION) */
-.mobile-view > div > :not(img):not(.action-qty) {
+.mobile-view>div> :not(img):not(.action-qty) {
   flex: 1;
 
   display: block;
@@ -116,7 +124,8 @@
   display: flex;
   align-items: center;
 
-  margin-left: auto;   /* ✅ toujours à droite */
+  margin-left: auto;
+  /* ✅ toujours à droite */
 }
 
 /* ✅ STRUCTURE INTERNE DES BOUTONS */
@@ -139,6 +148,7 @@
   width: 35px;
   text-align: center;
 }
+
 /* ✅ STOCK NORMAL */
 .mobile-view .product-stock {
   font-size: 13px;
@@ -147,19 +157,20 @@
 
 /* ✅ STOCK FAIBLE */
 .mobile-view .product-stock.stock-low {
-  color: #e74c3c !important;   /* ✅ IMPORTANT */
+  color: #e74c3c !important;
+  /* ✅ IMPORTANT */
   font-weight: 600;
 }
 
 .mobile-view .product-price {
-    color: #3498db;
-    font-size: 13px;
+  color: #3498db;
+  font-size: 13px;
 }
 
 .mobile-view .product-name {
-    font-weight: bold;
-    font-size: 13px;
-  }
+  font-weight: bold;
+  font-size: 13px;
+}
 
 
 /* ✅ PAR DÉFAUT → MOBILE */
@@ -173,12 +184,14 @@
   display: none;
 }
 
-@media (min-width: 712px) and (max-width: 1200px) {
+/*@media (min-width: 712px) and (max-width: 1280px) {*/
+@media (min-width: 712px) {
 
   .mobile-menu-grid {
     display: grid !important;
-    
-    grid-template-columns: repeat(3, 1fr); /* ✅ mieux tablette */
+
+    grid-template-columns: repeat(5, 1fr);
+    /* ✅ mieux tablette */
     gap: 12px;
   }
 
@@ -209,7 +222,7 @@
 @media (min-width: 712px) and (max-width: 1200px) {
 
   #btnAddCartMenu {
-    display: block; ✅
+    display: block;
   }
 
 }
@@ -222,47 +235,52 @@
 /* ✅ MOBILE UNIQUEMENT */
 @media (max-width: 712px) {
 
-.floating-add-cart {
-  display: flex;
+  .floating-add-cart {
+    display: flex;
 
-  position: fixed;
-  bottom: 15px;
-  left: 50%;
-  transform: translateX(-50%);
+    position: fixed;
+    bottom: 15px;
+    left: 50%;
+    transform: translateX(-50%);
 
-  background: #2ecc71;
-  color: white;
+    background: #2ecc71;
+    color: white;
 
-  padding: 14px 20px;
-  border-radius: 30px;
+    padding: 14px 20px;
+    border-radius: 30px;
 
-  font-weight: bold;
-  z-index: 999999;
+    font-weight: bold;
+    z-index: 999999;
 
-  width: 90%;
+    width: 90%;
 
-  /* ✅ alignement parfait */
-  justify-content: center;
-  align-items: center;
+    /* ✅ alignement parfait */
+    justify-content: center;
+    align-items: center;
 
-  text-align: center;     /* ✅ important */
-  line-height: 1;         /* ✅ évite décalage vertical */
+    text-align: center;
+    /* ✅ important */
+    line-height: 1;
+    /* ✅ évite décalage vertical */
+  }
+
 }
 
-}
 /* ✅ cacher dans le grid par défaut */
 .mobile-menu-grid #cartBtnMobile {
   display: none;
 }
 
 /* ✅ afficher uniquement tablette */
-@media (min-width: 712px) and (max-width: 1200px) {
+/*@media (min-width: 712px) and (max-width: 1280px) {*/
+@media (min-width: 712px) {
 
   .mobile-menu-grid #cartBtnMobile {
     display: flex;
   }
 
 }
+
 #cartBtnMobile {
   background: #34495e;
   color: white;
@@ -279,7 +297,8 @@
 
   height: 100%;
 
-  position: relative; /* ✅ FIX IMPORTANT */
+  position: relative;
+  /* ✅ FIX IMPORTANT */
 }
 
 /* ✅ actif */
@@ -304,19 +323,3 @@
 
   display: none;
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

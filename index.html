@@ -115,6 +115,11 @@
         📦<br>Produits
       </button>
 
+      <button id="cartBtnMobile" onclick="showSection('cart')">
+        🛒 Panier
+        <span id="cartBadge">0</span>
+      </button>
+
       <button data-section="today" onclick="showSection('today'); setActiveMobileMenu('today')">
         💰<br>Ventes
       </button>
@@ -143,10 +148,6 @@
 
       <button data-section="tickets" onclick="showSection('tickets'); setActiveMobileMenu('tickets')">
         🎟️<br>Tickets
-      </button>
-      <button id="cartBtnMobile" onclick="showSection('cart')">
-        🛒 Panier
-        <span id="cartBadge">0</span>
       </button>
 
       <button onclick="openQrScanner()">📷 Scanner</button>
@@ -215,7 +216,7 @@
           <div class="desktop-view">
 
             <div class="table-wrapper">
-              <table>
+              <!--<table>
                 <thead>
                   <tr>
                     <th>QR Code</th>
@@ -230,7 +231,7 @@
 
                 <tbody id="productList"></tbody>
 
-              </table>
+              </table>-->
             </div>
 
           </div>

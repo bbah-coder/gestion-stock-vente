@@ -662,10 +662,9 @@ function closeProductQr() {
  * FUNCTION : Bouton pour imprimer le QR-CODE
  ************************************************************/
 function printProductQr() {
-
   window.print();
-
 }
+
 
 //CODE MIGRATION
 /*products.forEach((p, index) => {

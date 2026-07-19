@@ -1263,98 +1263,74 @@ td:last-child {
 
 /*CSS ITEM MOUVEMENT DE STOCK*/
 .history-item {
-
   padding: 12px;
-
   margin-bottom: 15px;
-
   border: 1px solid #ddd;
   border-radius: 10px;
-
   background: #fafafa;
 }
 
 .history-title {
-
   font-size: 16px;
   font-weight: 700;
-
   color: #333;
-
   margin-bottom: 5px;
 }
 
 .history-total {
-
   color: #2563eb;
-
   font-weight: 600;
-
   margin-bottom: 10px;
 }
 
 .history-detail {
-
   margin-left: 15px;
-
   margin-top: 8px;
-
   padding-top: 8px;
-
   border-top: 1px dashed #ddd;
-
   font-size: 14px;
-
   color: #555;
 }
 
 #historyModal .modal-content {
-
   display: flex;
   flex-direction: column;
-
   max-height: 85vh;
 }
 
-.history-body {
-
-  flex: 1;
-
+#historyModal {
   overflow-y: auto;
+  padding-top: 20px;
+  align-items: flex-start;
+  padding: 15px
+}
 
+.history-body {
+  flex: 1;
+  overflow-y: auto;
   padding-right: 5px;
 }
 
-.history-footer {
+#historyList {
+  max-height: 100%;
+  overflow-y: auto;
+}
 
+.history-footer {
   position: sticky;
   bottom: 0;
-
   background: white;
-
   padding-top: 10px;
-
   text-align: center;
 }
 
-@media (max-width: 768px) {
 
-  #historyModal .modal-content {
-
-    width: 95%;
-
-    max-height: 85vh;
-
-    padding: 15px;
-  }
-
-}
-
-@media (max-width: 430px) {
+@media (max-width: 1024px) {
   .modal-content h2 {
     font-size: 14px;
   }
 }
+
 
 /*CSS PRIX DETAIL ET GROS */
 .price-wholesale {

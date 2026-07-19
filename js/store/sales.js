@@ -526,7 +526,8 @@ function changeQty(index, delta) {
   const produit = products[index];
   const max = produit?.stock || 0;
 
-  const isTablet = window.matchMedia("(min-width: 712px) and (max-width: 1200px)").matches;
+  //const isTablet = window.matchMedia("(min-width: 712px) and (max-width: 1280px)").matches;
+  const isTablet = window.matchMedia("(min-width: 712px)").matches;
 
   // ✅ ✅ TABLETTE → PAS DE VALUE MANUEL
   if (!isTablet) {
@@ -589,20 +590,20 @@ function changeQty(index, delta) {
 function renderCart() {
 
   //const isMobile = window.innerWidth <= 768 && window.outerWidth === window.innerWidth;
-  const isMobileOrTablet = window.matchMedia("(max-width: 1024px)").matches;
+  //const isMobileOrTablet = window.matchMedia("(max-width: 1024px)").matches;
 
   const table = document.querySelector("#cartSection table");
   const mobileDiv = document.getElementById("cartMobileList");
 
-  if (isMobileOrTablet) {
-    table.style.display = "none";
-    mobileDiv.style.display = "block";
+  //if (isMobileOrTablet) {
+  table.style.display = "none";
+  mobileDiv.style.display = "block";
 
-    renderCartMobile();
-    return;
-  }
+  renderCartMobile();
+  return;
+  // }
 
-  const div = document.getElementById("cartList");
+  /*const div = document.getElementById("cartList");
   div.innerHTML = "";
 
   let total = 0;
@@ -661,7 +662,7 @@ function renderCart() {
 `;
 
     div.appendChild(row);
-  });
+  });*/
 
   const totalEl = document.getElementById("total");
 
@@ -675,7 +676,6 @@ function renderCart() {
     }, 300);
 
   }
-
 
   if (getPaymentMethod() === "credit" && creditData) {
 
@@ -1455,35 +1455,35 @@ function renderSalesByDay() {
     const encours = summary[date]?.encours || 0;
 
     row.innerHTML = `
-      <td><span class="price-cell">${displayDate}</span></td>
-
-      <td>
-        <strong class="price-cell">${formatPrice(summary[date].brut)} GNF</strong>
-      </td>
-
-     <td style="${summary[date].remise > 0 ? 'color:red;' : 'color:#999;'}">
-      ${summary[date].remise > 0
+       <td><span class="price-cell">${displayDate}</span></td>
+ 
+       <td>
+         <strong class="price-cell">${formatPrice(summary[date].brut)} GNF</strong>
+       </td>
+ 
+      <td style="${summary[date].remise > 0 ? 'color:red;' : 'color:#999;'}">
+       ${summary[date].remise > 0
         ? `- ${formatPrice(summary[date].remise)} GNF`
         : "-"
       }
-    </td>
-
+     </td>
+ 
+    <td>
+     <strong class="price-cell">✅ ${formatPrice(summary[date].encaisse)} GNF encaissé</strong>
+ 
+     ${summary[date].credit > 0 ? `
+       <div style="color:orange; font-size:12px;">
+         🟠 ${formatPrice(summary[date].credit)} crédit
+       </div>
+     ` : ""}
+   </td>
+ 
    <td>
-    <strong class="price-cell">✅ ${formatPrice(summary[date].encaisse)} GNF encaissé</strong>
-
-    ${summary[date].credit > 0 ? `
-      <div style="color:orange; font-size:12px;">
-        🟠 ${formatPrice(summary[date].credit)} crédit
-      </div>
-    ` : ""}
-  </td>
-
-  <td>
-  <button onclick="showDetail('${date}')">
-      Voir détail
-    </button>
-  </td>
-`;
+   <button onclick="showDetail('${date}')">
+       Voir détail
+     </button>
+   </td>
+ `;
 
     // ✅ mise en évidence aujourd’hui
     if (date === today) {

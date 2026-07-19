@@ -52,11 +52,11 @@ function renderProducts() {
 
   const isMobile = window.matchMedia("(max-width: 1200px)").matches;
 
-  if (isMobile) {
-    renderMobileProducts(vm);
-  } else {
+  /*if (isMobile) {*/
+  renderMobileProducts(vm);
+  /*} else {
     renderDesktopProducts(vm);
-  }
+  }*/
 
   renderPagination(sorted.length);
 }

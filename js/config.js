@@ -31,21 +31,21 @@ function renderResponsive(config) {
   const table = tableBody ? tableBody.closest("table") : null;
   const mobile = document.querySelector(config.mobileSelector);
 
-  if (isMobile) {
-    if (table) table.style.display = "none";   // ✅ cache TABLE complet
-    if (mobile) mobile.style.display = "flex";
+  //if (isMobile) {
+  if (table) table.style.display = "none";   // ✅ cache TABLE complet
+  if (mobile) mobile.style.display = "flex";
 
-    if (config.mobileRender) {
-      config.mobileRender();
-    }
+  if (config.mobileRender) {
+    config.mobileRender();
+  }
 
-  } else {
+  /*} else {
     if (table) table.style.display = "table";  // ✅ réaffiche TABLE
     if (mobile) mobile.style.display = "none";
 
     if (config.desktopRender) {
       config.desktopRender();
     }
-  }
+  }*/
 }
 

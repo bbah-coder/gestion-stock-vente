@@ -25,10 +25,10 @@
  * → Mise à jour de l’UI complète (KPI + tableaux)
  ************************************************************/
 
-function filterSalesByDate(){
+function filterSalesByDate() {
 
   const selectedDate = document.getElementById("filterDate").value;
-  if(!selectedDate) return;
+  if (!selectedDate) return;
 
   const selectedCategory =
     document.getElementById("filterCategoryHistory")?.value || "all";
@@ -58,8 +58,8 @@ function filterSalesByDate(){
 
   // ✅ HIDE LEGACY PARTS
   const detail = document.getElementById("salesDetail");
-  if(detail) detail.style.display = "none";
+  if (detail) detail.style.display = "none";
 
   const detailProducts = document.getElementById("detailProducts");
-  if(detailProducts) detailProducts.style.display = "none";
+  if (detailProducts) detailProducts.style.display = "none";
 }
