@@ -181,6 +181,7 @@ function showToast(message, type = "info") {
 
   // ✅ afficher
   toast.classList.add("show");
+  console.log("Toast affiché", toast);
 
   // ✅ cacher après 2.5s
   setTimeout(() => {

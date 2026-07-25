@@ -204,13 +204,29 @@ function vendreWithQty(index, btn) {
 
   if (exist) {
 
-    if (exist.quantity + q > produit.stock) {
-      alert(`❌ Stock insuffisant\nDisponible : ${produit.stock}`);
+    const qtyToAdd =
+      window.matchMedia("(min-width: 712px)").matches
+        ? 1
+        : q;
+
+    if (exist.quantity + qtyToAdd > produit.stock) {
+      showToast(
+        `❌ Stock insuffisant\nDisponible : ${produit.stock}`
+      );
+
       return;
     }
 
-    //exist.quantity += q;
-    exist.quantity += q;
+    exist.quantity += qtyToAdd;
+    /*if (exist) {
+  
+      if (exist.quantity + q > produit.stock) {
+        alert(`❌ Stock insuffisant\nDisponible : ${produit.stock}`);
+        return;
+      }
+  
+      //exist.quantity += q;
+      exist.quantity += q;*/
 
     const pricing =
       getProductPrice(
@@ -535,8 +551,14 @@ function changeQty(index, delta) {
 
     if (value < 0)
       value = 0;
-    if (value > max)
+    if (value >= max && delta > 0) {
       value = max;
+      showToast(
+        `❌ Stock insuffisant\nDisponible : ${max}`
+      );
+    }
+    /*if (value > max)
+      value = max;*/
 
     if (el.tagName === "INPUT") {
       el.value = value;
@@ -549,21 +571,27 @@ function changeQty(index, delta) {
   if (isTablet) {
 
     if (delta > 0) {
+
       vendreWithQty(index, null);
+
     } else {
-      let existing = cart.find(item => item.id === produit.id);
+      //let existing = cart.find(item => item.id === produit.id);
+      let existing =
+        cart.find(item => item.index === index);
 
       if (existing) {
         existing.quantity -= 1;
 
         if (existing.quantity <= 0) {
-          cart = cart.filter(item => item.id !== produit.id);
+          //cart = cart.filter(item => item.id !== produit.id);
+          cart = cart.filter(item => item.index !== index);
         }
       }
     }
 
     // ✅ ✅ 🔥 SYNCHRO UI AVEC CART
-    const existing = cart.find(item => item.id === produit.id);
+    //const existing = cart.find(item => item.id === produit.id);
+    const existing = cart.find(item => item.index === index);
     const realQty = existing ? existing.quantity : 0;
 
     if (el.tagName === "INPUT") {
@@ -605,23 +633,23 @@ function renderCart() {
 
   /*const div = document.getElementById("cartList");
   div.innerHTML = "";
-
+ 
   let total = 0;
-
+ 
   cart.forEach((item, i) => {
-
+ 
     const product = products[item.index];
-
+ 
     const brut = item.price * item.quantity;
     const remise = Math.min(item.remise || 0, brut);
     const net = brut - remise;
-
+ 
     total += net;
-
+ 
     const row = document.createElement("tr");
-
+ 
     row.innerHTML = `
-
+ 
   <td>
     ${product && product.image
         ? `<div class="img-container">
@@ -630,18 +658,18 @@ function renderCart() {
         : `<div style="width:40px;height:40px;background:#eee;text-align:center;line-height:40px;">📦</div>`
       }
   </td>
-
+ 
   <td>${item.name}</td>
-
+ 
   <td>${formatPrice(item.price)}</td>
-
+ 
   <td>
     <input type="number"
       value="${item.quantity}"
       min="1"
       onchange="updateQty(${i}, this.value)">
   </td>
-
+ 
   <!-- ✅ COLONNE REMISE (AJOUT ICI) -->
   <td>
     <input type="number"
@@ -650,17 +678,17 @@ function renderCart() {
       onchange="updateRemise(${i}, this.value)"
       style="width:70px;">
   </td>
-
+ 
   <!-- ✅ TOTAL NET UNIQUEMENT -->
   <td>
     <strong>${formatPrice(net)}</strong>
   </td>
-
+ 
   <td>
     <button onclick="removeItem(${i})">🗑️</button>
   </td>
 `;
-
+ 
     div.appendChild(row);
   });*/
 
@@ -740,23 +768,23 @@ function updateRemise(index, value) {
  * 🔄 MODIFIER QUANTITÉ PANIER
  ************************************************************/
 /*function updateQty(i, val) {
-
+ 
   let newQty = parseInt(val) || 1;
-
+ 
   const product = products[cart[i].index];
   const max = product?.stock || 0;
-
+ 
   // ✅ minimum Bloqué à 1
   if (newQty < 1) newQty = 1;
-
+ 
   // ✅ maximum stock
   if (newQty > max) newQty = max;
-
+ 
   cart[i].quantity = newQty;
-
-
+ 
+ 
   localStorage.setItem("cart", JSON.stringify(cart));
-
+ 
   renderCart();
   updateCartBadge();
   updateFloatingCart(); // ✅ important
@@ -1225,84 +1253,84 @@ function renderDashboard() {
   /*const mobileList = document.getElementById("salesListMobile");
   if (mobileList)
     mobileList.style.display = "none";
-
+ 
   document.querySelector("#todaySection table").style.display = "table";
-
+ 
   // ✅ 2. DATA
   // ✅ LISTE DES VENTES DU JOUR (TICKETS)
   const todaySales = sales
     .filter(s => new Date(s.date).toDateString() === today)
     .sort((a, b) => new Date(b.date) - new Date(a.date));
-
+ 
   if (todaySales.length === 0) {
     salesList.innerHTML = "<tr><td colspan='6'>Aucune vente aujourd’hui</td></tr>";
     return;
   }
-
+ 
   // ✅ PAGINATION
   const totalPages = Math.ceil(todaySales.length / itemsPerPageToday) || 1;
-
+ 
   if (currentPageToday > totalPages) {
     currentPageToday = totalPages;
   }
-
+ 
   const start = (currentPageToday - 1) * itemsPerPageToday;
   const paginated = todaySales.slice(start, start + itemsPerPageToday);
-
+ 
   // ✅ AFFICHAGE PAR TICKET
   paginated.forEach((sale, index) => {
-
+ 
     const totalNet = (sale.items || []).reduce((sum, item) => {
       const brut = item.price * item.quantity;
       const remise = item.remise || 0;
       return sum + (brut - remise);
     }, 0);
-
+ 
     let totalPaid = 0;
-
+ 
     if (sale.payment?.type === "credit") {
       totalPaid = (sale.payment.payments || [])
         .reduce((sum, p) => sum + Number(p.amount || 0), 0);
     } else {
       totalPaid = totalNet;
     }
-
+ 
     const remaining = Math.max(0, totalNet - totalPaid);
-
+ 
     const itemsCount = (sale.items || []).length;
-
+ 
     const row = document.createElement("tr");
-
+ 
     row.innerHTML = `
     <td>${formatDateFR(sale.date)}</td>
-
+ 
     <td>${itemsCount} article${itemsCount > 1 ? "s" : ""}</td>
-
+ 
     <td>
       <strong class="price-cell">
         ${formatPrice(totalNet)} GNF
       </strong>
     </td>
-
+ 
     <td style="color:green;">
       ✅ ${formatPrice(totalPaid)} GNF
     </td>
-
+ 
     <td style="color:${remaining > 0 ? "orange" : "gray"};">
       ${remaining > 0 ? `🟠 ${formatPrice(remaining)} GNF` : "-"}
     </td>
-
+ 
     <td>
       <button onclick="exportTicketPDF(${sale.id || index})">
         📄 PDF
       </button>
     </td>
   `;
-
+ 
     salesList.appendChild(row);
-
+ 
   });
-
+ 
   // ✅ pagination
   renderPaginationToday(todaySales.length);*/
 }
@@ -1875,16 +1903,16 @@ function openCreditModal() {
 }
 
 /*function openCreditModal(){
-
+ 
   const modal = document.getElementById("creditModal");
   modal.style.display = "flex";
-
+ 
   const total = cart.reduce((sum, i) => {
   const brut = i.price * i.quantity;
   const remise = Math.min(i.remise || 0, brut);
   return sum + (brut - remise);
 }, 0);
-
+ 
   document.getElementById("paidNow").value = "";
   document.getElementById("remaining").value = total;
 }*/
@@ -1907,44 +1935,44 @@ function closeCreditModal() {
 }
 
 /*function confirmCredit(){
-
+ 
   const paidNow = Number(document.getElementById("paidNow").value) || 0;
-
+ 
   const total = cart.reduce((sum, i) => {
   const brut = i.price * i.quantity;
   const remise = Math.min(i.remise || 0, brut);
   return sum + (brut - remise);
 }, 0);
-
+ 
   const dueDate = document.getElementById("dueDate").value;
   const clientName = document.getElementById("clientName").value.trim();
   const clientPhone = document.getElementById("clientPhone").value.trim();
-
+ 
   if(!clientName){
     alert("❌ Nom client obligatoire");
     return;
   }
-
+ 
   // ✅ ✅ ✅ ICI TU METS LE NOUVEAU MODÈLE
   creditData = {
     type: "credit",
     total: total,
-
+ 
     payments: paidNow > 0 ? [{
       amount: paidNow,
       date: new Date().toISOString()
     }] : [],
-
+ 
     remaining: total - paidNow,
-
+ 
     clientName,
     clientPhone,
     dueDate,
   createdAt: new Date().toISOString(),
-
+ 
     status: (total - paidNow) > 0 ? "EN ATTENTE" : "PAYÉ"
   };
-
+ 
   document.getElementById("creditModal").style.display = "none";
 }*/
 
@@ -2006,22 +2034,22 @@ function confirmCredit() {
 
 /*FILTRE CREDIT*/
 /*function filterCredits(credits){
-
+ 
   const clean = s => (s || "").toLowerCase().replace(/\s+/g, "");
-
+ 
   const searchRaw = document
     .getElementById("searchCredit")
     ?.value || "";
-
+ 
   const search = clean(searchRaw);
-
+ 
   if(!search) return credits;
-
+ 
   return credits.filter(c => {
-
+ 
     const name = clean(c.clientName);
     const phone = clean(c.clientPhone);
-
+ 
     return (
       name.includes(search) ||
       phone.includes(search)
@@ -2159,20 +2187,20 @@ function renderCreditDashboard() {
     if (mobile)
       mobile.style.display = "none";
   }
-
+ 
   if (filteredCredits.length === 0) {
     container.innerHTML = "<tr><td colspan='6'>✅ Aucun crédit en cours</td></tr>";
     totalDiv.innerText = "💰 Encours total : 0 GNF";
     return;
   }
-
+ 
   filteredCredits.forEach(c => {
-
+ 
     const dueDate = c.dueDate ? new Date(c.dueDate) : null;
-
+ 
     let statusColor = "orange";
     let statusLabel = "EN ATTENTE";
-
+ 
     if (c.remaining <= 0) {
       statusColor = "green";
       statusLabel = "PAYÉ";
@@ -2180,24 +2208,24 @@ function renderCreditDashboard() {
       statusColor = "red";
       statusLabel = "EN RETARD";
     }
-
+ 
     const row = document.createElement("tr");
-
+ 
     row.innerHTML = `
   <td><strong>${c.clientName}</strong></td>
   <td>${c.clientPhone || "-"}</td>
-
+ 
   <td><strong>${formatPrice(c.remaining)} GNF</strong></td>
-
+ 
   <td>
     ${c.createdAt && !isNaN(new Date(c.createdAt))
         ? formatDateFR(c.createdAt)
         : "-"
       }
   </td>
-
+ 
   <td>${formatDateFR(c.dueDate)}</td>
-
+ 
   <!-- ✅ DATE PAIEMENT uniquement si soldé -->
   <td>
     ${c.remaining <= 0 && c.payments && c.payments.length > 0
@@ -2205,28 +2233,28 @@ function renderCreditDashboard() {
         : "-"
       }
   </td>
-
+ 
   <td style="color:${statusColor}; font-weight:bold;">
     ${statusLabel}
   </td>
-
+ 
   <td>
     <button onclick="exportCreditPDF(${c.index})">📄 PDF</button>
-
+ 
     ${c.remaining > 0
         ? `<button onclick="addPayment(${c.index})">💰 Payer</button>`
         : `<span style="color:green; font-weight:bold;">✅ Soldé</span>`
       }
   </td>
 `;
-
+ 
     if (c.remaining <= 0) {
       row.style.opacity = "0.6";
     }
-
+ 
     container.appendChild(row);
   });
-
+ 
   totalDiv.innerText = `💰 Encours total : ${formatPrice(totalCredit)} GNF`;*/
 }
 
@@ -2301,18 +2329,18 @@ function addPayment(index) {
 
 
 /*function addPayment(index){
-
+ 
   const sale = sales[index];
-
+ 
   if (!sale.payment || sale.payment.type !== "credit")
       return;
-
+ 
   let amount = prompt(
 `💰 Montant payé (reste : ${formatPrice(sale.payment.remaining)} GNF) :`,
           0);
-
+ 
   amount = Number(amount);
-
+ 
   if (!amount || amount <= 0) {
       alert("❌ Montant invalide");
       return;
@@ -2322,43 +2350,43 @@ function addPayment(index) {
 // ✅ ✅ ✅ ICI → recalcul AVANT paiement
   const totalPaid = (sale.payment.payments || [])
     .reduce((sum, p) => sum + p.amount, 0);
-
+ 
   const remaining = sale.payment.total - totalPaid;
-
-
+ 
+ 
   // ✅ ✅ ✅ BLOCK SI SUPÉRIEUR À LA DETTE
   const remaining = sale.payment.remaining;
-
+ 
   if (amount > remaining) {
       alert(`❌ Le montant dépasse la dette (${formatPrice(remaining)} GNF)`);
       return;
   }
-
-
+ 
+ 
   // ✅ init si vide
   if(!sale.payment.payments){
     sale.payment.payments = [];
   }
-
+ 
   // ✅ ajouter paiement
   sale.payment.payments.push({
     amount: amount,
     date: new Date().toISOString()
   });
-
+ 
   // ✅ recalcul
   const totalPaid = sale.payment.payments
     .reduce((sum, p) => sum + p.amount, 0);
-
+ 
   sale.payment.remaining = sale.payment.total - totalPaid;
-
+ 
   sale.payment.status =
     sale.payment.remaining <= 0 ? "PAYÉ" : "EN ATTENTE";
-
+ 
   localStorage.setItem("sales", JSON.stringify(sales));
-
+ 
   renderCreditDashboard();
-
+ 
   alert("✅ Paiement ajouté");
 }*/
 

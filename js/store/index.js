@@ -203,7 +203,11 @@ function showSection(section, options = {}) {
     document.getElementById("cartSection").style.display = "block";
 
     const btn = document.getElementById("cartBtnMobile");
-    if (btn) btn.classList.add("active");
+    if (btn) {
+      btn.classList.add("active");
+    }
+    //Toujours rerendre le panier
+    renderCartMobile();
 
   }
 
