@@ -836,76 +836,76 @@ body::before {
 /* CSS MENU Ventes du jour*/
 
 /* ✅ PAR DEFAUT (DESKTOP) */
-.mobile-sales-list {
+/*.mobile-sales-list {
+  display: none;
+}*/
+
+/* ✅ MOBILE */
+/*@media (max-width: 1024px) {*/
+
+/* cacher le tableau */
+#todaySection table {
   display: none;
 }
 
-/* ✅ MOBILE */
-@media (max-width: 1024px) {
-
-  /* cacher le tableau */
-  #todaySection table {
-    display: none;
-  }
-
-  /* liste mobile */
-  .mobile-sales-list {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-  }
-
-  /* CARD */
-  .sale-card {
-    background: white;
-    padding: 14px;
-    border-radius: 14px;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
-  }
-
-  /* HEADER */
-  .sale-header {
-    display: flex;
-    justify-content: space-between;
-    font-size: 14px;
-    margin-bottom: 8px;
-  }
-
-  .sale-stock {
-    color: red;
-    font-weight: bold;
-  }
-
-  /* BODY */
-  .sale-body {
-    font-size: 13px;
-    color: #555;
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-  }
-
-  /* REMISE */
-  .sale-remise span {
-    color: red;
-    font-weight: bold;
-  }
-
-  /* FOOTER */
-  .sale-footer {
-    margin-top: 10px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-  }
-
-  .sale-credit {
-    font-size: 12px;
-    text-align: right;
-    color: #666;
-  }
-
+/* liste mobile */
+.mobile-sales-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
 }
+
+/* CARD */
+.sale-card {
+  background: white;
+  padding: 14px;
+  border-radius: 14px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+}
+
+/* HEADER */
+.sale-header {
+  display: flex;
+  justify-content: space-between;
+  font-size: 14px;
+  margin-bottom: 8px;
+}
+
+.sale-stock {
+  color: red;
+  font-weight: bold;
+}
+
+/* BODY */
+.sale-body {
+  font-size: 13px;
+  color: #555;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+/* REMISE */
+.sale-remise span {
+  color: red;
+  font-weight: bold;
+}
+
+/* FOOTER */
+.sale-footer {
+  margin-top: 10px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.sale-credit {
+  font-size: 12px;
+  text-align: right;
+  color: #666;
+}
+
+/*}*/
 
 .sale-credit {
   margin-top: 6px;
@@ -1470,11 +1470,11 @@ body::before {
   border: none;
 }
 
-@media (min-width: 1200px) {
+/*@media (min-width: 1200px) {
   #creditLoadMore {
     display: none !important;
   }
-}
+}*/
 
 
 .credit-paid {

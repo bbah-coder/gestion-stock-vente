@@ -963,44 +963,44 @@ td:first-child {
   flex: 1;
 }
 
-@media (max-width: 768px) {
+/*@media (min-width: 768px) {*/
 
-  /* ✅ conteneur actions crédit */
-  .actions {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    width: 100%;
-  }
-
-  /* ✅ bouton PDF */
-  .btn-pdf {
-    width: 100%;
-    box-sizing: border-box;
-
-    padding: 10px 12px;
-    border-radius: 10px;
-    font-size: 14px;
-  }
-
-  /* ✅ wrapper recherche */
-  .search-containerCredit {
-    position: relative;
-    width: 100%;
-  }
-
-  /* ✅ input recherche crédit */
-  #searchCredit {
-    width: 100%;
-    box-sizing: border-box;
-
-    padding: 10px 12px;
-    border-radius: 10px;
-    border: 1px solid #ccc;
-    font-size: 14px;
-  }
-
+/* ✅ conteneur actions crédit */
+.actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
 }
+
+/* ✅ bouton PDF */
+.btn-pdf {
+  width: 100%;
+  box-sizing: border-box;
+
+  padding: 10px 12px;
+  border-radius: 10px;
+  font-size: 14px;
+}
+
+/* ✅ wrapper recherche */
+.search-containerCredit {
+  position: relative;
+  width: 100%;
+}
+
+/* ✅ input recherche crédit */
+#searchCredit {
+  width: 100%;
+  box-sizing: border-box;
+
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid #ccc;
+  font-size: 14px;
+}
+
+/*}*/
 
 /* ✅ croix clear crédit */
 #clearSearchCredit {

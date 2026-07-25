@@ -15,11 +15,11 @@ let currentPageToday = 1;
 let currentPageHistoryStock = 1;
 
 // 👉 nombre de produits par page
-const itemsPerPage = 20;
-const itemsPerPageDetail = 20;
-const itemsPerPageHistory = 20;
-const itemsPerPageToday = 20;
-const itemsPerPageHistoryStock = 20;
+const itemsPerPage = 10;
+const itemsPerPageDetail = 10;
+const itemsPerPageHistory = 10;
+const itemsPerPageToday = 10;
+const itemsPerPageHistoryStock = 10;
 
 
 /* Fonction Générique pour responsive Mobile */

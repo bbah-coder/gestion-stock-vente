@@ -1205,24 +1205,24 @@ function renderDashboard() {
 
   // ✅ ✅ ✅ MOBILE (PLACÉ AU BON ENDROIT 🔥)
   //const isMobile = window.innerWidth <= 768 && window.outerWidth === window.innerWidth;
-  const isMobile = window.innerWidth <= 1025;
+  //const isMobile = window.innerWidth <= 1025;
   //const isMobileOrTablet  = window.matchMedia("(max-width: 1024px)").matches;
 
-  if (isMobile) {
+  //if (isMobile) {
 
-    document.querySelector("#todaySection table").style.display = "none";
+  document.querySelector("#todaySection table").style.display = "none";
 
-    const mobileList = document.getElementById("salesListMobile");
-    if (mobileList) mobileList.style.display = "flex";
+  const mobileList = document.getElementById("salesListMobile");
+  if (mobileList) mobileList.style.display = "flex";
 
-    //renderSalesMobile(summary);
-    renderSalesMobile();
+  //renderSalesMobile(summary);
+  renderSalesMobile();
 
-    return;
-  }
+  // return;
+  //}
 
   // ✅ DESKTOP
-  const mobileList = document.getElementById("salesListMobile");
+  /*const mobileList = document.getElementById("salesListMobile");
   if (mobileList)
     mobileList.style.display = "none";
 
@@ -1304,7 +1304,7 @@ function renderDashboard() {
   });
 
   // ✅ pagination
-  renderPaginationToday(todaySales.length);
+  renderPaginationToday(todaySales.length);*/
 }
 
 
@@ -2136,22 +2136,24 @@ function renderCreditDashboard() {
 
   // ✅ RESPONSIVE SWITCH
   //const isMobile = window.matchMedia("(max-width: 768px)").matches;
-  const isMobileOrTablet = window.matchMedia("(max-width: 1024px)").matches;
+  //const isMobileOrTablet = window.matchMedia("(max-width: 1024px)").matches;
 
   const table = document.getElementById("creditList").closest("table");
   const mobile = document.getElementById("creditMobileList");
 
-  if (isMobileOrTablet) {
-    if (table)
-      table.style.display = "none";
-    if (mobile)
-      mobile.style.display = "flex";
+  //if (isMobileOrTablet) {
+  if (table)
+    table.style.display = "none";
+  if (mobile)
+    mobile.style.display = "flex";
 
-    // ✅ on envoie les données déjà calculées
-    renderCreditMobile(credits, totalCredit);
+  // ✅ on envoie les données déjà calculées
+  renderCreditMobile(credits, totalCredit);
 
-    return; // ✅ STOP -> ne pas exécuter le desktop
-  } else {
+  return; // ✅ STOP -> ne pas exécuter le desktop
+  //PLus d'affichage tableau un affichage unique mobile/desktop
+  // }
+  /*else {
     if (table)
       table.style.display = "table";
     if (mobile)
@@ -2225,7 +2227,7 @@ function renderCreditDashboard() {
     container.appendChild(row);
   });
 
-  totalDiv.innerText = `💰 Encours total : ${formatPrice(totalCredit)} GNF`;
+  totalDiv.innerText = `💰 Encours total : ${formatPrice(totalCredit)} GNF`;*/
 }
 
 

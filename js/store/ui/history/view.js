@@ -16,11 +16,13 @@
  * ✅ renderHeader()
  * ✅ renderKPIBlock()
  * ✅ renderSalesComparisonTable()
- * ✅ renderCategoryTable()
+ * ✅ renderCategoryTableHistoDay()
  * ✅ renderTopTables()
  ************************************************************/
 
 function renderDesktopFull(stats, comparison, selectedDate) {
+
+
 
   const kpiContainer = document.getElementById("historyKPI");
   const topContainer = document.getElementById("topProductsHistory");
@@ -38,7 +40,7 @@ function renderDesktopFull(stats, comparison, selectedDate) {
 
   // ✅ Tables
   topContainer.innerHTML = `
-    ${renderCategoryTable(stats, dateStr)}
+    ${renderCategoryTableHistoDay(stats, dateStr)}
     ${renderTopTables(stats, dateStr)}
   `;
 }
@@ -217,7 +219,7 @@ function renderSalesComparisonTable(stats, comparison) {
  * UX :
  * ✅ Couleur dynamique sur %
  ************************************************************/
-function renderCategoryTable(stats, dateStr) {
+function renderCategoryTableHistoDay(stats, dateStr) {
 
   let totalNet = 0;
 

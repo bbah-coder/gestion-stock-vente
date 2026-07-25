@@ -540,8 +540,26 @@ function exportTicketPDF(id) {
     totalBrut += subtotal;
 
     // ✅ NOM PRODUIT
+    // Produit
+    doc.setFont(undefined, "bold");
     doc.text(cleanText(item.name), 5, y);
-    y += 4;
+
+    y += 5;
+
+    // Ligne quantité
+    doc.setFont(undefined, "normal");
+
+    doc.text(
+      cleanText(
+        `${qty} x ${formatPrice(price)} GNF = ${formatPrice(subtotal)} GNF`
+      ),
+      5,
+      y
+    );
+
+    y += 8;
+    /*doc.text(cleanText(item.name), 5, y);
+    y += 5;
 
     // ✅ DETAIL
     if (item.isWholesale) {
@@ -566,14 +584,14 @@ function exportTicketPDF(id) {
 
     }
 
-    y += 4;
+    y += 5;
     doc.text(
       cleanText(
         `${qty} x ${formatPrice(price)} GNF = ${formatPrice(subtotal)} GNF`
       ),
       5,
       y
-    );
+    );*/
     /*doc.text(
       cleanText(`${qty} x ${formatPrice(price)} GNF = ${formatPrice(subtotal)} GNF`),
       5,
