@@ -834,34 +834,63 @@ function renderCreditMobile(credits, totalCredit) {
     ? sortedCredits
     : sortedCredits.slice(0, creditPerPage);
 
-  /*GROUPER PAR MOIS */
+  /*console.table(
+    visibleCredits.map(c => ({
+      client: c.clientName,
+      remaining: c.remaining,
+      dueDate: c.dueDate
+    }))
+  );*/
 
-  const grouped = {};
+  /*==========================
+  GROUPER PAR STATUT METIER
+  ==========================*/
+
+  const grouped = [
+    {
+      label: "🚨 EN RETARD",
+      items: []
+    },
+    {
+      label: "🟠 EN ATTENTE",
+      items: []
+    },
+    {
+      label: "✅ SOLDÉS",
+      items: []
+    }
+  ];
 
   visibleCredits.forEach(c => {
 
-    const dateObj = c.dueDate ? new Date(c.dueDate) : new Date();
+    const dueDate = c.dueDate
+      ? new Date(c.dueDate)
+      : null;
 
-    const key = dateObj.getFullYear() + "-" + (dateObj.getMonth() + 1);
+    const isPaid = Number(c.remaining || 0) <= 0;
 
-    const label = dateObj.toLocaleString("fr-FR", {
-      month: "long",
-      year: "numeric"
-    });
+    const isLate =
+      !isPaid &&
+      dueDate &&
+      dueDate < today;
 
-    if (!grouped[key]) {
-      grouped[key] = {
-        label,
-        items: []
-      };
+    if (isLate) {
+      grouped[0].items.push(c);
     }
-
-    grouped[key].items.push(c);
+    else if (!isPaid) {
+      grouped[1].items.push(c);
+    }
+    else {
+      grouped[2].items.push(c);
+    }
   });
 
-  /*AFFICHAGE PAR MOIS */
-  Object.values(grouped)
-    .sort((a, b) => new Date(a.items[0].dueDate) - new Date(b.items[0].dueDate))
+  /* ==========================
+     AFFICHAGE PAR STATUT
+     ========================== */
+
+  grouped
+    .filter(group => group.items.length > 0)
     .forEach(group => {
 
       // ✅ HEADER MOIS

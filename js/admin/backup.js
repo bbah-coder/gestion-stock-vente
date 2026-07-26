@@ -8,7 +8,8 @@ setInterval(autoBackup, 5 * 60 * 1000);
 function generateBackup() {
   return {
     products,
-    stockLogs,
+    //stockLogs,
+    stockMovements: JSON.parse(localStorage.getItem("stockMovements") || "[]"),
     sales: JSON.parse(localStorage.getItem("sales") || "[]"),
     date: new Date().toISOString()
   };
@@ -105,8 +106,8 @@ function restoreBackup(file) {
         localStorage.setItem("sales", JSON.stringify(data.sales));
       }
 
-      if (data.stockLogs) {
-        localStorage.setItem("stockLogs", JSON.stringify(data.stockLogs));
+      if (data.stockMovements) {
+        localStorage.setItem("stockMovements", JSON.stringify(data.stockMovements));
       }
 
       showToast("✅ Restauration réussie");
