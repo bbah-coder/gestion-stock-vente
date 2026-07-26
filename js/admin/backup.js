@@ -5,7 +5,7 @@
 // ✅ lancer toutes les 5 minutes
 setInterval(autoBackup, 5 * 60 * 1000);
 
-function generateBackup(){
+function generateBackup() {
   return {
     products,
     stockLogs,
@@ -14,7 +14,7 @@ function generateBackup(){
   };
 }
 
-function autoBackup(){
+function autoBackup() {
 
   const backup = generateBackup();
 
@@ -28,7 +28,7 @@ setInterval(autoBackup, 5 * 60 * 1000);
 
 //EXPORT MANUEL (BOUTON)
 
-function downloadBackup(){
+function downloadBackup() {
 
   const data = generateBackup();
 
@@ -49,13 +49,13 @@ function downloadBackup(){
 }
 
 // RESTORE (IMPORT FICHIER)
-function handleRestore(event){
+function handleRestore(event) {
 
   console.log("🔥 handleRestore déclenché");
 
   const file = event.target.files[0];
 
-  if(!file){
+  if (!file) {
     console.log("❌ aucun fichier");
     return;
   }
@@ -64,30 +64,30 @@ function handleRestore(event){
 }
 
 //Alerte si pas sauvegarde
-function checkBackupReminder(){
+function checkBackupReminder() {
 
   const last = localStorage.getItem("lastBackupTime");
 
-  if(!last){
-    alert("⚠️ Pensez à faire une sauvegarde !");
+  if (!last) {
+    showToast("⚠️ Pensez à faire une sauvegarde !");
     return;
   }
 
   const diff = Date.now() - last;
 
   // 1 heure sans backup
-  if(diff > 60 * 60 * 1000){
-    alert("⚠️ Aucune sauvegarde récente (1h)");
+  if (diff > 60 * 60 * 1000) {
+    showToast("⚠️ Aucune sauvegarde récente (1h)");
   }
 }
 
-function restoreBackup(file){
+function restoreBackup(file) {
 
   console.log("✅ restore lancé");
 
   const reader = new FileReader();
 
-  reader.onload = function(e){
+  reader.onload = function (e) {
 
     console.log("✅ fichier lu");
 
@@ -97,24 +97,24 @@ function restoreBackup(file){
 
       console.log("✅ JSON OK", data);
 
-      if(data.products){
+      if (data.products) {
         localStorage.setItem("products", JSON.stringify(data.products));
       }
 
-      if(data.sales){
+      if (data.sales) {
         localStorage.setItem("sales", JSON.stringify(data.sales));
       }
 
-      if(data.stockLogs){
+      if (data.stockLogs) {
         localStorage.setItem("stockLogs", JSON.stringify(data.stockLogs));
       }
 
-      alert("✅ Restauration réussie");
+      showToast("✅ Restauration réussie");
       location.reload();
 
-    } catch(err){
+    } catch (err) {
       console.error("❌ Erreur JSON", err);
-      alert("❌ Fichier invalide");
+      showToast("❌ Fichier invalide");
     }
 
   };

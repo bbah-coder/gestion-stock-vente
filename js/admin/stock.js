@@ -25,7 +25,7 @@ function addStock(index) {
   const value = parseInt(qty);
 
   if (isNaN(value) || value <= 0) {
-    alert("Quantité invalide");
+    showToast("Quantité invalide");
     return;
   }
 
@@ -54,7 +54,7 @@ function addStock(index) {
 
   render();
 
-  alert(
+  showToast(
     `✅ Stock mis à jour\n\nProduit : ${p.name}\nAjout : +${value}\nNouveau stock : ${p.stock}`
   );
 
@@ -194,7 +194,7 @@ function clearHistory() {
 
   renderStockHistory();
 
-  alert("✅ Historique vidé");
+  showToast("✅ Historique vidé");
 }
 
 /************************************************************

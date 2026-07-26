@@ -114,7 +114,7 @@ function saveProduct() {
   const stock = parseInt(document.getElementById("stock").value);
 
   if (!name || !price || isNaN(stock)) {
-    alert("Remplir tous les champs");
+    showToast("Remplir tous les champs");
     return;
   }
 
@@ -251,7 +251,7 @@ function saveFinal(product) {
         existingProduct.image = product.image;
       }
 
-      alert("✅ Stock mis à jour avec succès");
+      showToast("✅ Stock mis à jour avec succès");
 
     } else {
 
@@ -378,7 +378,7 @@ function deletePhysicalProduct(index) {
 
   if ((p.sold || 0) > 0) {
 
-    alert(
+    showToast(
       "❌ Impossible de supprimer un produit ayant déjà des ventes.\n\nUtilisez Archiver."
     );
 
@@ -491,7 +491,7 @@ function importCSV() {
   const file = input.files[0];
 
   if (!file) {
-    alert("Aucun fichier sélectionné");
+    showToast("Aucun fichier sélectionné");
     return;
   }
 
@@ -633,11 +633,11 @@ function importCSV() {
 
     render();
 
-    alert(count + " nouveaux produits importés ✅");
+    showToast(count + " nouveaux produits importés ✅");
   };
 
   reader.onerror = function () {
-    alert("Erreur lecture fichier");
+    showToast("Erreur lecture fichier");
   };
 
   reader.readAsText(file);
@@ -816,7 +816,7 @@ function resetSalesOnly() {
   renderCart();
   updateCartBadge();
 
-  alert("✅ Panier réinitialisé");
+  showToast("✅ Panier réinitialisé");
 }
 
 //--------------------------------------------------------------------
@@ -849,7 +849,7 @@ function resetStockOnly() {
 
   render();
 
-  alert("✅ Stocks réinitialisés");
+  showToast("✅ Stocks réinitialisés");
 }
 
 //--------------------------------------------------------------------
@@ -886,7 +886,7 @@ function resetAll() {
   render();
   updateCartBadge();
 
-  alert("✅ Stock réinitialisé + historique conservé");
+  showToast("✅ Stock réinitialisé + historique conservé");
 }
 
 //--------------------------------------------------------------------
@@ -909,7 +909,7 @@ function resetProducts() {
 
   render();
 
-  alert("✅ Tous les produits supprimés");
+  showToast("✅ Tous les produits supprimés");
 }
 
 //--------------------------------------------------------------------

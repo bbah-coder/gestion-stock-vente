@@ -187,7 +187,7 @@ function vendreWithQty(index, btn) {
   const produit = products[index];
 
   if (produit.stock <= 0) {
-    alert("❌ Stock épuisé");
+    showToast("❌ Stock épuisé");
     return;
   }
 
@@ -218,15 +218,6 @@ function vendreWithQty(index, btn) {
     }
 
     exist.quantity += qtyToAdd;
-    /*if (exist) {
-  
-      if (exist.quantity + q > produit.stock) {
-        alert(`❌ Stock insuffisant\nDisponible : ${produit.stock}`);
-        return;
-      }
-  
-      //exist.quantity += q;
-      exist.quantity += q;*/
 
     const pricing =
       getProductPrice(
@@ -240,7 +231,7 @@ function vendreWithQty(index, btn) {
   } else {
 
     if (q > produit.stock) {
-      alert(`❌ Stock insuffisant\nDisponible : ${produit.stock}`);
+      showToast(`❌ Stock insuffisant\nDisponible : ${produit.stock}`);
       return;
     }
 
@@ -298,7 +289,7 @@ function addProductByBarcode(code) {
   // ✅ Aucun stock disponible
   if ((produit.stock || 0) <= 0) {
 
-    alert(
+    showToast(
       `❌ Plus de stock disponible\n\nProduit : ${produit.name}`
     );
 
@@ -321,7 +312,7 @@ function addProductByBarcode(code) {
       lastScanned =
         `STOCK-${produit.barcode}`;
 
-      alert(
+      showToast(
         `❌ Plus de stock disponible\n\nProduit : ${produit.name}\nStock disponible : ${produit.stock}`
       );
 
@@ -566,7 +557,7 @@ function changeQty(index, delta) {
       el.innerText = value;
     }
   }
-  console.log("✅ qty updated:", index, value);
+  // console.log("✅ qty updated:", index, value);
 
   if (isTablet) {
 
@@ -575,7 +566,7 @@ function changeQty(index, delta) {
       vendreWithQty(index, null);
 
     } else {
-      //let existing = cart.find(item => item.id === produit.id);
+
       let existing =
         cart.find(item => item.index === index);
 
@@ -583,14 +574,14 @@ function changeQty(index, delta) {
         existing.quantity -= 1;
 
         if (existing.quantity <= 0) {
-          //cart = cart.filter(item => item.id !== produit.id);
+
           cart = cart.filter(item => item.index !== index);
         }
       }
     }
 
     // ✅ ✅ 🔥 SYNCHRO UI AVEC CART
-    //const existing = cart.find(item => item.id === produit.id);
+
     const existing = cart.find(item => item.index === index);
     const realQty = existing ? existing.quantity : 0;
 
@@ -604,7 +595,7 @@ function changeQty(index, delta) {
   // ✅ UI toujours
   updateAddToCartButton();
   updateCartMobileBtn();
-  //localStorage.setItem("cart", JSON.stringify(cart));
+
 }
 
 /************************************************************
@@ -617,80 +608,14 @@ function changeQty(index, delta) {
  ************************************************************/
 function renderCart() {
 
-  //const isMobile = window.innerWidth <= 768 && window.outerWidth === window.innerWidth;
-  //const isMobileOrTablet = window.matchMedia("(max-width: 1024px)").matches;
-
   const table = document.querySelector("#cartSection table");
   const mobileDiv = document.getElementById("cartMobileList");
 
-  //if (isMobileOrTablet) {
   table.style.display = "none";
   mobileDiv.style.display = "block";
 
   renderCartMobile();
   return;
-  // }
-
-  /*const div = document.getElementById("cartList");
-  div.innerHTML = "";
- 
-  let total = 0;
- 
-  cart.forEach((item, i) => {
- 
-    const product = products[item.index];
- 
-    const brut = item.price * item.quantity;
-    const remise = Math.min(item.remise || 0, brut);
-    const net = brut - remise;
- 
-    total += net;
- 
-    const row = document.createElement("tr");
- 
-    row.innerHTML = `
- 
-  <td>
-    ${product && product.image
-        ? `<div class="img-container">
-           <img src="${product.image}" style="width:40px;height:40px;object-fit:cover;">
-         </div>`
-        : `<div style="width:40px;height:40px;background:#eee;text-align:center;line-height:40px;">📦</div>`
-      }
-  </td>
- 
-  <td>${item.name}</td>
- 
-  <td>${formatPrice(item.price)}</td>
- 
-  <td>
-    <input type="number"
-      value="${item.quantity}"
-      min="1"
-      onchange="updateQty(${i}, this.value)">
-  </td>
- 
-  <!-- ✅ COLONNE REMISE (AJOUT ICI) -->
-  <td>
-    <input type="number"
-      value="${item.remise || 0}"
-      min="0"
-      onchange="updateRemise(${i}, this.value)"
-      style="width:70px;">
-  </td>
- 
-  <!-- ✅ TOTAL NET UNIQUEMENT -->
-  <td>
-    <strong>${formatPrice(net)}</strong>
-  </td>
- 
-  <td>
-    <button onclick="removeItem(${i})">🗑️</button>
-  </td>
-`;
- 
-    div.appendChild(row);
-  });*/
 
   const totalEl = document.getElementById("total");
 
@@ -738,9 +663,6 @@ function renderCart() {
 
   mobileDiv.style.display = "none";
   table.style.display = "table";
-
-
-  //document.getElementById("total").innerText = formatPrice(total);
 }
 
 
@@ -759,7 +681,6 @@ function updateRemise(index, value) {
   localStorage.setItem("cart", JSON.stringify(cart));
 
   renderCart(); // ✅ uniquement ici
-  //updateFloatingCart();
 }
 
 
@@ -767,29 +688,6 @@ function updateRemise(index, value) {
 /************************************************************
  * 🔄 MODIFIER QUANTITÉ PANIER
  ************************************************************/
-/*function updateQty(i, val) {
- 
-  let newQty = parseInt(val) || 1;
- 
-  const product = products[cart[i].index];
-  const max = product?.stock || 0;
- 
-  // ✅ minimum Bloqué à 1
-  if (newQty < 1) newQty = 1;
- 
-  // ✅ maximum stock
-  if (newQty > max) newQty = max;
- 
-  cart[i].quantity = newQty;
- 
- 
-  localStorage.setItem("cart", JSON.stringify(cart));
- 
-  renderCart();
-  updateCartBadge();
-  updateFloatingCart(); // ✅ important
-  updateCartMobileBtn();
-}*/
 function updateQty(i, val) {
 
   let newQty = parseInt(val) || 1;
@@ -862,8 +760,6 @@ function validerPanier() {
   let totalRemise = 0;
   let totalNet = 0;
 
-  //const clientPhone = document.getElementById("ticketPhone")?.value || "";
-
   let clientPhone =
     document.getElementById("ticketPhone")?.value.trim() || "";
 
@@ -877,7 +773,7 @@ function validerPanier() {
 
   // ✅ sécurité panier vide
   if (cart.length === 0) {
-    alert("❌ Panier vide, impossible de valider la vente");
+    showToast("❌ Panier vide, impossible de valider la vente");
     return;
   }
 
@@ -887,7 +783,7 @@ function validerPanier() {
     const product = products[item.index];
 
     if (product.stock < item.quantity) {
-      alert(`❌ Stock insuffisant pour ${product.name}`);
+      showToast(`❌ Stock insuffisant pour ${product.name}`);
       return;
     }
 
@@ -921,7 +817,7 @@ function validerPanier() {
 
   // ✅ sécurité total
   if (totalNet === 0) {
-    alert("❌ Le montant de la vente est nul");
+    showToast("❌ Le montant de la vente est nul");
     return;
   }
 
@@ -931,7 +827,7 @@ function validerPanier() {
   if (paymentMethod === "credit") {
 
     if (!creditData) {
-      alert("❌ Veuillez saisir les infos crédit");
+      showToast("❌ Veuillez saisir les infos crédit");
       return;
     }
 
@@ -1003,8 +899,7 @@ function validerPanier() {
 
     totalBrut,
     totalRemise,
-    total: totalNet, // ✅ IMPORTANT
-    //clientPhone,
+    total: totalNet,
     clientPhone: salePhone,
 
     payment: {
@@ -1041,7 +936,7 @@ function validerPanier() {
   renderLowStock();
   updateCartMobileBtn();
 
-  alert("✅ Vente validée avec succès");
+  showToast("✅ Vente validée avec succès");
 
   document.querySelector('input[name="paymentMethod"][value="cash"]').checked = true;
   document.getElementById("ticketPhone").value = "";
@@ -1230,109 +1125,14 @@ function renderDashboard() {
   document.getElementById("todayTickets").innerText = totalTickets;
   document.getElementById("todayItems").innerText = totalItems;
 
-
-  // ✅ ✅ ✅ MOBILE (PLACÉ AU BON ENDROIT 🔥)
-  //const isMobile = window.innerWidth <= 768 && window.outerWidth === window.innerWidth;
-  //const isMobile = window.innerWidth <= 1025;
-  //const isMobileOrTablet  = window.matchMedia("(max-width: 1024px)").matches;
-
-  //if (isMobile) {
-
   document.querySelector("#todaySection table").style.display = "none";
 
   const mobileList = document.getElementById("salesListMobile");
   if (mobileList) mobileList.style.display = "flex";
 
-  //renderSalesMobile(summary);
   renderSalesMobile();
 
-  // return;
-  //}
 
-  // ✅ DESKTOP
-  /*const mobileList = document.getElementById("salesListMobile");
-  if (mobileList)
-    mobileList.style.display = "none";
- 
-  document.querySelector("#todaySection table").style.display = "table";
- 
-  // ✅ 2. DATA
-  // ✅ LISTE DES VENTES DU JOUR (TICKETS)
-  const todaySales = sales
-    .filter(s => new Date(s.date).toDateString() === today)
-    .sort((a, b) => new Date(b.date) - new Date(a.date));
- 
-  if (todaySales.length === 0) {
-    salesList.innerHTML = "<tr><td colspan='6'>Aucune vente aujourd’hui</td></tr>";
-    return;
-  }
- 
-  // ✅ PAGINATION
-  const totalPages = Math.ceil(todaySales.length / itemsPerPageToday) || 1;
- 
-  if (currentPageToday > totalPages) {
-    currentPageToday = totalPages;
-  }
- 
-  const start = (currentPageToday - 1) * itemsPerPageToday;
-  const paginated = todaySales.slice(start, start + itemsPerPageToday);
- 
-  // ✅ AFFICHAGE PAR TICKET
-  paginated.forEach((sale, index) => {
- 
-    const totalNet = (sale.items || []).reduce((sum, item) => {
-      const brut = item.price * item.quantity;
-      const remise = item.remise || 0;
-      return sum + (brut - remise);
-    }, 0);
- 
-    let totalPaid = 0;
- 
-    if (sale.payment?.type === "credit") {
-      totalPaid = (sale.payment.payments || [])
-        .reduce((sum, p) => sum + Number(p.amount || 0), 0);
-    } else {
-      totalPaid = totalNet;
-    }
- 
-    const remaining = Math.max(0, totalNet - totalPaid);
- 
-    const itemsCount = (sale.items || []).length;
- 
-    const row = document.createElement("tr");
- 
-    row.innerHTML = `
-    <td>${formatDateFR(sale.date)}</td>
- 
-    <td>${itemsCount} article${itemsCount > 1 ? "s" : ""}</td>
- 
-    <td>
-      <strong class="price-cell">
-        ${formatPrice(totalNet)} GNF
-      </strong>
-    </td>
- 
-    <td style="color:green;">
-      ✅ ${formatPrice(totalPaid)} GNF
-    </td>
- 
-    <td style="color:${remaining > 0 ? "orange" : "gray"};">
-      ${remaining > 0 ? `🟠 ${formatPrice(remaining)} GNF` : "-"}
-    </td>
- 
-    <td>
-      <button onclick="exportTicketPDF(${sale.id || index})">
-        📄 PDF
-      </button>
-    </td>
-  `;
- 
-    salesList.appendChild(row);
- 
-  });
- 
-  // ✅ pagination
-  renderPaginationToday(todaySales.length);*/
 }
 
 
@@ -1756,7 +1556,7 @@ function fixSales() {
 
   localStorage.setItem("sales", JSON.stringify(sales));
 
-  alert("✅ CA corrigé !");
+  showToast("✅ CA corrigé !");
 }
 
 /************************************************************
@@ -1795,7 +1595,7 @@ function onPaymentChange() {
 
   // ✅ ❌ BLOQUER DIRECT SI PANIER VIDE
   if (mode === "credit" && cart.length === 0) {
-    alert("🛒 Ajoutez un produit avant d'utiliser le crédit");
+    showToast("🛒 Ajoutez un produit avant d'utiliser le crédit");
 
     // ✅ revenir sur comptant
     document.querySelector('input[name="paymentMethod"][value="cash"]').checked = true;
@@ -1825,7 +1625,7 @@ function openCreditModal() {
 
   // ✅ sécurité panier vide (double protection)
   if (cart.length === 0) {
-    alert("🛒 Le panier est vide");
+    showToast("🛒 Le panier est vide");
 
     document.querySelector('input[name="paymentMethod"][value="cash"]').checked = true;
     return;
@@ -1902,27 +1702,11 @@ function openCreditModal() {
   }, 100);
 }
 
-/*function openCreditModal(){
- 
-  const modal = document.getElementById("creditModal");
-  modal.style.display = "flex";
- 
-  const total = cart.reduce((sum, i) => {
-  const brut = i.price * i.quantity;
-  const remise = Math.min(i.remise || 0, brut);
-  return sum + (brut - remise);
-}, 0);
- 
-  document.getElementById("paidNow").value = "";
-  document.getElementById("remaining").value = total;
-}*/
-
 function closeCreditModal() {
 
   document.getElementById("creditModal").style.display = "none";
 
   // reset si annulation
-  //document.getElementById("paymentMethod").value = "cash";
   //reset vers comptant
   document.querySelector('input[name="paymentMethod"][value="cash"]').checked = true;
 
@@ -1933,48 +1717,6 @@ function closeCreditModal() {
   renderCart(); // 🔥 refresh UI
 
 }
-
-/*function confirmCredit(){
- 
-  const paidNow = Number(document.getElementById("paidNow").value) || 0;
- 
-  const total = cart.reduce((sum, i) => {
-  const brut = i.price * i.quantity;
-  const remise = Math.min(i.remise || 0, brut);
-  return sum + (brut - remise);
-}, 0);
- 
-  const dueDate = document.getElementById("dueDate").value;
-  const clientName = document.getElementById("clientName").value.trim();
-  const clientPhone = document.getElementById("clientPhone").value.trim();
- 
-  if(!clientName){
-    alert("❌ Nom client obligatoire");
-    return;
-  }
- 
-  // ✅ ✅ ✅ ICI TU METS LE NOUVEAU MODÈLE
-  creditData = {
-    type: "credit",
-    total: total,
- 
-    payments: paidNow > 0 ? [{
-      amount: paidNow,
-      date: new Date().toISOString()
-    }] : [],
- 
-    remaining: total - paidNow,
- 
-    clientName,
-    clientPhone,
-    dueDate,
-  createdAt: new Date().toISOString(),
- 
-    status: (total - paidNow) > 0 ? "EN ATTENTE" : "PAYÉ"
-  };
- 
-  document.getElementById("creditModal").style.display = "none";
-}*/
 
 function confirmCredit() {
 
@@ -1992,13 +1734,13 @@ function confirmCredit() {
   const clientPhone = document.getElementById("clientPhone").value.trim();
 
   if (!clientName) {
-    alert("❌ Nom client obligatoire");
+    showToast("❌ Nom client obligatoire");
     return;
   }
 
   // ✅ ✅ ✅ SÉCURITÉ MONTANT
   if (paidNow > total) {
-    alert("❌ Le montant payé dépasse le total");
+    showToast("❌ Le montant payé dépasse le total");
     return;
   }
 
@@ -2032,30 +1774,6 @@ function confirmCredit() {
   renderCart(); // ✅ rafraîchit affichage total crédit
 }
 
-/*FILTRE CREDIT*/
-/*function filterCredits(credits){
- 
-  const clean = s => (s || "").toLowerCase().replace(/\s+/g, "");
- 
-  const searchRaw = document
-    .getElementById("searchCredit")
-    ?.value || "";
- 
-  const search = clean(searchRaw);
- 
-  if(!search) return credits;
- 
-  return credits.filter(c => {
- 
-    const name = clean(c.clientName);
-    const phone = clean(c.clientPhone);
- 
-    return (
-      name.includes(search) ||
-      phone.includes(search)
-    );
-  });
-}*/
 function filterCredits(credits) {
 
   const search = document
@@ -2162,14 +1880,9 @@ function renderCreditDashboard() {
 
   });
 
-  // ✅ RESPONSIVE SWITCH
-  //const isMobile = window.matchMedia("(max-width: 768px)").matches;
-  //const isMobileOrTablet = window.matchMedia("(max-width: 1024px)").matches;
-
   const table = document.getElementById("creditList").closest("table");
   const mobile = document.getElementById("creditMobileList");
 
-  //if (isMobileOrTablet) {
   if (table)
     table.style.display = "none";
   if (mobile)
@@ -2178,84 +1891,8 @@ function renderCreditDashboard() {
   // ✅ on envoie les données déjà calculées
   renderCreditMobile(credits, totalCredit);
 
-  return; // ✅ STOP -> ne pas exécuter le desktop
-  //PLus d'affichage tableau un affichage unique mobile/desktop
-  // }
-  /*else {
-    if (table)
-      table.style.display = "table";
-    if (mobile)
-      mobile.style.display = "none";
-  }
- 
-  if (filteredCredits.length === 0) {
-    container.innerHTML = "<tr><td colspan='6'>✅ Aucun crédit en cours</td></tr>";
-    totalDiv.innerText = "💰 Encours total : 0 GNF";
-    return;
-  }
- 
-  filteredCredits.forEach(c => {
- 
-    const dueDate = c.dueDate ? new Date(c.dueDate) : null;
- 
-    let statusColor = "orange";
-    let statusLabel = "EN ATTENTE";
- 
-    if (c.remaining <= 0) {
-      statusColor = "green";
-      statusLabel = "PAYÉ";
-    } else if (dueDate && dueDate < today) {
-      statusColor = "red";
-      statusLabel = "EN RETARD";
-    }
- 
-    const row = document.createElement("tr");
- 
-    row.innerHTML = `
-  <td><strong>${c.clientName}</strong></td>
-  <td>${c.clientPhone || "-"}</td>
- 
-  <td><strong>${formatPrice(c.remaining)} GNF</strong></td>
- 
-  <td>
-    ${c.createdAt && !isNaN(new Date(c.createdAt))
-        ? formatDateFR(c.createdAt)
-        : "-"
-      }
-  </td>
- 
-  <td>${formatDateFR(c.dueDate)}</td>
- 
-  <!-- ✅ DATE PAIEMENT uniquement si soldé -->
-  <td>
-    ${c.remaining <= 0 && c.payments && c.payments.length > 0
-        ? formatDateFR(c.payments[c.payments.length - 1].date)
-        : "-"
-      }
-  </td>
- 
-  <td style="color:${statusColor}; font-weight:bold;">
-    ${statusLabel}
-  </td>
- 
-  <td>
-    <button onclick="exportCreditPDF(${c.index})">📄 PDF</button>
- 
-    ${c.remaining > 0
-        ? `<button onclick="addPayment(${c.index})">💰 Payer</button>`
-        : `<span style="color:green; font-weight:bold;">✅ Soldé</span>`
-      }
-  </td>
-`;
- 
-    if (c.remaining <= 0) {
-      row.style.opacity = "0.6";
-    }
- 
-    container.appendChild(row);
-  });
- 
-  totalDiv.innerText = `💰 Encours total : ${formatPrice(totalCredit)} GNF`;*/
+  return; // ✅ PLus d'affichage tableau un affichage unique mobile/desktop
+
 }
 
 
@@ -2286,13 +1923,13 @@ function addPayment(index) {
   amount = Number(amount);
 
   if (!amount || amount <= 0) {
-    alert("❌ Montant invalide");
+    showToast("❌ Montant invalide");
     return;
   }
 
   // ✅ ✅ ✅ BLOQUER SI DÉPASSEMENT
   if (amount > remaining) {
-    alert(`❌ Le montant dépasse la dette (${formatPrice(remaining)} GNF)`);
+    showToast(`❌ Le montant dépasse la dette (${formatPrice(remaining)} GNF)`);
     return;
   }
 
@@ -2324,71 +1961,8 @@ function addPayment(index) {
   // ✅ refresh UI
   renderCreditDashboard();
 
-  alert("✅ Paiement enregistré");
+  showToast("✅ Paiement enregistré");
 }
-
-
-/*function addPayment(index){
- 
-  const sale = sales[index];
- 
-  if (!sale.payment || sale.payment.type !== "credit")
-      return;
- 
-  let amount = prompt(
-`💰 Montant payé (reste : ${formatPrice(sale.payment.remaining)} GNF) :`,
-          0);
- 
-  amount = Number(amount);
- 
-  if (!amount || amount <= 0) {
-      alert("❌ Montant invalide");
-      return;
-  }
-  
-   
-// ✅ ✅ ✅ ICI → recalcul AVANT paiement
-  const totalPaid = (sale.payment.payments || [])
-    .reduce((sum, p) => sum + p.amount, 0);
- 
-  const remaining = sale.payment.total - totalPaid;
- 
- 
-  // ✅ ✅ ✅ BLOCK SI SUPÉRIEUR À LA DETTE
-  const remaining = sale.payment.remaining;
- 
-  if (amount > remaining) {
-      alert(`❌ Le montant dépasse la dette (${formatPrice(remaining)} GNF)`);
-      return;
-  }
- 
- 
-  // ✅ init si vide
-  if(!sale.payment.payments){
-    sale.payment.payments = [];
-  }
- 
-  // ✅ ajouter paiement
-  sale.payment.payments.push({
-    amount: amount,
-    date: new Date().toISOString()
-  });
- 
-  // ✅ recalcul
-  const totalPaid = sale.payment.payments
-    .reduce((sum, p) => sum + p.amount, 0);
- 
-  sale.payment.remaining = sale.payment.total - totalPaid;
- 
-  sale.payment.status =
-    sale.payment.remaining <= 0 ? "PAYÉ" : "EN ATTENTE";
- 
-  localStorage.setItem("sales", JSON.stringify(sales));
- 
-  renderCreditDashboard();
- 
-  alert("✅ Paiement ajouté");
-}*/
 
 // Mode de paiement Radio
 function getPaymentMethod() {

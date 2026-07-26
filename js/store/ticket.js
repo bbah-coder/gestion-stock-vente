@@ -360,7 +360,7 @@ function showTicketDetail(id) {
   console.log("DETAIL TICKET:", t);
 
   if (!t) {
-    alert("❌ Ticket introuvable");
+    showToast("❌ Ticket introuvable");
     return;
   }
 
@@ -428,7 +428,7 @@ function showTicketDetail(id) {
 
   text += `\n✅ Total net : ${formatPrice(totalNet)} GNF`;
 
-  alert(text);
+  showToast(text);
 }
 
 /*PDF LABEL */
@@ -471,7 +471,7 @@ function exportTicketPDF(id) {
   const store = getStoreInfo();
 
   if (!t) {
-    alert("❌ Ticket introuvable");
+    showToast("❌ Ticket introuvable");
     return;
   }
 
@@ -558,47 +558,7 @@ function exportTicketPDF(id) {
     );
 
     y += 8;
-    /*doc.text(cleanText(item.name), 5, y);
-    y += 5;
 
-    // ✅ DETAIL
-    if (item.isWholesale) {
-
-      doc.text(
-        cleanText(
-          `📦 Prix gros  : ${formatPrice(item.wholesalePrice)} GNF`
-        ),
-        5,
-        y
-      );
-
-    } else {
-
-      doc.text(
-        cleanText(
-          `🛒 Prix detail : ${formatPrice(item.detailPrice)} GNF`
-        ),
-        5,
-        y
-      );
-
-    }
-
-    y += 5;
-    doc.text(
-      cleanText(
-        `${qty} x ${formatPrice(price)} GNF = ${formatPrice(subtotal)} GNF`
-      ),
-      5,
-      y
-    );*/
-    /*doc.text(
-      cleanText(`${qty} x ${formatPrice(price)} GNF = ${formatPrice(subtotal)} GNF`),
-      5,
-      y
-    );
-
-    y += 5; */
   });
 
   // ✅ LIGNE
