@@ -281,6 +281,7 @@ async function showRegister() {
   document.getElementById("formRegister").style.display = "block";
   document.getElementById("pdfContainer").style.display = "block";
   document.getElementById("formSection").style.display = "none";
+  document.getElementById("costSection").style.display = "none";
 
 
   //CHARGER LES MAGASIN
@@ -848,6 +849,7 @@ function showUsers() {
   //CACHER LES AUTRES SECTIONS
   hideAllSectionsForms();
   document.getElementById("importSection").style.display = "none";
+  document.getElementById("costSection").style.display = "none";
 
   document.getElementById("formSection").style.display = "none";
   document.getElementById("usersSection").style.display = "block";
@@ -869,6 +871,7 @@ function hideAllSectionsForms() {
   document.getElementById("formRegister").style.display = "none";
   document.getElementById("usersSection").style.display = "none";
   document.getElementById("shopsSection").style.display = "none";
+  document.getElementById("costSection").style.display = "none";
 }
 
 /************************************************************
@@ -885,6 +888,7 @@ function showStoreInfo() {
   document.getElementById("pdfContainer").style.display = "block";
   document.getElementById("formSection").style.display = "none";
   document.getElementById("importSection").style.display = "none";
+  document.getElementById("costSection").style.display = "none";
 
   loadStoreForm();
 

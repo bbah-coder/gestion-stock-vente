@@ -17,6 +17,7 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.23/jspdf.plugin.autotable.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
   <!--Supabase-->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
 
@@ -62,6 +63,7 @@
     <button id="btnStore" onclick="showStoreInfo(); closeMobileMenu()" class="btn secondary">🏪 Info Magasin</button>
     <button class="btnManageShops" onclick="showShops(); closeMobileMenu()" style="display:none;">🏪 Magasins</button>
     <button onclick="showUsers(); closeMobileMenu()">👤 Utilisateurs</button>
+    <button onclick="showCostModule(); closeMobileMenu()">📦 Coûts d'achat </button>
     <button onclick="switchUser()">🔁 Changer de compte</button>
     <button onclick="logout()" class="logout">🔌 Déconnexion</button>
   </div>
@@ -102,6 +104,9 @@
 
           <button onclick="showUsers(); closeMobileMenu()">
             👥 Utilisateurs
+          </button>
+          <button onclick="showCostModule(); closeMobileMenu()">
+            📦 Coûts d'achat
           </button>
         </div>
       </div>
@@ -252,7 +257,166 @@
       </div>
     </section>
 
+    <!--===MODULE CALCUL DES COÛTS=======-->
 
+    <section id="costSection" class="view-section" style="display:none;">
+
+      <div class="cost-header">
+
+        <div class="cost-header-icon">
+          📦
+        </div>
+
+        <div>
+          <h2>Calcul des coûts d'achat</h2>
+          <p>
+            Calcul du coût réel avec répartition
+            des frais annexes
+          </p>
+        </div>
+
+      </div>
+
+      <!-- Méthode -->
+      <div class="cost-card">
+
+        <label>Méthode de répartition</label>
+
+        <select id="costMethod">
+          <option value="value">
+            Prorata valeur d'achat
+          </option>
+
+          <option value="quantity">
+            Répartition par quantité
+          </option>
+        </select>
+
+      </div>
+
+      <!-- Frais -->
+      <div class="cost-card">
+
+        <h3>Frais annexes</h3>
+
+        <div class="cost-extra-grid">
+
+          <div class="cost-input-group">
+            <label>🚚 Transport</label>
+            <input id="transportCost" type="number" placeholder="0">
+          </div>
+
+          <div class="cost-input-group">
+            <label>🛃 Douane</label>
+            <input id="customsCost" type="number" placeholder="0">
+          </div>
+
+          <div class="cost-input-group">
+            <label>📦 Divers</label>
+            <input id="otherCost" type="number" placeholder="0">
+          </div>
+
+        </div>
+
+      </div>
+
+      <!-- Produits -->
+      <div class="cost-card">
+
+        <h3>Articles</h3>
+        <!-- ==AJOUT D'UN ARTICLE=========== -->
+        <div class="cost-add-form">
+          <!-- Produit -->
+          <div class="cost-input-group">
+
+            <label>Produit</label>
+            <input type="text" id="costProductSearch" placeholder="🔍 Rechercher un produit..." autocomplete="off"
+              oninput="filterCostProducts()">
+            <div id="costProductDropdown" class="cost-product-dropdown"></div>
+          </div>
+
+          <div class="cost-input-group">
+            <label>Quantité</label>
+            <input type="number" id="costQuantity" min="1" placeholder="0">
+          </div>
+
+          <div class="cost-input-group">
+            <label>Prix d'achat</label>
+            <input type="number" id="costPurchasePrice" min="1" placeholder="0">
+          </div>
+        </div>
+
+        <button type="button" onclick="addCostItemFromForm()">
+          ➕ Ajouter
+        </button>
+      </div>
+
+      <div id="costItemsContainer"></div>
+
+      <!--<div class="cost-item-actions">-->
+      <!--- <button onclick="renderAddCostItemForm()">
+              ➕ Ajouter un article
+            </button>
+
+            <button onclick="startNewCostCalculation()">
+              🆕 Nouveau calcul
+            </button>-->
+
+      <!--<button onclick="openCostImport()">
+          📊 Import Excel
+        </button> -->
+
+      <!--</div>-->
+
+      <input type="file" id="costExcelFile" accept=".xlsx,.xls" style="display:none;" onchange="importCostExcel(event)">
+
+      <!-- Actions -->
+      <div class="cost-card">
+        <div class="cost-actions">
+
+          <button onclick="calculateCostView()">
+            🧮 Calculer et enregistrer
+          </button>
+
+          <button onclick="openCostImport()">
+            📊 Import Excel
+          </button>
+
+          <button onclick="showCostHistory()">
+            📜 Historique
+          </button>
+
+        </div>
+      </div>
+
+      <!-- Résultats -->
+      <div id="costResults"></div>
+
+    </section>
+    <!--===HISTORIQUE DES CALCULS============-->
+    <section id="costHistorySection" class="view-section" style="display:none;">
+
+      <div class="cost-history-header">
+
+        <button class="back-btn" onclick="showCostModule()">
+          ←
+        </button>
+
+        <div>
+
+          <h2>📜 Historique des calculs</h2>
+
+          <p>
+            Consulter les calculs enregistrés
+          </p>
+
+        </div>
+
+      </div>
+
+      <div id="costHistoryList"></div>
+
+    </section>
     <!-- ========= FORMULAIRE ========= -->
     <section id="formSection" class="card" style="display:none">
       <h2 id="formTitle">➕ Ajouter un produit</h2>
@@ -296,7 +460,7 @@
 
       <!-- ✅ Bouton propre -->
       <button class="btn-upload" onclick="document.getElementById('fileInput').click()">
-        📂 Choisir un fichier
+        📂 Choisir un fichier (CSV)
       </button>
 
       <!-- ✅ Nom du fichier -->
@@ -306,12 +470,20 @@
 
       <!-- ✅ bouton import -->
       <button class="btn-primary" onclick="importCSV()">
-        ✅ Importer les produits
+        ✅ Importer les produits (CSV)
       </button>
+
+      <!-- ✅ bouton import Excel -->
+      <button onclick="openExcelImport()">
+        📊 Import Excel
+      </button>
+
+      <input type="file" id="importExcelFile" accept=".xlsx,.xls" style="display:none;"
+        onchange="importExcelProducts(event)">
 
       <!-- ✅ info -->
       <p class="import-info">
-        Format : nom, prix, stock, image (optionnelle), catégorie
+        Format : nom, prix,prix gros, seuil gros, stock, image (optionnelle), catégorie
       </p>
 
     </section>
@@ -560,6 +732,7 @@
       </div>
     </section>
 
+
     <!--====== FOOTER ===== -->
     <footer class="app-footer">
       <div class="footer-content">
@@ -587,6 +760,9 @@
   <script src="js/admin/pdf.js"></script>
   <script src="js/admin/app.js"></script>
   <script src="js/admin/mobileAdmin.js"></script>
+  <script src="js/admin/views/costView.js"></script>
+  <script src="js/admin/models/costModel.js"></script>
+  <script src="js/admin/controllers/costController.js"></script>
 
 
 </body>

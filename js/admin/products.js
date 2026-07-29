@@ -564,13 +564,31 @@ function importCSV() {
           }
         }
 
-        // ✅ fusion stock
         existingProduct.stock += stock;
-        // ✅ mettre à jour stock initial aussi
-        if (existingProduct.initialStock === undefined) {
-          existingProduct.initialStock = existingProduct.stock;
+
+        // Mise à jour compteur entrées
+        existingProduct.entries ??= 0;
+        existingProduct.entries += stock;
+        //On crée un mouvement de stock
+        stockMovements.unshift({
+          product: existingProduct.name,
+          type: "entry",
+          reason: "achat",
+          quantity: stock,
+          comment: "Import csv",
+          user: localStorage.getItem("username"),
+          role: localStorage.getItem("userRole"),
+          date: new Date().toLocaleString("fr-FR")
+
+        });
+
+        // Ne jamais modifier le stock initial
+        if (
+          existingProduct.initialStock === undefined
+        ) {
+          existingProduct.initialStock =
+            existingProduct.stock - stock;
         }
-        existingProduct.initialStock += stock;
         // ✅ sécurité sold
         if (existingProduct.sold === undefined) {
           existingProduct.sold = 0;
@@ -607,28 +625,37 @@ function importCSV() {
           wholesaleMinQty,
           stock,
           initialStock: stock,
+          entries: 0,
           barcode: "PRD-" + Date.now().toString().slice(-6), //Ajout QR-CODE
           sold: 0,
           image: image || null,
           category: category,
           // Date import
-          createAt: new Date().toLocaleString("fr-FR"),
+          //createAt: new Date().toLocaleString("fr-FR"),
+          createdAt:
+            new Date()
+              .toLocaleString(
+                "fr-FR"
+              ),
           //Utilisateur import
           createdBy: localStorage.getItem("username"),
           //Rôle utilisateur
           createdRole: localStorage.getItem("userRole"),
 
         });
-
         count++;
       }
 
-
     });
+
 
     // ✅ sauvegarde
     localStorage.setItem("products", JSON.stringify(products));
     localStorage.setItem("products_updated_at", Date.now() + "_" + Math.random());
+    localStorage.setItem(
+      "stockMovements",
+      JSON.stringify(stockMovements)
+    );
 
 
     render();
@@ -1085,6 +1112,306 @@ function changeDays(delta) {
   input.value = value;
 
   updateInactiveProducts(); // ✅ refresh auto
+}
+
+//--------------------------------------------------------------------
+// ✅ FUNCTION : Ouvrir le fichier Excel
+//--------------------------------------------------------------------
+function openExcelImport() {
+
+  document.getElementById(
+    "importExcelFile"
+  ).click();
+
+}
+
+//------------------------------------------------
+// ✅ FONCTION : Import produit via fichier Excel
+//------------------------------------------------
+
+function importExcelProducts(event) {
+
+  const file = event.target.files[0];
+
+  if (!file) {
+
+    showToast(
+      "Aucun fichier sélectionné"
+    );
+
+    return;
+  }
+
+  const reader = new FileReader();
+
+  reader.onload = function (e) {
+
+    const data =
+      new Uint8Array(
+        e.target.result
+      );
+
+    const workbook =
+      XLSX.read(data, {
+        type: "array"
+      });
+
+    const sheet =
+      workbook.Sheets[
+      workbook.SheetNames[0]
+      ];
+
+    const rows =
+      XLSX.utils.sheet_to_json(
+        sheet,
+        {
+          defval: ""
+        }
+      );
+
+    let count = 0;
+
+    rows.forEach(row => {
+
+      const name =
+        String(
+          row["Nom"] || ""
+        ).trim();
+
+      const price =
+        parseFloat(
+          row["Prix"] || 0
+        );
+
+      const wholesalePrice =
+        parseFloat(
+          row["Prix Gros"] || 0
+        ) || "";
+
+      const wholesaleMinQty =
+        parseInt(
+          row["Seuil Gros"] || 0
+        ) || "";
+
+      const stock =
+        parseInt(
+          row["Stock"] || 0
+        );
+
+      const image =
+        String(
+          row["Image"] || ""
+        ).trim();
+
+      const category =
+        String(
+          row["Catégorie"] || "Autre"
+        ).trim();
+
+      if (
+        !name ||
+        isNaN(price) ||
+        isNaN(stock)
+      ) {
+        return;
+      }
+
+      const normalizedName =
+        name.toLowerCase().trim();
+
+      const existingIndex =
+        products.findIndex(
+          p =>
+            p.name
+              .toLowerCase()
+              .trim() ===
+            normalizedName
+        );
+
+      if (existingIndex !== -1) {
+
+        const existingProduct =
+          products[existingIndex];
+
+        const confirmStock =
+          confirm(
+            `⚠️ Produit "${existingProduct.name}" existe déjà\n\n` +
+            `Stock actuel : ${existingProduct.stock}\n` +
+            `Stock ajouté : ${stock}\n\n` +
+            `Continuer ?`
+          );
+
+        if (!confirmStock) {
+          return;
+        }
+
+        if (
+          Number(existingProduct.price) !==
+          Number(price)
+        ) {
+
+          const confirmPrice =
+            confirm(
+              `⚠️ Prix différent détecté\n\n` +
+              `Ancien : ${existingProduct.price}\n` +
+              `Nouveau : ${price}\n\n` +
+              `Mettre à jour le prix ?`
+            );
+
+          if (confirmPrice) {
+
+            existingProduct.price =
+              price;
+
+          }
+        }
+
+        existingProduct.stock += stock;
+
+        // Mise à jour compteur entrées
+        existingProduct.entries ??= 0;
+        existingProduct.entries += stock;
+
+        stockMovements.unshift({
+          product: existingProduct.name,
+          type: "entry",
+          reason: "achat",
+          quantity: stock,
+          comment: "Import Excel",
+          user: localStorage.getItem("username"),
+          role: localStorage.getItem("userRole"),
+          date: new Date().toLocaleString("fr-FR")
+        });
+
+        // Ne jamais modifier le stock initial
+        if (
+          existingProduct.initialStock === undefined
+        ) {
+          existingProduct.initialStock =
+            existingProduct.stock - stock;
+        }
+
+        existingProduct.sold ??= 0;
+
+        if (image) {
+
+          existingProduct.image =
+            image;
+
+        }
+
+        if (
+          category &&
+          existingProduct.category !==
+          category
+        ) {
+
+          const confirmCategory =
+            confirm(
+              `Mettre à jour la catégorie de ${existingProduct.name} ?\n\n` +
+              `Ancienne : ${existingProduct.category}\n` +
+              `Nouvelle : ${category}`
+            );
+
+          if (confirmCategory) {
+
+            existingProduct.category =
+              category;
+
+          }
+        }
+
+      } else {
+
+        products.push({
+          name,
+          price,
+          wholesalePrice,
+          wholesaleMinQty,
+          stock,
+          initialStock: stock,
+          entries: 0,
+          barcode:
+            "PRD-" +
+            Date.now()
+              .toString()
+              .slice(-6) +
+            Math.floor(
+              Math.random() * 100
+            ),
+
+          sold: 0,
+          image:
+            image || null,
+          category,
+          createdAt:
+            new Date()
+              .toLocaleString(
+                "fr-FR"
+              ),
+          createdBy:
+            localStorage.getItem(
+              "username"
+            ),
+          createdRole:
+            localStorage.getItem(
+              "userRole"
+            )
+
+        });
+
+        count++;
+
+      }
+
+    });
+
+    localStorage.setItem(
+      "products",
+      JSON.stringify(products)
+    );
+
+    localStorage.setItem(
+      "products_updated_at",
+      Date.now() +
+      "_" +
+      Math.random()
+    );
+
+    localStorage.setItem(
+      "stockMovements",
+      JSON.stringify(stockMovements)
+    );
+
+    render();
+
+    showToast(
+      count +
+      " nouveaux produits importés ✅"
+    );
+
+  };
+
+  reader.onerror = function () {
+
+    showToast(
+      "Erreur lecture fichier"
+    );
+
+  };
+
+  reader.readAsArrayBuffer(file);
+
+  document.getElementById(
+    "importExcelFile"
+  ).value = "";
+
+  document.getElementById(
+    "tableCard"
+  )?.scrollIntoView({
+    behavior: "smooth"
+  });
+
 }
 
 

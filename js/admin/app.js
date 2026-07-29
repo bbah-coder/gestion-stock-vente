@@ -310,6 +310,7 @@ function showAdminSection(section) {
 
     document.getElementById("pdfContainer").style.display = "none";
     document.getElementById("infoShop").style.display = "none";
+    document.getElementById("costSection").style.display = "none";
   }
 
   if (section === "import") {
@@ -320,6 +321,7 @@ function showAdminSection(section) {
 
     // ✅ cacher la date PDF
     document.getElementById("pdfContainer").style.display = "none";
+
 
     // ✅ attacher l'event file input (une seule fois proprement)
     const input = document.getElementById("fileInput");

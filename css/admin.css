@@ -1587,3 +1587,217 @@ td:last-child {
 .dropdown-menu button:hover {
   background: #f8f9fa;
 }
+
+/*CSS COST MODULE*/
+/* ==========================================
+   COST MODULE
+========================================== */
+
+.cost-card {
+  background: #fff;
+  padding: 15px;
+  border-radius: 12px;
+  margin-bottom: 15px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, .08);
+}
+
+.cost-card h3 {
+  margin-bottom: 10px;
+}
+
+.cost-extra-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+
+.cost-card input,
+.cost-card select {
+  width: 100%;
+  padding: 10px;
+}
+
+
+.cost-item-card {
+  background: #fff;
+  border-radius: 12px;
+  padding: 15px;
+  margin-bottom: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, .08);
+  border-left: 4px solid #3498db;
+}
+
+.cost-item-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.cost-item-card strong {
+  font-size: 16px;
+}
+
+.cost-actions {
+  display: flex;
+  gap: 10px;
+  margin: 20px 0;
+}
+
+.cost-actions button {
+  flex: 1;
+  height: 48px;
+  font-weight: 600;
+}
+
+#costResults {
+  margin-top: 25px;
+}
+
+.cost-result-card {
+  background: #fff;
+  border-radius: 15px;
+  padding: 18px;
+  margin-bottom: 12px;
+  border-left: 5px solid #2ecc71;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, .08);
+}
+
+.cost-real-price {
+  color: #2ecc71;
+  font-size: 20px;
+  font-weight: bold;
+}
+
+@media (max-width:768px) {
+  .cost-actions {
+    flex-direction: column;
+  }
+
+}
+
+.cost-extra-grid {
+  display: grid;
+  grid-template-columns:
+    repeat(auto-fit, minmax(220px, 1fr));
+  gap: 15px;
+  margin-top: 15px;
+}
+
+.cost-input-group {
+  background: #fff;
+  border-radius: 12px;
+  padding: 12px;
+  box-shadow:
+    0 2px 6px rgba(0, 0, 0, .08);
+
+}
+
+.cost-input-group label {
+  display: block;
+  font-weight: 600;
+  margin-bottom: 8px;
+  color: #2c3e50;
+}
+
+.cost-input-group input {
+  width: 100%;
+  height: 45px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 0 12px;
+  font-size: 15px;
+  box-sizing: border-box;
+}
+
+.cost-input-group input:focus {
+  outline: none;
+  border-color: #3498db;
+  box-shadow:
+    0 0 0 3px rgba(52, 152, 219, .15);
+}
+
+.cost-header {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  background: #ffffff;
+  padding: 20px;
+  border-radius: 16px;
+  margin-bottom: 20px;
+  box-shadow:
+    0 4px 12px rgba(0, 0, 0, .08);
+}
+
+.cost-header-icon {
+  width: 60px;
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 28px;
+  border-radius: 15px;
+  background:
+    linear-gradient(135deg,
+      #3498db,
+      #2980b9);
+  color: white;
+}
+
+.cost-header h2 {
+  margin: 0;
+  font-size: 26px;
+}
+
+.cost-header p {
+  margin: 4px 0 0;
+  color: #777;
+  font-size: 14px;
+}
+
+.cost-history-header {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  background: #fff;
+  padding: 20px;
+  border-radius: 16px;
+  margin-bottom: 20px;
+  box-shadow:
+    0 4px 12px rgba(0, 0, 0, .08);
+}
+
+.back-btn {
+  width: 45px;
+  height: 45px;
+  border: none;
+  border-radius: 12px;
+  background: #3498db;
+  color: #fff;
+  font-size: 18px;
+  cursor: pointer;
+}
+
+.back-btn:hover {
+  background: #2980b9;
+}
+
+.cost-history-header h2 {
+  margin: 0;
+}
+
+.cost-history-header p {
+  margin: 5px 0 0;
+  color: #666;
+  font-size: 14px;
+}
+
+/*CSS HISTORY COST*/
+.cost-history-load-more {
+  text-align: center;
+  margin-top: 15px;
+}
+
+.cost-history-load-more button {
+  min-width: 180px;
+}
