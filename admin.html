@@ -203,9 +203,7 @@
           <button class="btn-save" onclick="createAccount()">
             👤 Créer le compte
           </button>
-
         </div>
-
       </div>
 
     </section>
@@ -221,15 +219,10 @@
     </section>
 
     <section id="usersSection" class="hidden">
-
       <div class="auth-box">
-
         <h3>👤 Utilisateurs</h3>
-
         <div id="usersList"></div>
-
         <button onclick="hideUsers()" class="btn secondary">⬅ Retour</button>
-
       </div>
 
     </section>
@@ -245,9 +238,79 @@
 
         <!-- ✅ FORM -->
         <div class="store-form">
+          <label>
+            🏪 Nom du magasin
+          </label>
           <input id="storeName" placeholder="Nom magasin">
+          <label>
+            📞 Téléphone
+          </label>
           <input id="storePhone" placeholder="Téléphone">
+          <label>
+            🏪 Adresse
+          </label>
           <input id="storeAddress" placeholder="Adresse">
+          <div class="form-group">
+            <label>
+              👥 Nombre d'utilisateurs
+            </label>
+            <select id="subscriptionPlan">
+              <option value="">
+                Choisir une formule
+              </option>
+              <option value="starter">
+                1 à 2 utilisateurs
+                (200 000 GNF / mois)
+              </option>
+              <option value="business">
+                3 à 5 utilisateurs
+                (250 000 GNF / mois)
+              </option>
+              <option value="enterprise">
+                6 à 10 utilisateurs
+                (400 000 GNF / mois)
+              </option>
+            </select>
+          </div>
+          <!--Info consommation-->
+          <div id="subscriptionInfoCard" class="subscription-card" style="display:none;">
+            <div class="subscription-title">
+              📋 Consommation abonnement
+            </div>
+            <div class="subscription-row">
+              <span>Formule :</span>
+              <strong id="subscriptionPlanLabel">
+                -
+              </strong>
+            </div>
+            <div class="subscription-row">
+              <span>Utilisateurs :</span>
+              <strong>
+                <span id="currentUsersCount">
+                  0
+                </span>
+                /
+                <span id="maxUsersCount">
+                  0
+                </span>
+              </strong>
+            </div>
+
+            <div class="subscription-row">
+              <span>Montant :</span>
+              <strong id="subscriptionPrice">
+                0 GNF
+              </strong>
+            </div>
+
+            <div class="subscription-progress">
+
+              <div id="subscriptionProgressBar" class="subscription-progress-bar">
+              </div>
+
+            </div>
+
+          </div>
 
           <button class="btn-save" onclick="saveStoreInfo()">
             💾 Enregistrer

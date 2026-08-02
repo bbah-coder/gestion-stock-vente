@@ -86,10 +86,6 @@ async function loadCurrentShop() {
       .eq("username", username)
       .single();
 
-  /*if (profileError || !profile?.shop_id) {
-    return null;
-  }*/
-
   if (profileError) {
     return null;
   }

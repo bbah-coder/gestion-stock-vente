@@ -24,7 +24,7 @@ async function initApp() {
       showToast(
         "🏪 Créez votre premier magasin"
       );
-
+      lockAppUntilStoreCreated();
       showStoreInfo();
 
       return;

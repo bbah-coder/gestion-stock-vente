@@ -1801,3 +1801,39 @@ td:last-child {
 .cost-history-load-more button {
   min-width: 180px;
 }
+
+/*CSS SUBSCRIPTION ABONNEMENT*/
+.subscription-card {
+  margin-top: 15px;
+  padding: 15px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+}
+
+.subscription-title {
+  font-weight: 600;
+  margin-bottom: 10px;
+  color: #2563eb;
+}
+
+.subscription-row {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.subscription-progress {
+  height: 10px;
+  background: #e5e7eb;
+  border-radius: 999px;
+  overflow: hidden;
+  margin-top: 10px;
+}
+
+.subscription-progress-bar {
+  height: 100%;
+  width: 0%;
+  background: #22c55e;
+  transition: .3s;
+}

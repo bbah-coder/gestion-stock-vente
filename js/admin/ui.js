@@ -334,6 +334,19 @@ async function createAccount() {
 
     return;
   }
+  // Vérifier la limite de l'abonnement
+  if (!isSuperAdmin()) {
+    const canCreate =
+      await canCreateMoreUsers(
+        shopId
+      );
+    if (!canCreate) {
+      showToast(
+        "⛔ Limite d'utilisateurs atteinte pour votre abonnement"
+      );
+      return;
+    }
+  }
 
   // ✅ validations
   if (!username || !password) {
@@ -454,6 +467,44 @@ async function createAccount() {
   }
 }
 
+/***********************************************************************
+ * FUNCTION : Vérifie si le magasin peut encore créer des utilisateurs
+ ***********************************************************************/
+async function canCreateMoreUsers(shopId) {
+
+  if (!shopId) {
+    return false;
+  }
+  // Récupérer les informations du magasin
+  const { data: shop, error: shopError } =
+    await supabaseClient
+      .from("shops")
+      .select("max_users")
+      .eq("id", shopId)
+      .single();
+
+  if (shopError || !shop) {
+    console.error(shopError);
+    return false;
+  }
+  // Compter les utilisateurs du magasin
+  const { count, error: countError } =
+    await supabaseClient
+      .from("profiles")
+      .select(
+        "*",
+        { count: "exact", head: true }
+      )
+      .eq("shop_id", shopId);
+
+  if (countError) {
+    console.error(countError);
+    return false;
+  }
+  return count < shop.max_users;
+
+}
+
 /************************************************************
  * FUNCTION : La vue liste des users
  ************************************************************/
@@ -474,7 +525,8 @@ function displayUsers(users) {
         <small>(${user.role})</small>
 
        ${isSuperAdmin()
-        ? `<br><small>🏪 ${user.shops?.name || "Aucun magasin"}</small>`
+        ? `<br><small>🏪 ${user.shops?.name || "Aucun magasin"}</small>
+           <br><small style="color:#2563eb;">👥 ${user.users_count || 0}/${user.max_users || 0}utilisateurs</small>`
         : ""
       }
     </div>
@@ -520,22 +572,13 @@ async function renderUsers() {
 
     console.log("SESSION :", session);
 
-
-    /*const currentShop = getCurrentShop();
-
-    const { data: users, error } =
-      await supabaseClient
-        .from("profiles")
-        .select("*")
-        .eq("shop_id", currentShop.id);*/
-
     const currentShop = getCurrentShop();
 
     let query = supabaseClient
       .from("profiles")
       .select(`
         *,
-        shops(name)
+        shops(name, max_users, subscription_plan)
        `);
 
     // ✅ SUPER ADMIN
@@ -549,6 +592,36 @@ async function renderUsers() {
 
     const { data: users, error } =
       await query;
+
+    //Récupération des magasins users
+    for (const user of users || []) {
+      if (!user.shop_id) continue;
+
+      console.log(
+        "USER",
+        user.username,
+        user.shop_id
+      );
+
+      const usage =
+        await getShopUserUsage(
+          user.shop_id
+        );
+
+      console.log(
+        "USAGE",
+        usage
+      );
+
+      user.users_count =
+        usage.currentUsers;
+
+      user.max_users =
+        usage.maxUsers;
+
+
+
+    }
 
     console.log("USERS SUPABASE :", users);
     console.log("ERROR SUPABASE :", error);
@@ -878,7 +951,7 @@ function hideAllSectionsForms() {
  * INFO MAGASIN POUR HEADER TICKET DE CAISSE
  ***********************************************************/
 
-function showStoreInfo() {
+async function showStoreInfo() {
   // ✅ cacher les autres sections si besoin
 
   hideAllSectionsForms();
@@ -886,11 +959,13 @@ function showStoreInfo() {
   // ✅ afficher la section magasin
   document.getElementById("infoShop").style.display = "block";
   document.getElementById("pdfContainer").style.display = "block";
+  document.getElementById("subscriptionInfoCard").style.display = "block";
   document.getElementById("formSection").style.display = "none";
   document.getElementById("importSection").style.display = "none";
   document.getElementById("costSection").style.display = "none";
 
   loadStoreForm();
+  await renderSubscriptionInfo();
 
 }
 
@@ -941,24 +1016,41 @@ async function saveStoreInfo() {
   const name = document.getElementById("storeName").value.trim();
   const phone = document.getElementById("storePhone").value.trim();
   const address = document.getElementById("storeAddress").value.trim();
+  const plan = document.getElementById("subscriptionPlan").value;
 
-  // ✅ Compter les champs renseignés
-  let filledFields = 0;
+  const subscription_plan =
+    getSubscriptionData(plan);
 
-  if (name) filledFields++;
-  if (phone) filledFields++;
-  if (address) filledFields++;
+  if (!subscription_plan) {
+    showToast("Formule invalide");
+    return;
+  }
 
-  // ✅ Au moins 2 champs requis
-  if (filledFields < 2) {
-    showToast("⚠️ Minimum 2 champs requis", "warning");
+  // Vérification des champs obligatoires
+  if (!name) {
+    showToast("⚠️ Nom du magasin obligatoire");
+    return;
+  }
+  if (!phone) {
+    showToast("⚠️ Téléphone obligatoire");
+    return;
+  }
+  if (!address) {
+    showToast("⚠️ Adresse obligatoire");
+    return;
+  }
+  if (!plan) {
+    showToast("⚠️ Sélectionnez une formule d'abonnement");
     return;
   }
 
   const store = {
     name,
     phone,
-    address
+    address,
+    subscription_plan: plan,
+    max_users: subscription_plan.maxUsers,
+    monthly_price: subscription_plan.monthlyPrice
   };
 
   try {
@@ -1024,6 +1116,7 @@ async function saveStoreInfo() {
         JSON.stringify(data)
       );
 
+      window.location.reload();
       showToast("✅ Magasin créé", "success");
 
     }
@@ -1343,4 +1436,196 @@ async function hasShopAssigned() {
   }
 
   return !!data?.shop_id;
+}
+
+/************************************************************
+ * Bloque l'application tant qu'aucun magasin n'est créé
+ ***********************************************************/
+function lockAppUntilStoreCreated() {
+
+  // Masquer la zone produits
+  document.getElementById("tableCard")?.style.setProperty(
+    "display",
+    "none"
+  );
+
+  // Masquer la synthèse
+  document.querySelector(".sales-summary")?.style.setProperty(
+    "display",
+    "none"
+  );
+
+  // Désactiver la recherche
+  const searchInput =
+    document.getElementById("searchInput");
+
+  if (searchInput) {
+
+    searchInput.disabled = true;
+    searchInput.placeholder =
+      "Créez votre magasin pour commencer";
+
+  }
+
+  // Désactiver tous les boutons
+  document
+    .querySelectorAll("button")
+    .forEach(button => {
+
+      const text =
+        button.textContent
+          .trim()
+          .toLowerCase();
+
+      // Boutons autorisés
+      const allowedButtons = [
+
+        "enregistrer",
+        "déconnexion"
+      ];
+
+      const isAllowed =
+        allowedButtons.some(
+          allowed =>
+            text.includes(
+              allowed
+            )
+        );
+
+      if (isAllowed) {
+        return;
+      }
+
+      button.disabled = true;
+      button.style.opacity = "0.5";
+      button.style.cursor =
+        "not-allowed";
+
+    });
+
+}
+
+/************************************************************
+ * Retourne les informations du forfait
+ ***********************************************************/
+// 
+function getSubscriptionData(plan) {
+
+  switch (plan) {
+    case "starter":
+      return {
+        maxUsers: 2,
+        monthlyPrice: 200000
+      };
+    case "business":
+      return {
+        maxUsers: 5,
+        monthlyPrice: 250000
+      };
+    case "enterprise":
+      return {
+        maxUsers: 10,
+        monthlyPrice: 400000
+      };
+    default:
+      return null;
+  }
+
+}
+
+/************************************************************
+ * Retourne le nombre d'utilisateurs
+ ***********************************************************/
+async function getShopUserUsage(shopId) {
+
+  const { data: shop } =
+    await supabaseClient
+      .from("shops")
+      .select("max_users")
+      .eq("id", shopId)
+      .single();
+
+  const { count } =
+    await supabaseClient
+      .from("profiles")
+      .select(
+        "*",
+        { count: "exact", head: true }
+      )
+      .eq("shop_id", shopId);
+
+  return {
+    currentUsers: count,
+    maxUsers: shop.max_users
+  };
+
+}
+
+/************************************************************
+ * Affichage info consommation
+ ***********************************************************/
+async function renderSubscriptionInfo() {
+
+  const currentShop =
+    getCurrentShop();
+
+  if (!currentShop) return;
+
+  const { count } =
+    await supabaseClient
+      .from("profiles")
+      .select(
+        "*",
+        {
+          count: "exact",
+          head: true
+        }
+      )
+      .eq(
+        "shop_id",
+        currentShop.id
+      );
+
+  const currentUsers =
+    count || 0;
+
+  const maxUsers =
+    currentShop.max_users || 0;
+
+  const percentage =
+    maxUsers
+      ? (currentUsers / maxUsers) * 100
+      : 0;
+
+  document.getElementById(
+    "subscriptionInfoCard"
+  ).style.display = "block";
+
+  document.getElementById(
+    "subscriptionPlanLabel"
+  ).textContent =
+    currentShop.subscription_plan || "-";
+
+  document.getElementById(
+    "currentUsersCount"
+  ).textContent =
+    currentUsers;
+
+  document.getElementById(
+    "maxUsersCount"
+  ).textContent =
+    maxUsers;
+
+  document.getElementById(
+    "subscriptionPrice"
+  ).textContent =
+    formatPrice(
+      currentShop.monthly_price || 0
+    ) + " GNF/mois";
+
+  document.getElementById(
+    "subscriptionProgressBar"
+  ).style.width =
+    percentage + "%";
+
 }
