@@ -151,7 +151,7 @@ function getTotalPurchaseValue() {
  * Calculer les coûts réels
  * Répartition au prorata de la valeur d'achat
  */
-function calculateCurrentCosts() {
+/*function calculateCurrentCosts() {
 
     const totalExtraCosts = getTotalExtraCosts();
     const totalPurchaseValue = getTotalPurchaseValue();
@@ -172,12 +172,14 @@ function calculateCurrentCosts() {
         // Part des frais attribuée à l'article
         const allocatedCost =
             Math.ceil(totalExtraCosts * ratio);
+        
 
         // Part des frais par unité
         const allocatedCostPerUnit =
             Math.ceil(
                 allocatedCost / item.quantity
             );
+        
 
         // Coût réel unitaire
         const realUnitCost =
@@ -185,7 +187,7 @@ function calculateCurrentCosts() {
                 Number(item.purchasePrice) +
                 allocatedCostPerUnit
             );
-
+        
         return {
             ...item,
 
@@ -200,6 +202,54 @@ function calculateCurrentCosts() {
             realUnitCost
         };
     });
+}*/
+function calculateCurrentCosts() {
+
+    const totalExtraCosts = getTotalExtraCosts();
+    const totalPurchaseValue = getTotalPurchaseValue();
+
+    if (totalPurchaseValue <= 0) {
+        return [];
+    }
+
+    return currentCostCalculation.items.map(item => {
+
+        const purchaseValue =
+            Number(item.quantity) *
+            Number(item.purchasePrice);
+
+        const ratio =
+            purchaseValue / totalPurchaseValue;
+
+        // Part réelle des frais affectés à l'article
+        const allocatedCost =
+            totalExtraCosts * ratio;
+
+        // Frais par unité
+        const allocatedCostPerUnit =
+            allocatedCost / Number(item.quantity);
+
+        // Coût réel unitaire
+        const realUnitCost =
+            Number(item.purchasePrice) +
+            allocatedCostPerUnit;
+
+        return {
+            ...item,
+
+            purchaseValue,
+
+            ratio: Number(ratio.toFixed(6)),
+
+            allocatedCost,
+
+            allocatedCostPerUnit,
+
+            realUnitCost
+        };
+
+    });
+
 }
 
 /**

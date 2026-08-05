@@ -852,7 +852,7 @@ function exportCostCalculationPDF(id) {
     function formatPricePDF(value) {
 
         return Number(value || 0)
-            .toFixed(0)
+            .toFixed(2)
             .replace(
                 /\B(?=(\d{3})+(?!\d))/g,
                 " "
