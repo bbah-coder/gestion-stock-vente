@@ -461,6 +461,11 @@ function renderCostHistory() {
                        📄 PDF
                     </button>
 
+                    <button  class="btn btn-success btn-sm"
+                        onclick="exportCostCalculationExcel('${calc.id}')">
+                           <i class="fas fa-file-excel"></i> 📊 Export Excel
+                    </button>
+
                     <button
                         onclick="deleteCostCalculationView('${calc.id}')">
 
@@ -1303,5 +1308,104 @@ function exportCostCalculationPDF(id) {
     doc.save(
         `Calcul-Cout-${formatDateFR(calculation.date)}.pdf`
     );
+
+}
+
+
+function exportCostCalculationExcel(id) {
+
+    try {
+
+        const calculation =
+            getCostCalculations().find(
+                c => c.id === id
+            );
+
+        if (!calculation) {
+            showToast("Calcul introuvable");
+            return;
+        }
+
+        const data = calculation.results.map(item => ({
+
+            Produit: item.productName || item.name,
+
+            Quantite: item.quantity,
+
+            PrixAchat: Number(item.purchasePrice),
+
+            PartFrais: formatPrice(Number(item.allocatedCostPerUnit)),
+
+            CoutReel: formatPrice(Number(item.realUnitCost)),
+
+            ValeurStock: formatPrice(Number(
+                item.realUnitCost * item.quantity
+            ))
+
+        }));
+
+        const worksheet =
+            XLSX.utils.json_to_sheet(data);
+
+        XLSX.utils.sheet_add_aoa(
+            worksheet,
+            [
+
+                [],
+
+                ["RESUME FINANCIER"],
+
+                [
+                    "Valeur achat",
+                    calculation.totalPurchaseValue
+                ],
+
+                [
+                    "Frais annexes",
+                    calculation.totalExtraCosts
+                ],
+
+                [
+                    "Valeur finale",
+                    calculation.totalPurchaseValue +
+                    calculation.totalExtraCosts
+                ]
+
+            ],
+            {
+                origin: data.length + 2
+            }
+        );
+
+        const workbook =
+            XLSX.utils.book_new();
+
+        XLSX.utils.book_append_sheet(
+            workbook,
+            worksheet,
+            "Calcul Cout Achat"
+        );
+
+        XLSX.writeFile(
+            workbook,
+            `Calcul-Cout-Achat-${new Date()
+                .toISOString()
+                .split("T")[0]
+            }.xlsx`
+        );
+
+        showToast(
+            "✅ Export Excel effectué"
+        );
+
+    } catch (error) {
+
+        console.error(error);
+
+        showToast(
+            "Erreur lors de l'export Excel"
+        );
+
+    }
 
 }
