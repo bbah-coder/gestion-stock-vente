@@ -3,9 +3,6 @@
    Gestion du calcul en cours
 ========================================== */
 
-/**
- * Calcul actuellement en préparation
- */
 let currentCostCalculation = {
     date: new Date().toISOString(),
 
@@ -16,17 +13,9 @@ let currentCostCalculation = {
     items: []
 };
 
-/*if (currentCostCalculation.allocationMethod === "value") {
-    return calculateCurrentCosts();
-}
-
-if (currentCostCalculation.allocationMethod === "quantity") {
-    return calculateCurrentCostsByQuantity();
-}*/
-
-/**
- * Réinitialiser le calcul en cours
- */
+/*************************************************
+ *FUNCTION :  Réinitialiser le calcul en cours
+ *************************************************/
 function resetCurrentCostCalculation() {
 
     currentCostCalculation = {
@@ -38,16 +27,16 @@ function resetCurrentCostCalculation() {
     };
 }
 
-/**
- * Retourne le calcul en cours
- */
+/*************************************************
+ *FUNCTION :  Retourne le calcul en cours
+ *************************************************/
 function getCurrentCostCalculation() {
     return currentCostCalculation;
 }
 
-/**
- * Ajouter un frais annexe
- */
+/*************************************************
+ *FUNCTION :  Ajouter un frais annexe
+ *************************************************/
 function addExtraCost(label, amount) {
 
     currentCostCalculation.extraCosts.push({
@@ -57,12 +46,9 @@ function addExtraCost(label, amount) {
     });
 }
 
-/**
- * Ajouter un article au calcul
- */
-/**
- * Ajouter un article au calcul
- */
+/*************************************************
+ *FUNCTION :  Ajouter un article au calcul
+ *************************************************/
 function addCostItem(
     productName,
     quantity,
@@ -99,6 +85,9 @@ function addCostItem(
     return true;
 }
 
+/*************************************************
+ *FUNCTION :  Supprimer un coût calculé
+ *************************************************/
 function removeCostItemByIndex(index) {
 
     currentCostCalculation.items.splice(
@@ -108,9 +97,10 @@ function removeCostItemByIndex(index) {
 
     renderCostItems();
 }
-/**
- * Supprimer un article
- */
+
+/*************************************************
+ *FUNCTION :  Supprimer un article
+ *************************************************/
 function removeCostItem(productId) {
 
     currentCostCalculation.items =
@@ -119,9 +109,9 @@ function removeCostItem(productId) {
         );
 }
 
-/**
- * Calcul du total des frais annexes
- */
+/*************************************************
+ *FUNCTION :  Calcul du total des frais annexes
+ *************************************************/
 function getTotalExtraCosts() {
 
     return currentCostCalculation.extraCosts.reduce(
@@ -131,9 +121,9 @@ function getTotalExtraCosts() {
     );
 }
 
-/**
- * Valeur totale d'achat
- */
+/*************************************************
+ *FUNCTION :  Valeur totale d'achat
+ *************************************************/
 function getTotalPurchaseValue() {
 
     return currentCostCalculation.items.reduce(
@@ -147,62 +137,10 @@ function getTotalPurchaseValue() {
     );
 }
 
-/**
- * Calculer les coûts réels
- * Répartition au prorata de la valeur d'achat
- */
-/*function calculateCurrentCosts() {
-
-    const totalExtraCosts = getTotalExtraCosts();
-    const totalPurchaseValue = getTotalPurchaseValue();
-
-    if (totalPurchaseValue <= 0) {
-        return [];
-    }
-
-    return currentCostCalculation.items.map(item => {
-
-        const purchaseValue =
-            Number(item.quantity) *
-            Number(item.purchasePrice);
-
-        const ratio =
-            purchaseValue / totalPurchaseValue;
-
-        // Part des frais attribuée à l'article
-        const allocatedCost =
-            Math.ceil(totalExtraCosts * ratio);
-        
-
-        // Part des frais par unité
-        const allocatedCostPerUnit =
-            Math.ceil(
-                allocatedCost / item.quantity
-            );
-        
-
-        // Coût réel unitaire
-        const realUnitCost =
-            Math.ceil(
-                Number(item.purchasePrice) +
-                allocatedCostPerUnit
-            );
-        
-        return {
-            ...item,
-
-            purchaseValue,
-
-            ratio: Number(ratio.toFixed(4)),
-
-            allocatedCost,
-
-            allocatedCostPerUnit,
-
-            realUnitCost
-        };
-    });
-}*/
+/*************************************************
+ *FUNCTION :  Calculer les coûts réels
+ *     Répartition au prorata de la valeur d'achat
+ *************************************************/
 function calculateCurrentCosts() {
 
     const totalExtraCosts = getTotalExtraCosts();
@@ -252,10 +190,10 @@ function calculateCurrentCosts() {
 
 }
 
-/**
- * Calculer les coûts réels
- * Répartition par quantité
- */
+/*************************************************
+ *FUNCTION :  Calculer les coûts réels
+ *     Répartition par quantité
+ *************************************************/
 function calculateCurrentCostsByQuantity() {
 
     const totalExtraCosts = getTotalExtraCosts();
@@ -310,10 +248,12 @@ function calculateCurrentCostsByQuantity() {
     });
 }
 
-/**
- * Enregistrer le calcul actuel
- */
-function saveCurrentCalculation(method = "value") {
+
+/*************************************************
+ *FUNCTION : Enregistrer le calcul actuel
+ *************************************************/
+
+function saveCurrentCalculation(method = "value", devise = "GNF") {
 
     let results = [];
 
@@ -335,6 +275,8 @@ function saveCurrentCalculation(method = "value") {
         date: new Date().toISOString(),
 
         allocationMethod: method,
+
+        devise,
 
         transportCost: Number(
             document.getElementById(
@@ -380,9 +322,9 @@ function saveCurrentCalculation(method = "value") {
     return true;
 }
 
-/**
- * Retourne le dernier calcul
- */
+/*************************************************
+ *FUNCTION : Retourne le dernier calcul
+ *************************************************/
 function getLastCalculation() {
 
     const calculations =
@@ -397,23 +339,21 @@ function getLastCalculation() {
     ];
 }
 
-/* ==========================================
-   CREER LES MOUVEMENTS DE STOCK
-========================================== */
+/*************************************************
+ *FUNCTION : Creer les mouvements de stock
+ *************************************************/
 
-function createStockMovementsFromCalculation(
-    calculation
-) {
+function createStockMovementsFromCalculation(calculation) {
 
     if (!calculation?.results?.length) {
         return;
     }
 
-    const username =
-        localStorage.getItem("username") || "Système";
+    const username = localStorage.getItem("username") || "Système";
 
-    const userRole =
-        localStorage.getItem("userRole") || "Inconnu";
+    const userRole = localStorage.getItem("userRole") || "Inconnu";
+
+    const devise = document.getElementById("calculDevise")?.value || "GNF";
 
     calculation.results.forEach(item => {
 
@@ -446,8 +386,8 @@ function createStockMovementsFromCalculation(
 
             comment:
                 `Calcul coût d'achat | ` +
-                `PA: ${item.purchasePrice} GNF | ` +
-                `Coût réel: ${item.realUnitCost} GNF`,
+                `PA: ${formatCurrency(item.purchasePrice, devise)} | ` +
+                `Coût réel: ${formatCurrency(item.realUnitCost, devise)}`,
 
             user: username,
 
@@ -475,6 +415,10 @@ function createStockMovementsFromCalculation(
 /* ==========================================
    METTRE A JOUR LE STOCK PRODUIT
 ========================================== */
+
+/*************************************************
+ *FUNCTION : Mettre à jour le stock produit
+ *************************************************/
 
 function updateProductStockFromCalculation(
     calculation
@@ -510,7 +454,10 @@ function updateProductStockFromCalculation(
     saveProducts();
 }
 
-
+/*************************************************
+ *FUNCTION : Importer les produits via Excel
+ * Pour calculer les coûts d'achat
+ *************************************************/
 function importCostExcel(event) {
 
     const file =
@@ -556,6 +503,9 @@ function importCostExcel(event) {
 
 }
 
+/*************************************************
+ *FUNCTION : Les colonnes du fichier excel
+ *************************************************/
 function importRowsToCostCalculation(
     rows
 ) {
@@ -601,7 +551,6 @@ function importRowsToCostCalculation(
 
         }
 
-
     });
 
     renderCostItems();
@@ -611,3 +560,4 @@ function importRowsToCostCalculation(
     );
 
 }
+

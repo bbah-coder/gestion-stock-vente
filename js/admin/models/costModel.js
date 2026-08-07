@@ -8,9 +8,9 @@ let costCalculations = JSON.parse(
     localStorage.getItem("costCalculations") || "[]"
 );
 
-/**
- * Sauvegarder dans localStorage
- */
+/*************************************************
+ *FUNCTION :  Sauvegarder dans localStorage
+ *************************************************/
 function saveCostCalculations() {
     localStorage.setItem(
         "costCalculations",
@@ -18,24 +18,24 @@ function saveCostCalculations() {
     );
 }
 
-/**
- * Retourne tous les calculs
- */
+/*************************************************
+ *FUNCTION :  Retourne tous les calculs
+ *************************************************/
 function getCostCalculations() {
     return costCalculations;
 }
 
-/**
- * Ajouter un calcul
- */
+/*************************************************
+ *FUNCTION :  Ajouter un calcul
+ *************************************************/
 function addCostCalculation(calculation) {
     costCalculations.push(calculation);
     saveCostCalculations();
 }
 
-/**
- * Supprimer un calcul
- */
+/*************************************************
+ *FUNCTION :  Supprimer un clacul
+ *************************************************/
 function deleteCostCalculation(id) {
     costCalculations = costCalculations.filter(
         c => c.id !== id

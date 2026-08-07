@@ -10,6 +10,9 @@ let selectedCostProduct = null;
 let costHistoryLimit = 3
 
 
+/*************************************************
+ * FUNCTION : Affiche la view coût d'achat
+ *************************************************/
 function showCostModule() {
 
     // Masquer les autres vues
@@ -27,108 +30,52 @@ function showCostModule() {
 }
 
 
-function renderAddCostItemForm() {
-
-    const productName = prompt("Nom du produit");
-
-    if (!productName) return;
-
-    const quantity = Number(
-        prompt("Quantité") || 0
-    );
-
-    const purchasePrice = Number(
-        prompt("Prix d'achat unitaire") || 0
-    );
-
-    const success = addCostItem(
-        productName,
-        quantity,
-        purchasePrice
-    );
-
-    if (!success) {
-        showToast?.("❌ Produit introuvable");
-        return;
-    }
-
-    renderCostItems();
-}
-
+/*************************************************
+ * FUNCTION : Permet d'ajouter des artciles pour 
+ * le calcul du coût d'achat
+ *************************************************/
 function renderCostItems() {
 
-    const container =
-        document.getElementById(
-            "costItemsContainer"
-        );
+    const container = document.getElementById("costItemsContainer");
 
     if (!container) return;
 
-    const items =
-        getCurrentCostCalculation().items;
+    const devise = document.getElementById("calculDevise")?.value || "GNF";
+
+    const items = getCurrentCostCalculation().items;
 
     if (!items.length) {
 
-        container.innerHTML = `
-            <p>Aucun article ajouté</p>
-        `;
-
+        container.innerHTML = ` <p>Aucun article ajouté</p> `;
         return;
     }
 
     container.innerHTML = items.map((item, index) => `
-
         <div class="cost-item-card">
-
             <div class="cost-item-header">
-
-                <strong>
-                    📦 ${item.productName}
-                </strong>
-
-                <button
-                    class="cost-delete-btn"
-                    onclick="removeCostItemByIndex(${index})">
-                    🗑️
-                </button>
-
+                <strong>📦 ${item.productName}</strong>
+                <button class="cost-delete-btn" onclick="removeCostItemByIndex(${index})">🗑️</button>
             </div>
-
-            <div>
-                Qté : ${item.quantity}
-            </div>
-
-            <div>
-                Achat : ${formatPrice(item.purchasePrice)} GNF
-            </div>
-
+            <div> Qté : ${item.quantity}</div>
+            <div> Achat : ${formatCurrency(item.purchasePrice, devise)}</div>
         </div>
 
     `).join("");
 
 }
 
+/*************************************************
+ * FUNCTION : Charger les frais annexes
+ *************************************************/
 function prepareExtraCosts() {
 
     currentCostCalculation.extraCosts = [];
 
-    const transport =
-        Number(
-            document.getElementById("transportCost")
-                ?.value || 0
-        );
+    const transport = Number(document.getElementById("transportCost")?.value || 0);
 
-    const customs =
-        Number(
-            document.getElementById("customsCost")
-                ?.value || 0
-        );
+    const customs = Number(document.getElementById("customsCost")?.value || 0);
 
-    const other =
-        Number(
-            document.getElementById("otherCost")
-                ?.value || 0
-        );
+    const other = Number(document.getElementById("otherCost")?.value || 0);
 
     if (transport > 0) {
         addExtraCost("Transport", transport);
@@ -143,116 +90,35 @@ function prepareExtraCosts() {
     }
 }
 
-/*function calculateCostView() {
 
-    prepareExtraCosts();
-
-    const method =
-        document.getElementById("costMethod")
-            .value;
-
-    const results =
-        method === "quantity"
-            ? calculateCurrentCostsByQuantity()
-            : calculateCurrentCosts();
-
-    const container =
-        document.getElementById(
-            "costResults"
-        );
-
-    if (!results.length) {
-
-        container.innerHTML =
-            "<p>Aucun résultat</p>";
-
-        return;
-    }
-
-    container.innerHTML = results.map(r => `
-
-    <div class="cost-item-card">
-
-      <strong>
-        📦 ${r.productName}
-      </strong>
-
-      <div>
-        Prix achat :
-        ${formatPrice(r.purchasePrice)}
-        GNF
-      </div>
-
-      <div>
-        Frais/unité :
-        ${formatPrice(
-        r.allocatedCostPerUnit
-    )}
-        GNF
-      </div>
-
-      <div style="font-weight:bold;color:#2ecc71;">
-
-        Coût réel :
-        ${formatPrice(
-        r.realUnitCost
-    )}
-        GNF
-
-      </div>
-
-    </div>
-
-  `).join("");
-
-}*/
 /*************************************************
- * CALCULER ET ENREGISTRER LE CALCUL
+ *FUNCTION :  CALCULER ET ENREGISTRER LE CALCUL
  *************************************************/
 function calculateCostView() {
 
     // Vérifier qu'il y a au moins un article
-    const items =
-        getCurrentCostCalculation().items;
+    const items = getCurrentCostCalculation().items;
 
     if (!items.length) {
 
-        showToast(
-            "Ajoutez au moins un article"
-        );
+        showToast("Ajoutez au moins un article");
 
         return;
     }
 
     // Vérifier les frais annexes
-    const transport = Number(
-        document.getElementById(
-            "transportCost"
-        ).value || 0
-    );
+    const transport = Number(document.getElementById("transportCost").value || 0);
 
-    const customs = Number(
-        document.getElementById(
-            "customsCost"
-        ).value || 0
-    );
+    const customs = Number(document.getElementById("customsCost").value || 0);
 
     const other = Number(
-        document.getElementById(
-            "otherCost"
-        ).value || 0
-    );
+        document.getElementById("otherCost").value || 0);
 
-    const totalExtraCosts =
-        transport +
-        customs +
-        other;
+    const totalExtraCosts = transport + customs + other;
 
     if (totalExtraCosts <= 0) {
 
-        showToast(
-            "Veuillez renseigner au moins un frais annexe"
-        );
+        showToast("Veuillez renseigner au moins un frais annexe");
 
         return;
     }
@@ -261,10 +127,11 @@ function calculateCostView() {
     prepareExtraCosts();
 
     // Méthode sélectionnée
-    const method =
-        document.getElementById(
-            "costMethod"
-        ).value;
+    const method = document.getElementById("costMethod").value;
+
+    // Devise sélectionnée
+    const devise = document.getElementById('calculDevise').value;
+
 
     // Calcul
     const results =
@@ -275,10 +142,7 @@ function calculateCostView() {
     // Aucun résultat
     if (!results.length) {
 
-        showToast(
-            "Aucun résultat à calculer"
-        );
-
+        showToast("Aucun résultat à calculer");
         return;
     }
 
@@ -286,22 +150,16 @@ function calculateCostView() {
     renderCostResults(results);
 
     // Sauvegarde calcul
-    const success =
-        saveCurrentCalculation(method);
+    const success = saveCurrentCalculation(method, devise);
 
     if (!success) {
 
-        showToast(
-            "Erreur lors de l'enregistrement"
-        );
-
+        showToast("Erreur lors de l'enregistrement");
         return;
     }
 
     // Message succès
-    showToast(
-        "✅ Calcul enregistré et stock mis à jour"
-    );
+    showToast("✅ Calcul enregistré et stock mis à jour");
 
     // Attendre quelques secondes pour
     // permettre de consulter le résultat
@@ -313,38 +171,37 @@ function calculateCostView() {
 
 }
 
+/*************************************************
+ *FUNCTION :  Enregistre le calcul
+ *************************************************/
 function saveCalculationView() {
 
-    const method =
-        document.getElementById("costMethod")
-            .value;
+    const method = document.getElementById("costMethod").value;
 
-    const success =
-        saveCurrentCalculation(method);
+    const devise = document.getElementById('calculDevise').value;
+
+    const success = saveCurrentCalculation(method, devise);
 
     if (success) {
 
-        showToast?.(
-            "✅ Calcul enregistré"
-        );
+        showToast?.("✅ Calcul enregistré");
 
     } else {
 
-        showToast?.(
-            "❌ Rien à enregistrer"
-        );
-
+        showToast?.("❌ Rien à enregistrer");
     }
 }
 
+/*************************************************
+ *FUNCTION :  Commencer un nouveau calcul
+ *************************************************/
 function startNewCostCalculation() {
 
     resetCurrentCostCalculation();
 
     renderCostItems();
 
-    const results =
-        document.getElementById("costResults");
+    const results = document.getElementById("costResults");
 
     if (results) {
         results.innerHTML = "";
@@ -355,10 +212,14 @@ function startNewCostCalculation() {
     document.getElementById("otherCost").value = "";
 
     document.getElementById("costMethod").value = "value";
+    document.getElementById("calculDevise")?.value || "GNF";
 
     showToast?.("✅ Nouveau calcul démarré");
 }
 
+/*************************************************
+ *FUNCTION :  La view historique des coûts
+ *************************************************/
 function showCostHistory() {
 
     document
@@ -367,9 +228,7 @@ function showCostHistory() {
             section.style.display = "none";
         });
 
-    document.getElementById(
-        "costHistorySection"
-    ).style.display = "block";
+    document.getElementById("costHistorySection").style.display = "block";
 
     costHistoryLimit;
 
@@ -377,6 +236,10 @@ function showCostHistory() {
 
 }
 
+/*************************************************
+ *FUNCTION :  Limite les affichages des cartes
+ * Historique des coûts
+ *************************************************/
 function showMoreCostHistory() {
 
     costHistoryLimit += 3;
@@ -384,12 +247,15 @@ function showMoreCostHistory() {
     renderCostHistory();
 
 }
+
+/*************************************************
+ *FUNCTION :  L'historique des coûts
+ *************************************************/
 function renderCostHistory() {
 
-    const container =
-        document.getElementById(
-            "costHistoryList"
-        );
+    const container = document.getElementById("costHistoryList");
+
+    const devise = document.getElementById("calculDevise")?.value || "GNF";
 
     if (!container) return;
 
@@ -400,9 +266,7 @@ function renderCostHistory() {
 
     if (!calculations.length) {
 
-        container.innerHTML = `
-            <p>Aucun calcul enregistré</p>
-        `;
+        container.innerHTML = `<p>Aucun calcul enregistré</p> `;
 
         return;
     }
@@ -417,11 +281,7 @@ function renderCostHistory() {
         .map(calc => `
 
             <div class="cost-item-card">
-
-                <strong>
-                    📅 ${formatDateFR(calc.date)}
-                </strong>
-
+                <strong> 📅 ${formatDateFR(calc.date)}</strong>
                 <div>
                     Méthode :
                     ${calc.allocationMethod === "quantity"
@@ -430,33 +290,13 @@ function renderCostHistory() {
             }
                 </div>
 
-                <div>
-                    Frais :
-                    ${formatPrice(
-                calc.totalExtraCosts || 0
-            )} GNF
-                </div>
+                <div> Frais : ${formatCurrency(calc.totalExtraCosts || 0, devise)}</div>
+                <div> Articles : ${calc.results?.length || 0}</div>
+                <div style="display:flex; gap:10px;margin-top:10px;">
 
-                <div>
-                    Articles :
-                    ${calc.results?.length || 0}
-                </div>
+                  <!--<button onclick="viewCostCalculation('${calc.id}')">👁 Voir</button>-->
 
-                <div
-                    style="
-                        display:flex;
-                        gap:10px;
-                        margin-top:10px;
-                    ">
-
-                    <button
-                        onclick="viewCostCalculation('${calc.id}')">
-
-                        👁 Voir
-
-                    </button>
-
-                    <button
+                    <button 
                        onclick="exportCostCalculationPDF('${calc.id}')">
                        📄 PDF
                     </button>
@@ -468,13 +308,9 @@ function renderCostHistory() {
 
                     <button
                         onclick="deleteCostCalculationView('${calc.id}')">
-
                         🗑 Supprimer
-
                     </button>
-
                 </div>
-
             </div>
 
         `)
@@ -486,18 +322,12 @@ function renderCostHistory() {
     ) {
 
         html += `
-
             <div class="cost-history-load-more">
-
                 <button
                     onclick="showMoreCostHistory()">
-
                     📜 Afficher plus
-
                 </button>
-
             </div>
-
         `;
     }
 
@@ -505,6 +335,9 @@ function renderCostHistory() {
 
 }
 
+/*************************************************
+ *FUNCTION :  Permet de supprimer un coût de calcul
+ *************************************************/
 function deleteCostCalculationView(id) {
 
     if (
@@ -519,10 +352,12 @@ function deleteCostCalculationView(id) {
 
     renderCostHistory();
 
-    showToast?.(
-        "✅ Calcul supprimé"
-    );
+    showToast?.("✅ Calcul supprimé");
 }
+
+/*************************************************
+ *FUNCTION :  La view des coûts en cours de calcul
+ *************************************************/
 function viewCostCalculation(id) {
 
     const calculation =
@@ -542,29 +377,26 @@ function viewCostCalculation(id) {
 
         message +=
             `${r.productName}
-
-Qté : ${r.quantity}
-Achat : ${formatPrice(r.purchasePrice)}
-Coût réel : ${formatPrice(r.realUnitCost)}
-
+    Qté : ${r.quantity}
+    Achat : ${formatPrice(r.purchasePrice)}
+    Coût réel : ${formatPrice(r.realUnitCost)}
 `;
     });
 
     alert(message);
 }
 
-
+/*************************************************
+ *FUNCTION :  L'ouverture du fichier pour l'import
+ *************************************************/
 function openCostImport() {
 
-    document
-        .getElementById("costExcelFile")
-        .click();
-
+    document.getElementById("costExcelFile").click();
 }
 
 /**************************************************
- * RECHERCHE TEMPS * ÉEL
-    *************************************************/
+ * FUNCTION : RECHERCHE TEMPS RÉEL
+*************************************************/
 function filterCostProducts() {
 
     const search = document
@@ -573,9 +405,7 @@ function filterCostProducts() {
         .toLowerCase()
         .trim();
 
-    const dropdown = document.getElementById(
-        "costProductDropdown"
-    );
+    const dropdown = document.getElementById("costProductDropdown");
 
     if (!search) {
 
@@ -623,31 +453,27 @@ function filterCostProducts() {
 
     dropdown.style.display = "block";
 }
+
 /*************************************************
- * Sélectionner un produit
+ *FUNCTION : Permettant de sélectionner un produit
  *************************************************/
 function selectCostProduct(productName) {
 
     selectedCostProduct = productName;
 
-    document.getElementById(
-        "costProductSearch"
-    ).value = productName;
+    document.getElementById("costProductSearch").value = productName;
 
-    document.getElementById(
-        "costProductDropdown"
-    ).style.display = "none";
+    document.getElementById("costProductDropdown").style.display = "none";
 }
 
 /*************************************************
- * AJOUTER UN ARTICLE AU CALCUL
+ *FUNTION :  AJOUTER UN ARTICLE AU CALCUL
  *************************************************/
 function addCostItemFromForm() {
 
     // Si des résultats existent,
     // démarrer un nouveau calcul
-    const resultsContainer =
-        document.getElementById("costResults");
+    const resultsContainer = document.getElementById("costResults");
 
     if (
         resultsContainer &&
@@ -661,42 +487,27 @@ function addCostItemFromForm() {
     // Vérifier qu'un produit est sélectionné
     if (!selectedCostProduct) {
 
-        showToast(
-            "Veuillez sélectionner un produit"
-        );
+        showToast("Veuillez sélectionner un produit");
 
         return;
     }
 
     // Récupération des valeurs
-    const quantity = Number(
-        document.getElementById(
-            "costQuantity"
-        ).value
-    );
+    const quantity = Number(document.getElementById("costQuantity").value);
 
-    const purchasePrice = Number(
-        document.getElementById(
-            "costPurchasePrice"
-        ).value
-    );
+    const purchasePrice = Number(document.getElementById("costPurchasePrice").value);
 
     // Contrôle quantité
     if (quantity <= 0) {
 
-        showToast(
-            "Quantité invalide"
-        );
-
+        showToast("Quantité invalide");
         return;
     }
 
     // Contrôle prix achat
     if (purchasePrice <= 0) {
 
-        showToast(
-            "Prix d'achat invalide"
-        );
+        showToast("Prix d'achat invalide");
 
         return;
     }
@@ -710,9 +521,7 @@ function addCostItemFromForm() {
 
     if (!success) {
 
-        showToast(
-            "Produit introuvable"
-        );
+        showToast("Produit introuvable");
 
         return;
     }
@@ -723,76 +532,51 @@ function addCostItemFromForm() {
     // Réinitialiser uniquement le formulaire
     selectedCostProduct = null;
 
-    document.getElementById(
-        "costProductSearch"
-    ).value = "";
+    document.getElementById("costProductSearch").value = "";
 
-    document.getElementById(
-        "costQuantity"
-    ).value = "";
+    document.getElementById("costQuantity").value = "";
 
-    document.getElementById(
-        "costPurchasePrice"
-    ).value = "";
+    document.getElementById("costPurchasePrice").value = "";
 
-    document.getElementById(
-        "costProductDropdown"
-    ).innerHTML = "";
+    document.getElementById("costProductDropdown").innerHTML = "";
 
-    document.getElementById(
-        "costProductDropdown"
-    ).style.display = "none";
+    document.getElementById("costProductDropdown").style.display = "none";
 
-    showToast(
-        "✅ Article ajouté"
-    );
+    showToast("✅ Article ajouté");
 }
 
 /*************************************************
- * Fermer la liste déroulante
+ *FUNCTION : Fermer la liste déroulante
  *************************************************/
 document.addEventListener(
     "click",
     function (event) {
 
-        const dropdown =
-            document.getElementById(
-                "costProductDropdown"
-            );
+        const dropdown = document.getElementById("costProductDropdown");
 
-        const searchInput =
-            document.getElementById(
-                "costProductSearch"
-            );
+        const searchInput = document.getElementById("costProductSearch");
 
-        if (
-            !dropdown?.contains(event.target) &&
-            event.target !== searchInput
-        ) {
+        if (!dropdown?.contains(event.target) && event.target !== searchInput) {
 
-            dropdown.style.display =
-                "none";
+            dropdown.style.display = "none";
         }
     }
 );
 
 /*************************************************
- * AFFICHAGE DES RESULTATS
+ *FUNCTION :  AFFICHAGE DES RESULTATS
  *************************************************/
 function renderCostResults(results) {
 
-    const container =
-        document.getElementById(
-            "costResults"
-        );
+    const container = document.getElementById("costResults");
+
+    const devise = document.getElementById("calculDevise")?.value || "GNF";
 
     if (!container) return;
 
     if (!results.length) {
 
-        container.innerHTML = `
-            <p>Aucun résultat</p>
-        `;
+        container.innerHTML = `<p>Aucun résultat</p>`;
 
         return;
     }
@@ -800,35 +584,20 @@ function renderCostResults(results) {
     container.innerHTML = results.map(result => `
 
         <div class="cost-result-card">
+            <strong> 📦 ${result.productName}</strong>
+            <div> Quantité : ${result.quantity}</div>
 
-            <strong>
-                📦 ${result.productName}
-            </strong>
+            <div> Prix achat : ${formatCurrency(result.purchasePrice, devise)} </div>
 
-            <div>
-                Quantité :
-                ${result.quantity}
-            </div>
-
-            <div>
-                Prix achat :
-                ${formatPrice(
-        result.purchasePrice
-    )} GNF
-            </div>
-
-            <div>
-                Coût réel :
-                ${formatPrice(
-        result.realUnitCost
-    )} GNF
-            </div>
-
+            <div> Coût réel : ${formatCurrency(result.realUnitCost, devise)} </div>
         </div>
 
     `).join("");
 }
 
+/*************************************************
+ *FUNCTION :  Exporter le resultat des coûts en PDF
+ *************************************************/
 function exportCostCalculationPDF(id) {
 
     const calculation =
@@ -838,9 +607,7 @@ function exportCostCalculationPDF(id) {
 
     if (!calculation) {
 
-        showToast(
-            "Calcul introuvable"
-        );
+        showToast("Calcul introuvable");
 
         return;
     }
@@ -850,20 +617,6 @@ function exportCostCalculationPDF(id) {
     const doc = new jsPDF();
 
     let y = 15;
-
-    //------------------------------------------------
-    // FORMAT PRIX
-    //------------------------------------------------
-    function formatPricePDF(value) {
-
-        return Number(value || 0)
-            .toFixed(2)
-            .replace(
-                /\B(?=(\d{3})+(?!\d))/g,
-                " "
-            );
-
-    }
 
     //------------------------------------------------
     // CALCULS
@@ -1061,7 +814,7 @@ function exportCostCalculationPDF(id) {
     );
 
     doc.text(
-        `Transport : ${formatPricePDF(transport)} GNF`,
+        `Transport : ${formatCurrency(transport, calculation.devise)}`,
         15,
         y
     );
@@ -1069,7 +822,7 @@ function exportCostCalculationPDF(id) {
     y += 6;
 
     doc.text(
-        `Douane : ${formatPricePDF(customs)} GNF`,
+        `Douane : ${formatCurrency(customs, calculation.devise)}`,
         15,
         y
     );
@@ -1077,7 +830,7 @@ function exportCostCalculationPDF(id) {
     y += 6;
 
     doc.text(
-        `Divers : ${formatPricePDF(other)} GNF`,
+        `Divers : ${formatCurrency(other, calculation.devise)}`,
         15,
         y
     );
@@ -1090,7 +843,7 @@ function exportCostCalculationPDF(id) {
     );
 
     doc.text(
-        `Total frais : ${formatPricePDF(totalExtraCosts)} GNF`,
+        `Total frais : ${formatCurrency(totalExtraCosts, calculation.devise)}`,
         15,
         y
     );
@@ -1148,21 +901,13 @@ function exportCostCalculationPDF(id) {
 
                     item.quantity,
 
-                    formatPricePDF(
-                        item.purchasePrice
-                    ) + " GNF",
+                    formatCurrency(item.purchasePrice, calculation.devise),
 
-                    formatPricePDF(
-                        partFrais
-                    ) + " GNF",
+                    formatCurrency(partFrais, calculation.devise),
 
-                    formatPricePDF(
-                        item.realUnitCost
-                    ) + " GNF",
+                    formatCurrency(item.realUnitCost, calculation.devise),
 
-                    formatPricePDF(
-                        totalLine
-                    ) + " GNF"
+                    formatCurrency(totalLine, calculation.devise)
 
                 ];
 
@@ -1209,7 +954,7 @@ function exportCostCalculationPDF(id) {
     );
 
     doc.text(
-        `Valeur achat : ${formatPricePDF(totalPurchase)} GNF`,
+        `Valeur achat : ${formatCurrency(totalPurchase, calculation.devise)}`,
         15,
         y
     );
@@ -1223,7 +968,7 @@ function exportCostCalculationPDF(id) {
     );
 
     doc.text(
-        `Frais annexes : ${formatPricePDF(totalExtraCosts)} GNF`,
+        `Frais annexes : ${formatCurrency(totalExtraCosts, calculation.devise)}`,
         15,
         y
     );
@@ -1239,7 +984,7 @@ function exportCostCalculationPDF(id) {
     doc.setFontSize(14);
 
     doc.text(
-        `Valeur finale : ${formatPricePDF(totalFinal)} GNF`,
+        `Valeur finale : ${formatCurrency(totalFinal, calculation.devise)}`,
         15,
         y
     );
@@ -1311,6 +1056,9 @@ function exportCostCalculationPDF(id) {
 
 }
 
+/*************************************************
+ *FUNCTION :  Exporter le résultat au format Excel
+ *************************************************/
 
 function exportCostCalculationExcel(id) {
 
@@ -1332,15 +1080,13 @@ function exportCostCalculationExcel(id) {
 
             Quantite: item.quantity,
 
-            PrixAchat: Number(item.purchasePrice),
+            PrixAchat: formatCurrency(Number(item.purchasePrice), calculation.devise),
 
-            PartFrais: formatPrice(Number(item.allocatedCostPerUnit)),
+            PartFrais: formatCurrency(Number(item.allocatedCostPerUnit), calculation.devise),
 
-            CoutReel: formatPrice(Number(item.realUnitCost)),
+            CoutReel: formatCurrency(Number(item.realUnitCost), calculation.devise),
 
-            ValeurStock: formatPrice(Number(
-                item.realUnitCost * item.quantity
-            ))
+            ValeurStock: formatCurrency(Number(item.realUnitCost * item.quantity), calculation.devise)
 
         }));
 
@@ -1357,18 +1103,18 @@ function exportCostCalculationExcel(id) {
 
                 [
                     "Valeur achat",
-                    calculation.totalPurchaseValue
+                    formatCurrency(calculation.totalPurchaseValue, calculation.devise)
                 ],
 
                 [
                     "Frais annexes",
-                    calculation.totalExtraCosts
+                    formatCurrency(calculation.totalExtraCosts, calculation.devise)
                 ],
 
                 [
                     "Valeur finale",
-                    calculation.totalPurchaseValue +
-                    calculation.totalExtraCosts
+                    formatCurrency(calculation.totalPurchaseValue +
+                        calculation.totalExtraCosts, calculation.devise)
                 ]
 
             ],

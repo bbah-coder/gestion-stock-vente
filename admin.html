@@ -354,6 +354,14 @@
             Répartition par quantité
           </option>
         </select>
+        <div class="form-group">
+          <label for="calculDevise">sélectionner une devise</label>
+          <select id="calculDevise" class="form-control">
+            <option value="GNF" selected>Franc Guinéen (GNF)</option>
+            <option value="EUR">Euro (€)</option>
+            <option value="USD">Dollar ($)</option>
+          </select>
+        </div>
 
       </div>
 
@@ -460,23 +468,16 @@
     <section id="costHistorySection" class="view-section" style="display:none;">
 
       <div class="cost-history-header">
-
         <button class="back-btn" onclick="showCostModule()">
           ←
         </button>
-
         <div>
-
           <h2>📜 Historique des calculs</h2>
-
           <p>
             Consulter les calculs enregistrés
           </p>
-
         </div>
-
       </div>
-
       <div id="costHistoryList"></div>
 
     </section>
@@ -623,7 +624,7 @@
       <!-- TABLE -->
       <table id="tableStock">
         <thead id="tableHead">
-          <tr>
+          <!--<tr>
             <th>QR</th>
             <th>Image</th>
             <th>Nom</th>
@@ -632,7 +633,7 @@
             <th>Stock initial</th>
             <th>Vendu</th>
             <th>Action</th>
-          </tr>
+          </tr>-->
         </thead>
 
         <tbody id="list"></tbody>
@@ -644,18 +645,12 @@
 
     </section>
 
-
     <!--=============STOCK MOUVEMENTS======-->
     <section>
-
       <div id="stockMovementModal" class="modal" style="display:none;">
-
         <div class="modal-content">
-
           <h2>📦 Mouvement de stock</h2>
-
           <label>Type</label>
-
           <select id="movementType">
             <option value="entry">Entrée</option>
             <option value="exit">Sortie</option>
@@ -680,9 +675,7 @@
           <!--<label>Commentaire</label>-->
 
           <textarea id="movementComment" placeholder="Commentaire facultatif"></textarea>
-
           <div class="modal-actions">
-
             <button type="button" onclick="closeStockMovement()">
               Annuler
             </button>
@@ -746,11 +739,11 @@
     <!-- ========= HISTORIQUE ========= -->
     <section id="historyCard" class="card">
 
-      <h2>📜 Historique des mouvements</h2>
+      <!--<h2>📜 Historique des mouvements</h2>-->
 
       <div class="history-filters">
 
-        <select id="filterType" onchange="renderStockHistory()">
+        <!-- <select id="filterType" onchange="renderStockHistory()">
           <option value="ALL">Tous</option>
           <option value="VENTE">Ventes</option>
           <option value="AJOUT">Ajouts</option>
@@ -760,18 +753,18 @@
 
         <button onclick="clearHistory()" class="btn-delete">
           🗑️ Vider
-        </button>
+        </button>-->
 
       </div>
 
       <table id="stockHistoryTable">
         <thead>
-          <tr>
+          <!--<tr>
             <th>Produit</th>
             <th>Type</th>
             <th>Quantité</th>
             <th>Date</th>
-          </tr>
+          </tr>-->
         </thead>
 
         <tbody id="stockHistory"></tbody>

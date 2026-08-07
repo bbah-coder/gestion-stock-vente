@@ -258,16 +258,45 @@ function formatPrice(value) {
     .replace(",", "."); // ✅ remplace la virgule par un point
 }
 
+/* ==========================================
+  FUNCTION DEVISE
+========================================== */
+
+function getCurrencySymbol(devise) {
+  switch (devise) {
+    case 'EUR':
+      return '€';
+    case 'USD':
+      return '$';
+    default:
+      return 'GNF';
+  }
+}
+
+function formatCurrency(amount, devise = 'GNF') {
+  return `${formatPricePDF(amount)} ${getCurrencySymbol(devise)}`;
+}
+
 /************************************************************
  * 💰 FORMAT PRIX (PDF)
  * ----------------------------------------------------------
  * - arrondi
  * - séparateur milliers espace
  ************************************************************/
-function formatPricePDF(value) {
+/*function formatPricePDF(value) {
   return Math.round(value)
     .toString()
     .replace(/\B(?=(\d{3})+(?!\d))/g, " ");
+}*/
+
+function formatPricePDF(value) {
+
+  return Number(value || 0)
+    .toFixed(2)
+    .replace(
+      /\B(?=(\d{3})+(?!\d))/g,
+      " "
+    );
 }
 
 /************************************************************
