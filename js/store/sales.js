@@ -751,7 +751,7 @@ function removeItem(i) {
  * - enregistre logs
  * - reset panier
  ************************************************************/
-function validerPanier() {
+async function validerPanier() {
 
   let total = 0;
   let totalItems = 0;
@@ -794,6 +794,14 @@ function validerPanier() {
     }
 
     product.sold += item.quantity;
+
+    //Derniere vente
+    product.lastSaleAt = new Date().toISOString();
+
+    //Synchronisation supabase
+    await updateProductSupabase(product);
+
+
 
     // ✅ ✅ ✅ CALCUL ICI (UNE SEULE FOIS)
 
@@ -917,6 +925,7 @@ function validerPanier() {
   // ✅ sauvegardes
   localStorage.setItem("products", JSON.stringify(products));
   localStorage.setItem("sales", JSON.stringify(sales));
+
 
   // ✅ reset panier
   cart = [];

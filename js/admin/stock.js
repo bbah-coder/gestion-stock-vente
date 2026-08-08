@@ -338,7 +338,7 @@ function saveStockMovement() {
 /************************************************************
  * FUNCTION : PERMET D'APPLIQUER LE MOUVEMENT
  ************************************************************/
-function applyStockMovement(
+async function applyStockMovement(
   index,
   type,
   quantity,
@@ -405,26 +405,51 @@ function applyStockMovement(
 
   }
 
-  // Historique (pour la future étape)
-  stockMovements.unshift({
+  // Historique des mouvements de stock
+  const profile = await getCurrentProfile();
+  console.log("PROFILE =", profile);
 
+  const movements = {
     product: p.name,
-
+    barcode: p.barcode,
     type,
-
     reason,
-
     quantity,
-
     comment,
+    user:
+      profile?.username ||
+      localStorage.getItem("username") ||
+      "Inconnu",
+    role:
+      profile?.role ||
+      localStorage.getItem("userRole") ||
+      "Inconnu",
+    date: new Date().toLocaleString()
+  };
+  stockMovements.unshift(movements);
 
-    user: localStorage.getItem("username"),
+  // ✅ Synchro Supabase
+  await saveStockMovementSupabase(movements)
 
-    role: localStorage.getItem("userRole"),
+  /*stockMovements.unshift({
+    product: p.name,
+    barcode: p.barcode,
+    type,
+    reason,
+    quantity,
+    comment,
+    user:
+      profile?.username ||
+      localStorage.getItem("username") ||
+      "Inconnu",
+    role:
+      profile?.role ||
+      localStorage.getItem("userRole") ||
+      "Inconnu",
 
     date: new Date().toLocaleString()
 
-  });
+  });*/
 
   localStorage.setItem(
     "stockMovements",
@@ -435,6 +460,9 @@ function applyStockMovement(
     "products",
     JSON.stringify(products)
   );
+
+  // ✅ Synchronisation Supabase
+  await updateProductSupabase(p);
 
   render();
 
@@ -492,6 +520,8 @@ function showProductHistory(productName) {
   // ✅ Ajouter le stock initial
   if (product?.initialStock > 0) {
 
+    console.log(product);
+
     movements.unshift({
       reason: "initial_stock",
       quantity: product.initialStock,
@@ -504,6 +534,7 @@ function showProductHistory(productName) {
     });
 
   }
+
 
   // ✅ Ajouter les ventes
   //TOUTES LES VENTES DU PRODUIT

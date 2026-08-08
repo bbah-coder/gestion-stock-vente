@@ -41,7 +41,11 @@ async function initApp() {
   initServiceWorker();
 
   // ✅ Init data
-  initProducts();
+  await initProducts();
+
+  // Init mvt stock
+  stockMovements =
+    await loadStockMovements();
 
   // ✅ UI
   updateUserInfo();

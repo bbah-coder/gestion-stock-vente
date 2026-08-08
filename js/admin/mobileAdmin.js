@@ -575,9 +575,8 @@ function renderArchivedCards(listData) {
      </div>
 
     </div>
-
               <div style="font-size:12px;color:#555;">
-                  Date d'archivage : ${p.deletedAt ? formatDate(p.deletedAt) : "-"}
+                  Date d'archivage : ${p.archivedAt ? formatDate(p.archivedAt) : "-"}
                 </div>
               
             </div>

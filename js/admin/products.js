@@ -15,16 +15,18 @@ function saveProducts() {
 // ✅ INIT PRODUITS
 //--------------------------------------
 
-function initProducts() {
+async function initProducts() {
+
+  products = await loadProducts();
 
   let updated = false;
 
   products.forEach(p => {
 
-    if (p.promo === undefined) {
+    /*if (p.promo === undefined) {
       p.promo = 0;
       updated = true;
-    }
+    }*/
 
     if (!p.category) {
       p.category = "Autre";
@@ -41,19 +43,32 @@ function initProducts() {
       updated = true;
     }
 
-    if (p.active === undefined) {
+    /*if (p.active === undefined) {
       p.active = true;
-    }
+    }*/
 
     if (!p.createdAt) {
       p.createdAt = new Date().toISOString();
       updated = true;
     }
 
-    if (p.archived === undefined) {
-      p.archived = false;
+    if (p.isArchived === undefined) {
+      p.isArchived = p.is_archived ?? false;
     }
 
+    if (p.archivedAt === undefined) {
+      p.archivedAt = p.archived_at ?? null;
+    }
+
+    if (p.lastSaleAt === undefined) {
+      p.lastSaleAt = p.last_sale_at ?? null;
+    }
+
+    if (p.promo === undefined) {
+      p.promo = p.promo_percent ?? 0;
+    }
+
+    console.log(p.name, p.isArchived, p.is_archived)
 
   });
 
@@ -162,13 +177,14 @@ function saveProduct() {
     }
 
     saveFinal(product);
+
   }
 }
 
 //--------------------------------------------------------------------
 // ✅ FUNCTION Enregistrement du Produit depuis le formulaire d'ajout
 //--------------------------------------------------------------------
-function saveFinal(product) {
+async function saveFinal(product) {
 
   const normalizedName = product.name.toLowerCase().trim();
 
@@ -205,6 +221,7 @@ function saveFinal(product) {
     if (product.image) {
       existing.image = product.image;
     }
+    updateProductSupabase(existing);
   }
 
   // ✅ MODE AJOUT
@@ -246,6 +263,9 @@ function saveFinal(product) {
       existingProduct.stock += product.stock;
       existingProduct.initialStock += product.stock;
 
+      // ✅ Synchronisation Supabase
+      await updateProductSupabase(existingProduct);
+
       // ✅ mise à jour image (si nouvelle)
       if (product.image) {
         existingProduct.image = product.image;
@@ -265,7 +285,18 @@ function saveFinal(product) {
       product.createdBy = localStorage.getItem("username");
       product.createdRole = localStorage.getItem("userRole");
 
+      /*createdBy:
+            profile?.username || localStorage.getItem("username") || "Inconnu",
+          createdRole:
+            profile?.role ||
+            localStorage.getItem("userRole") ||
+            "Inconnu"*/
+
+      //products.unshift(product);
       products.unshift(product);
+
+      // ✅ Sauvegarde Supabase
+      saveProductToSupabase(product);
 
     }
   }
@@ -350,8 +381,8 @@ function deleteProduct(index) {
   }
 
   // ✅ Desactivation Produit
-  products[index].active = false;
-  products[index].deletedAt = new Date().toISOString();
+  products[index].isArchived = false;
+  products[index].archivedAt = new Date().toISOString();
 
   localStorage.setItem("products", JSON.stringify(products));
 
@@ -370,7 +401,7 @@ function deleteProduct(index) {
 // ✅ FUNCTION : Suppression physique d'un produit sans vente
 //--------------------------------------------------------------------
 
-function deletePhysicalProduct(index) {
+async function deletePhysicalProduct(index) {
 
   const p = products[index];
 
@@ -394,6 +425,9 @@ function deletePhysicalProduct(index) {
   }
 
   products.splice(index, 1);
+
+  // ✅ Synchronisation Supabase
+  await deleteProductSupabase(p.barcode);
 
   localStorage.setItem(
     "products",
@@ -485,10 +519,12 @@ function openAddProduct() {
 // ✅ FUNCTION : Charegement des produits depuis un fichier CSV
 //--------------------------------------------------------------------
 
-function importCSV() {
+async function importCSV() {
 
   const input = document.getElementById("fileInput");
   const file = input.files[0];
+
+  const profile = await getCurrentProfile();
 
   if (!file) {
     showToast("Aucun fichier sélectionné");
@@ -497,7 +533,7 @@ function importCSV() {
 
   const reader = new FileReader();
 
-  reader.onload = function (e) {
+  reader.onload = async function (e) {
 
     const content = e.target.result;
 
@@ -506,17 +542,18 @@ function importCSV() {
 
     let count = 0;
 
-    lines.forEach((line, index) => {
+    //lines.forEach((line, index) => {
+    for (const [index, line] of lines.entries()) {
 
       const clean = line.trim();
-      if (!clean) return;
+      if (!clean) continue;
 
       // ✅ ignorer en-tête
-      if (index === 0) return;
+      if (index === 0) continue;
 
       const parts = clean.split(/[,;]/);
 
-      if (parts.length < 3) return;
+      if (parts.length < 3) continue;
 
       const name = parts[0].trim();
       const price = parseFloat(parts[1].trim());
@@ -526,7 +563,7 @@ function importCSV() {
       const image = parts[5] ? parts[5].trim() : "";
       const category = parts[6] ? parts[6].trim() : "Autre";
 
-      if (!name || isNaN(price) || isNaN(stock)) return;
+      if (!name || isNaN(price) || isNaN(stock)) continue;
 
       const normalizedName = name.toLowerCase().trim();
 
@@ -547,7 +584,7 @@ function importCSV() {
           `Continuer ?`
         );
 
-        if (!confirmStock) return;
+        if (!confirmStock) continue;
 
         // ✅ CONFIRMATION PRIX
         if (parseFloat(existingProduct.price) !== price) {
@@ -570,14 +607,21 @@ function importCSV() {
         existingProduct.entries ??= 0;
         existingProduct.entries += stock;
         //On crée un mouvement de stock
+
         stockMovements.unshift({
           product: existingProduct.name,
           type: "entry",
           reason: "achat",
           quantity: stock,
           comment: "Import csv",
-          user: localStorage.getItem("username"),
-          role: localStorage.getItem("userRole"),
+          user:
+            profile?.username ||
+            localStorage.getItem("username") ||
+            "Inconnu",
+          role:
+            profile?.role ||
+            localStorage.getItem("userRole") ||
+            "Inconnu",
           date: new Date().toLocaleString("fr-FR")
 
         });
@@ -615,10 +659,12 @@ function importCSV() {
           }
         }
 
+        // ✅ Synchronisation Supabase
+        await updateProductSupabase(existingProduct);
       } else {
 
         // ✅ nouveau produit
-        products.push({
+        const newProduct = {
           name,
           price,
           wholesalePrice,
@@ -626,28 +672,33 @@ function importCSV() {
           stock,
           initialStock: stock,
           entries: 0,
-          barcode: "PRD-" + Date.now().toString().slice(-6), //Ajout QR-CODE
+          barcode:
+            "PRD-" +
+            Date.now().toString().slice(-6),
           sold: 0,
           image: image || null,
-          category: category,
-          // Date import
-          //createAt: new Date().toLocaleString("fr-FR"),
+          category,
           createdAt:
-            new Date()
-              .toLocaleString(
-                "fr-FR"
-              ),
-          //Utilisateur import
-          createdBy: localStorage.getItem("username"),
-          //Rôle utilisateur
-          createdRole: localStorage.getItem("userRole"),
+            new Date().toLocaleString("fr-FR"),
 
-        });
+          createdBy:
+            profile?.username ||
+            localStorage.getItem("username") ||
+            "Inconnu",
+          createdRole:
+            profile?.role ||
+            localStorage.getItem("userRole") ||
+            "Inconnu"
+        };
+
+        products.push(newProduct);
+
+        // ✅ Synchronisation Supabase
+        await saveProductToSupabase(newProduct);
         count++;
       }
 
-    });
-
+    }
 
     // ✅ sauvegarde
     localStorage.setItem("products", JSON.stringify(products));
@@ -663,7 +714,7 @@ function importCSV() {
     showToast(count + " nouveaux produits importés ✅");
   };
 
-  reader.onerror = function () {
+  reader.onerror = async function () {
     showToast("Erreur lecture fichier");
   };
 
@@ -702,7 +753,7 @@ function openPromoPopup(index, currentValue) {
 //--------------------------------------------------------------------
 // ✅ FUNCTION : Mise à jour d'une promo
 //--------------------------------------------------------------------
-function updatePromo(index, value) {
+/*async function updatePromo(index, value) {
 
   let promo = parseInt(value);
 
@@ -716,16 +767,21 @@ function updatePromo(index, value) {
 
   products[index].promo = promo;
 
+  console.log("Promo avant update :", products[index].promo);
+
   localStorage.setItem("products", JSON.stringify(products));
+
+  //Synchronisation supaBase
+  await updateProductSupabase(products[index]);
 
   // ✅ refresh écran pour recalcul prix
   updateInactiveProducts();
-}
+}*/
 
 //--------------------------------------------------------------------
 // ✅ FUNCTION : Confirmation du promo lors d'une édition
 //--------------------------------------------------------------------
-function confirmPromo() {
+async function confirmPromo() {
 
   let value = parseInt(document.getElementById("promoInput").value);
 
@@ -740,6 +796,10 @@ function confirmPromo() {
   products[currentPromoIndex].promo = value;
 
   localStorage.setItem("products", JSON.stringify(products));
+
+  // ✅ Synchronisation Supabase
+
+  await updateProductSupabase(products[currentPromoIndex]);
 
   closePromoPopup();
 
@@ -758,7 +818,7 @@ function closePromoPopup() {
 // ✅ FUNCTION : Permet d'archiver un produit inactif (sans vente depuis un certain jour)
 //---------------------------------------------------------------------------------------
 
-function archiveProduct(index) {
+/*function archiveProduct(index) {
 
   const confirmAction = confirm("Archiver ce produit ?");
 
@@ -770,12 +830,36 @@ function archiveProduct(index) {
   localStorage.setItem("products", JSON.stringify(products));
 
   render();
+}*/
+
+async function archiveProduct(index) {
+
+  const confirmAction = confirm("Archiver ce produit ?");
+
+  if (!confirmAction) return;
+
+
+  const product = products[index];
+
+  product.isArchived = true;
+
+  product.archivedAt = new Date().toISOString();
+
+  console.log(product);
+
+  localStorage.setItem("products", JSON.stringify(products));
+
+  //Synchronisation supabase
+  await updateProductSupabase(product);
+
+  render();
+
 }
 
 //--------------------------------------------------------------------
 // ✅ FUNCTION : Reactive un produit archivé
 //--------------------------------------------------------------------
-function restoreProduct(index) {
+/*function restoreProduct(index) {
 
   const confirmAction = confirm("Réactiver ce produit ?");
 
@@ -787,6 +871,26 @@ function restoreProduct(index) {
   localStorage.setItem("products", JSON.stringify(products));
 
   render();
+}*/
+async function restoreProduct(index) {
+
+  const confirmAction = confirm("Réactiver ce produit ?");
+
+  if (!confirmAction) return;
+
+  const product = products[index];
+
+  product.isArchived = false;
+
+  product.archivedAt = null;
+
+  localStorage.setItem("products", JSON.stringify(products));
+
+  //Synchronisation supabase
+  await updateProductSupabase(product);
+
+  render();
+
 }
 
 //--------------------------------------------------------------------
@@ -810,7 +914,7 @@ function showArchived() {
   document.getElementById("pagination").style.display = "none";
   document.getElementById("filterCategoryAdmin").style.display = "none";
 
-  const archived = products.filter(p => p.active === false);
+  const archived = products.filter(p => p.isArchived === true);
 
   // ✅ AUCUN RESULTAT
   if (archived.length === 0) {
@@ -1021,7 +1125,7 @@ function showInactiveProducts() {
 /************************************************************
  * FUNCTION : RENDER INCTIF PRODUCT
  *************************************************************/
-function getInactiveProducts(days) {
+/*function getInactiveProducts(days) {
 
   const today = new Date();
 
@@ -1093,6 +1197,99 @@ function getInactiveProducts(days) {
     })
     .filter(p => p.days >= days) // ✅ filtre dynamique
     .sort((a, b) => b.days - a.days); // ✅ tri du pire au meilleur
+}*/
+
+function getInactiveProducts(days) {
+
+  const today = new Date();
+
+  return products
+    .filter(p => !p.isArchived)
+    .map(p => {
+
+      let lastSaleDate = null;
+
+      // ✅ Priorité au champ du produit
+      if (p.lastSaleAt) {
+
+        lastSaleDate =
+          new Date(p.lastSaleAt);
+
+      }
+
+      // ✅ Compatibilité anciens produits
+      else {
+        sales.forEach(sale => {
+          sale.items.forEach(item => {
+
+            if (
+              item.name.toLowerCase().trim() ===
+              p.name.toLowerCase().trim()
+            ) {
+
+              const saleDate =
+                new Date(sale.date);
+
+              if (
+                !lastSaleDate ||
+                saleDate > lastSaleDate
+              ) {
+
+                lastSaleDate =
+                  saleDate;
+              }
+
+            }
+
+          });
+
+        });
+
+      }
+
+      let diffDays = 0;
+
+      // ✅ Produit déjà vendu
+      if (lastSaleDate) {
+
+        diffDays = Math.floor(
+          (today - lastSaleDate)
+          / (1000 * 60 * 60 * 24)
+        );
+
+      }
+
+      // ✅ Jamais vendu
+      else {
+
+        const createdDate =
+          new Date(p.createdAt);
+
+        diffDays = Math.floor(
+          (today - createdDate)
+          / (1000 * 60 * 60 * 24)
+        );
+
+      }
+
+      return {
+
+        ...p,
+
+        index: products.indexOf(p),
+
+        days: diffDays,
+
+        label: lastSaleDate
+          ? `${diffDays} jours sans vente`
+          : `Jamais vendu (${diffDays} jours)`
+
+      };
+
+    })
+    .filter(p => p.days >= days)
+    .sort((a, b) => b.days - a.days);
+
 }
 
 //---------------------------------------------------------
@@ -1129,9 +1326,11 @@ function openExcelImport() {
 // ✅ FONCTION : Import produit via fichier Excel
 //------------------------------------------------
 
-function importExcelProducts(event) {
+async function importExcelProducts(event) {
 
   const file = event.target.files[0];
+
+  const profile = await getCurrentProfile();
 
   if (!file) {
 
@@ -1144,7 +1343,7 @@ function importExcelProducts(event) {
 
   const reader = new FileReader();
 
-  reader.onload = function (e) {
+  reader.onload = async function (e) {
 
     const data =
       new Uint8Array(
@@ -1171,8 +1370,8 @@ function importExcelProducts(event) {
 
     let count = 0;
 
-    rows.forEach(row => {
-
+    //rows.forEach(row => {
+    for (const row of rows) {
       const name =
         String(
           row["Nom"] || ""
@@ -1278,8 +1477,15 @@ function importExcelProducts(event) {
           reason: "achat",
           quantity: stock,
           comment: "Import Excel",
-          user: localStorage.getItem("username"),
-          role: localStorage.getItem("userRole"),
+          user:
+            profile?.username ||
+            localStorage.getItem("username") ||
+            "Inconnu",
+          role:
+            profile?.role ||
+            localStorage.getItem("userRole") ||
+            "Inconnu",
+
           date: new Date().toLocaleString("fr-FR")
         });
 
@@ -1320,10 +1526,12 @@ function importExcelProducts(event) {
 
           }
         }
+        // ✅ Synchronisation Supabase
+        await updateProductSupabase(existingProduct);
 
       } else {
 
-        products.push({
+        const newProduct = {
           name,
           price,
           wholesalePrice,
@@ -1331,6 +1539,7 @@ function importExcelProducts(event) {
           stock,
           initialStock: stock,
           entries: 0,
+
           barcode:
             "PRD-" +
             Date.now()
@@ -1341,30 +1550,35 @@ function importExcelProducts(event) {
             ),
 
           sold: 0,
-          image:
-            image || null,
+
+          image: image || null,
           category,
           createdAt:
             new Date()
-              .toLocaleString(
-                "fr-FR"
-              ),
-          createdBy:
-            localStorage.getItem(
-              "username"
-            ),
-          createdRole:
-            localStorage.getItem(
-              "userRole"
-            )
+              .toLocaleString("fr-FR"),
 
-        });
+          createdBy:
+            profile?.username ||
+            localStorage.getItem("username") ||
+            "Inconnu",
+          createdRole:
+            profile?.role ||
+            localStorage.getItem("userRole") ||
+            "Inconnu"
+
+        };
+
+        products.push(newProduct);
+
+        // ✅ Synchronisation Supabase
+        await saveProductToSupabase(newProduct);
 
         count++;
 
       }
 
-    });
+      //});
+    }
 
     localStorage.setItem(
       "products",
@@ -1392,7 +1606,7 @@ function importExcelProducts(event) {
 
   };
 
-  reader.onerror = function () {
+  reader.onerror = async function () {
 
     showToast(
       "Erreur lecture fichier"

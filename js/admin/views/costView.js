@@ -455,7 +455,7 @@ function filterCostProducts() {
 }
 
 /*************************************************
- *FUNCTION : Permettant de sélectionner un produit
+ *FUNCTION : Permer de sélectionner un produit
  *************************************************/
 function selectCostProduct(productName) {
 

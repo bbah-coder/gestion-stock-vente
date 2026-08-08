@@ -168,7 +168,8 @@ function render() {
     return (
       matchSearch &&
       matchCategory &&
-      p.active !== false
+      !p.isArchived
+      // p.active !== false
     );
 
   });
@@ -1211,6 +1212,7 @@ function getCurrentShop() {
 /************************************************************
  * ON RECUPERE LE PROFIL ADMIN
  ***********************************************************/
+
 async function getCurrentProfile() {
 
   const username = localStorage.getItem("username");
