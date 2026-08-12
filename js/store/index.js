@@ -150,7 +150,7 @@ function goToAdmin() {
 }
 
 
-function showSection(section, options = {}) {
+async function showSection(section, options = {}) {
 
   // ✅ 1. RESET + ACTIVE FIX
   document.querySelectorAll(".menu button")
@@ -196,7 +196,8 @@ function showSection(section, options = {}) {
     document.getElementById("productsSection").style.display = "block";
 
     currentPage = 1;
-    renderProducts();
+    //renderProducts();
+    await refreshShopProducts();
   }
 
   if (section === "cart") {
@@ -276,12 +277,13 @@ function showSection(section, options = {}) {
 
 }
 
-function globalSearch() {
+async function globalSearch() {
 
   const activeBtn = document.querySelector(".menu button.active");
 
   if (!activeBtn) {
-    renderProducts();
+    //renderProducts();
+    await refreshShopProducts();
     return;
   }
 
@@ -290,7 +292,8 @@ function globalSearch() {
   // ✅ PRODUITS
   if (section === "products") {
     currentPage = 1;
-    renderProducts();
+    await refreshShopProducts();
+    //renderProducts();
   }
 
   // ✅ VENTES JOUR

@@ -25,31 +25,27 @@ async function saveStockMovementSupabase(movement) {
                     username: movement.user,
                     role: movement.role,
                     movement_date:
-                        movement.date
-                            ? new Date(movement.date)
-                            : new Date()
+                        movement.movement_date
                 }])
                 .select();
 
         if (error) {
-            console.error(
-                "Erreur insertion mouvement",
-                error
-            );
+            console.warn("📴 Mouvement enregistré localement. Synchronisation automatique au retour de la connexion");
+
             return null;
         }
 
         return data[0];
 
     } catch (err) {
-
-        console.error(err);
-
+        console.warn("📴 Mode offline - mouvement en attente de synchronisation");
         return null;
 
     }
 
 }
+
+
 
 //--------------------------------------
 // ✅ Charger les mouvements Supabase
@@ -57,6 +53,7 @@ async function saveStockMovementSupabase(movement) {
 async function getStockMovementsSupabase() {
 
     try {
+
         const { data, error } =
             await supabaseClient
                 .from("stock_movements")
@@ -66,22 +63,18 @@ async function getStockMovementsSupabase() {
                 });
 
         if (error) {
-            console.error(
-                "Erreur chargement mouvements",
-                error
-            );
-
+            console.error("Erreur chargement mouvements", error);
             return [];
         }
 
-        return data || [];
+        return (data || [])
+            .map(mapStockMovement);
 
     } catch (err) {
 
         console.error(err);
 
         return [];
-
     }
 
 }
@@ -89,70 +82,98 @@ async function getStockMovementsSupabase() {
 //--------------------------------------
 // ✅ Chargement sécurisé des mouvements
 //--------------------------------------
-/*async function loadStockMovements() {
+
+async function loadStockMovements() {
 
     try {
+
+        const shopId =
+            await getCurrentShopId();
+
+        if (!shopId) {
+            return [];
+        }
+
         const movements =
-            await getStockMovementsSupabase();
+            (await db.stockMovements
+                .toArray())
+                .filter(
+                    movement =>
+                        movement.shop_id === shopId
+                )
+                .sort(
+                    (a, b) =>
+                        new Date(b.movement_date) -
+                        new Date(a.movement_date)
+                );
 
         console.log(
-            `✅ ${movements.length} mouvements chargés depuis Supabase`
+            `✅ ${movements.length} mouvements chargés pour le magasin ${shopId}`
         );
 
         return movements;
 
     } catch (error) {
 
-        console.error(error);
+        console.error(
+            "Erreur chargement IndexedDB",
+            error
+        );
 
-        return JSON.parse(
-            localStorage.getItem(
-                "stockMovements"
-            )
-        ) || [];
+        return [];
 
     }
 
-}*/
-async function loadStockMovements() {
+}
+
+/*async function loadStockMovements() {
 
     try {
         const movements =
-            await getStockMovementsSupabase();
+            await db.stockMovements
+                .orderBy("movement_date")
+                .reverse()
+                .toArray();
 
         console.log(
-            `✅ ${movements.length} mouvements chargés depuis Supabase`
+            `✅ ${movements.length} mouvements chargés depuis IndexedDB`
         );
 
-        return movements.map(m => ({
-            ...m,
-            // Compatibilité ancien code
-            product: m.product_name,
-            barcode: m.product_barcode,
-            user: m.username,
-            role: m.role,
-            date: new Date(
-                m.movement_date || m.created_at
-            ).toLocaleString("fr-FR", {
-                day: "2-digit",
-                month: "2-digit",
-                year: "numeric",
-                hour: "2-digit",
-                minute: "2-digit"
-            })
-
-        }));
+        return movements;
 
     } catch (error) {
 
-        console.error(error);
+        console.error(
+            "Erreur chargement IndexedDB",
+            error
+        );
 
-        return JSON.parse(
-            localStorage.getItem(
-                "stockMovements"
-            )
-        ) || [];
-
+        return [];
     }
+
+}*/
+
+function mapStockMovement(movement) {
+
+    return {
+        ...movement,
+
+        // Compatibilité ancien code
+        product: movement.product_name,
+        barcode: movement.product_barcode,
+        user: movement.username,
+        role: movement.role,
+
+        date: new Date(
+            movement.movement_date ||
+            movement.created_at
+        ).toLocaleString("fr-FR", {
+            day: "2-digit",
+            month: "2-digit",
+            year: "numeric",
+            hour: "2-digit",
+            minute: "2-digit"
+        })
+    };
 
 }

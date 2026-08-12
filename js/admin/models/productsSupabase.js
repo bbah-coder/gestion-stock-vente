@@ -4,6 +4,30 @@
  *************************************************/
 async function getProductsSupabase() {
     try {
+        const { data, error } =
+            await supabaseClient
+                .from("products")
+                .select("*")
+                .order("name");
+        if (error) {
+            console.error(
+                "Erreur chargement produits",
+                error
+            );
+            return [];
+        }
+        return (data || []).map(mapProduct);
+
+    } catch (err) {
+
+        console.error(err);
+
+        return [];
+    }
+
+}
+/*async function getProductsSupabase() {
+    try {
 
         const { data, error } =
             await supabaseClient
@@ -26,7 +50,7 @@ async function getProductsSupabase() {
 
         return [];
     }
-}
+}*/
 
 // --------------------------------------
 // ✅ Ajouter un produit dans Supabase
@@ -107,6 +131,65 @@ async function saveProductToSupabase(product) {
 // --------------------------------------
 async function getCurrentShopId() {
 
+    try {
+
+        // ✅ Offline
+        if (!navigator.onLine) {
+
+            const username =
+                localStorage.getItem("username");
+
+            if (!username) {
+                return null;
+            }
+
+            const profile =
+                (await db.profiles.toArray())
+                    .find(
+                        p => p.username === username
+                    );
+
+            return profile?.shop_id || null;
+
+        }
+
+        // ✅ Online
+        const {
+            data: { user }
+        } = await supabaseClient.auth.getUser();
+
+        if (!user) {
+            return null;
+        }
+
+        const { data, error } =
+            await supabaseClient
+                .from("profiles")
+                .select("shop_id")
+                .eq("id", user.id)
+                .single();
+
+        if (error) {
+
+            console.error(error);
+
+            return null;
+
+        }
+
+        return data?.shop_id || null;
+
+    } catch (error) {
+
+        console.error(error);
+
+        return null;
+
+    }
+
+}
+/*async function getCurrentShopId() {
+
     const { data: { user } } =
         await supabaseClient.auth.getUser();
 
@@ -123,7 +206,7 @@ async function getCurrentShopId() {
     }
 
     return data.shop_id;
-}
+}*/
 
 // --------------------------------------
 // ✅ Modifier un produit dans Supabase
@@ -184,20 +267,16 @@ async function updateProductSupabase(product) {
                 .select();
 
         if (error) {
-            console.error(
-                "Erreur modification produit",
-                error
-            );
+            console.warn("📴 Produit modifié localement. Synchronisation automatique au retour de la connexion");
             return null;
-
-            console.log("✅ Produit mis à jour", data);
         }
+        console.log("✅ Produit mis à jour", data);
 
         return data[0];
 
     } catch (err) {
+        console.warn("📴 Produit modifié localement, synchronisation différée");
 
-        console.error(err);
         return null;
 
     }
@@ -239,89 +318,81 @@ async function deleteProductSupabase(barcode) {
 //--------------------------------------
 // ✅ Chargement sécurisé des produits
 //--------------------------------------
-/*async function loadProducts() {
 
-    try {
-
-        const supabaseProducts =
-            await getProductsSupabase();
-
-        console.log(
-            `✅ ${supabaseProducts.length} produits chargés depuis Supabase`
-        );
-
-        return supabaseProducts || [];
-
-    } catch (error) {
-
-        console.error(
-            "Erreur chargement Supabase",
-            error
-        );
-
-        const localProducts =
-            JSON.parse(
-                localStorage.getItem("products")
-            ) || [];
-
-        console.warn(
-            `⚠️ Fallback localStorage (${localProducts.length} produits)`
-        );
-
-        return localProducts;
-
-    }
-
-}*/
 async function loadProducts() {
 
     try {
 
-        const supabaseProducts =
-            await getProductsSupabase();
+        const shopId = await getCurrentShopId();
 
-        console.log(
-            `✅ ${supabaseProducts.length} produits chargés depuis Supabase`
-        );
+        if (!shopId) {
+            return [];
+        }
 
-        return supabaseProducts.map(p => ({
+        const products =
+            await db.products
+                .filter(
+                    p => p.shop_id === shopId
+                )
+                .toArray();
 
-            ...p,
+        console.log(`✅ ${products.length} produits chargés pour le magasin ${shopId}`);
 
-            // ✅ Mapping Supabase -> JS
-            isArchived: p.is_archived ?? false,
-            archivedAt: p.archived_at,
-            lastSaleAt: p.last_sale_at,
-
-            promo: p.promo_percent ?? 0,
-
-            createdBy: p.created_by,
-            createdRole: p.created_role
-
-        }));
+        return products;
 
     } catch (error) {
 
         console.error(
-            "Erreur chargement Supabase",
+            "Erreur chargement IndexedDB",
             error
         );
 
-        const localProducts =
-            JSON.parse(
-                localStorage.getItem("products")
-            ) || [];
-
-        console.warn(
-            `⚠️ Fallback localStorage (${localProducts.length} produits)`
-        );
-
-        return localProducts;
+        return [];
 
     }
 
 }
 
+/*async function loadProducts() {
+    try {
+        const products =
+            await db.products
+                .orderBy("name")
+                .toArray();
+        console.log(
+            `✅ ${products.length} produits chargés depuis IndexedDB`
+        );
+        return products;
+    } catch (error) {
+        console.error(
+            "Erreur chargement IndexedDB",
+            error
+        );
+
+        return [];
+    }
+
+}*/
+
+// --------------------------------------
+// ✅ Map Product
+// --------------------------------------
+function mapProduct(product) {
+
+    return {
+        ...product,
+
+        isArchived: product.is_archived ?? false,
+        archivedAt: product.archived_at,
+        lastSaleAt: product.last_sale_at,
+
+        promo: product.promo_percent ?? 0,
+
+        createdBy: product.created_by,
+        createdRole: product.created_role
+    };
+
+}
 //--------------------------------------
 // ✅ Synchronisation unique vers Supabase
 //--------------------------------------

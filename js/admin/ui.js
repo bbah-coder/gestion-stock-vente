@@ -304,6 +304,11 @@ function hideRegister() {
  ************************************************************/
 async function createAccount() {
 
+  if (!navigator.onLine) {
+    showToast("📴 la création d'un compte nécessite une connexion Internet");
+
+    return;
+  }
   const usernameEl = document.getElementById("newUsername");
   const passwordEl = document.getElementById("newPassword");
   const roleEl = document.getElementById("role");
@@ -441,10 +446,6 @@ async function createAccount() {
     usernameEl.value = "";
     passwordEl.value = "";
 
-    /*if (shopEl) {
-      shopEl.value = "";
-    }*/
-
     showToast(
       "✅ Compte créé avec succès",
       "success"
@@ -552,6 +553,100 @@ function displayUsers(users) {
  * FUNCTION : La liste des users
  ************************************************************/
 async function renderUsers() {
+
+  console.log("✅ renderUsers appelé");
+
+  const container =
+    document.getElementById("usersList");
+
+  container.innerHTML = "";
+
+  // ✅ OFFLINE
+  if (!navigator.onLine) {
+
+    const currentShop =
+      getCurrentShop();
+
+    let users =
+      await db.profiles.toArray();
+
+    if (
+      !isSuperAdmin() &&
+      currentShop
+    ) {
+
+      users =
+        users.filter(
+          user =>
+            user.shop_id === currentShop.id &&
+            user.role !== "super_admin"
+        );
+
+    }
+
+    displayUsers(users);
+
+    return;
+
+  }
+
+  // ✅ ONLINE
+  const currentShop =
+    getCurrentShop();
+
+  let query =
+    supabaseClient
+      .from("profiles")
+      .select(`
+                *,
+                shops(name, max_users, subscription_plan)
+            `);
+
+  if (!isSuperAdmin()) {
+
+    query = query
+      .eq("shop_id", currentShop.id)
+      .neq("role", "super_admin");
+
+  }
+
+  const {
+    data: users,
+    error
+  } = await query;
+
+  if (error) {
+
+    console.error(error);
+
+    return;
+
+  }
+
+  for (const user of users || []) {
+
+    if (!user.shop_id) continue;
+
+    const usage =
+      await getShopUserUsage(
+        user.shop_id
+      );
+
+    user.users_count =
+      usage.currentUsers;
+
+    user.max_users =
+      usage.maxUsers;
+
+    // ✅ Mise à jour IndexedDB
+    await db.profiles.put(user);
+
+  }
+
+  displayUsers(users);
+
+}
+/*async function renderUsers() {
   console.log("✅ renderUsers appelé");
 
   const container = document.getElementById("usersList");
@@ -644,7 +739,7 @@ async function renderUsers() {
 
     displayUsers(users);
   }
-}
+}*/
 
 /************************************************************
  * FUNCTION : Activer/Desactiver un user
@@ -1014,6 +1109,12 @@ async function populateShopsSelect() {
 
 async function saveStoreInfo() {
 
+  if (!navigator.onLine) {
+    showToast("📴 La mise à jour d'une fiche magsin nécessite une connexion Internet");
+
+    return;
+  }
+
   const name = document.getElementById("storeName").value.trim();
   const phone = document.getElementById("storePhone").value.trim();
   const address = document.getElementById("storeAddress").value.trim();
@@ -1164,7 +1265,7 @@ async function saveStoreInfo() {
 /************************************************************
  * FUNCTION : CHARGER LE MAGASIN EXISTANT
  ************************************************************/
-function loadStoreForm() {
+/*function loadStoreForm() {
 
   const store = JSON.parse(
     localStorage.getItem("storeInfo") || "{}"
@@ -1191,7 +1292,55 @@ function loadStoreForm() {
 
   document.getElementById("storeAddress").value =
     store.address || "";
+}*/
+async function loadStoreForm() {
+
+  const shops =
+    await db.shops.toArray();
+
+  const store =
+    shops[0];
+
+  if (!store?.id) {
+
+    document.getElementById(
+      "storeName"
+    ).value = "";
+
+    document.getElementById(
+      "storePhone"
+    ).value = "";
+
+    document.getElementById(
+      "storeAddress"
+    ).value = "";
+
+    currentShopId = null;
+
+    return;
+
+  }
+
+  currentShopId =
+    store.id;
+
+  document.getElementById(
+    "storeName"
+  ).value =
+    store.name || "";
+
+  document.getElementById(
+    "storePhone"
+  ).value =
+    store.phone || "";
+
+  document.getElementById(
+    "storeAddress"
+  ).value =
+    store.address || "";
+
 }
+
 
 /*BOUTON RETOUR*/
 function closeStoreInfo() {
@@ -1213,7 +1362,7 @@ function getCurrentShop() {
  * ON RECUPERE LE PROFIL ADMIN
  ***********************************************************/
 
-async function getCurrentProfile() {
+/*async function getCurrentProfile() {
 
   const username = localStorage.getItem("username");
 
@@ -1231,6 +1380,129 @@ async function getCurrentProfile() {
   }
 
   return data;
+}*/
+
+/*async function getCurrentProfile() {
+
+  const username =
+    localStorage.getItem("username");
+
+  if (!username) {
+    return null;
+  }
+
+  // ✅ Mode offline
+  if (!navigator.onLine) {
+
+    const profile =
+      await db.profiles
+        .where("username")
+        .equals(username)
+        .first();
+
+    return profile || null;
+
+  }
+
+  try {
+
+    const { data, error } =
+      await supabaseClient
+        .from("profiles")
+        .select("*")
+        .eq("username", username)
+        .single();
+
+    if (error) {
+
+      console.error(error);
+
+      return null;
+
+    }
+
+    // ✅ Mise à jour du cache local
+    await db.profiles.put(data);
+
+    return data;
+
+  } catch (error) {
+
+    console.error(error);
+
+    // ✅ Fallback local
+    const profile =
+      await db.profiles
+        .where("username")
+        .equals(username)
+        .first();
+
+    return profile || null;
+
+  }
+
+}*/
+async function getCurrentProfile() {
+
+  const username =
+    localStorage.getItem("username");
+
+  if (!username) {
+    return null;
+  }
+
+  // ✅ Mode offline
+  if (!navigator.onLine) {
+
+    const profiles =
+      await db.profiles.toArray();
+
+    const profile =
+      profiles.find(
+        p => p.username === username
+      );
+
+    return profile || null;
+
+  }
+
+  try {
+
+    const { data, error } =
+      await supabaseClient
+        .from("profiles")
+        .select("*")
+        .eq("username", username)
+        .single();
+
+    if (error) {
+
+      console.error(error);
+
+      return null;
+
+    }
+
+    await db.profiles.put(data);
+
+    return data;
+
+  } catch (error) {
+
+    console.error(error);
+
+    const profiles =
+      await db.profiles.toArray();
+
+    const profile =
+      profiles.find(
+        p => p.username === username
+      );
+
+    return profile || null;
+
+  }
+
 }
 
 /************************************************************
@@ -1253,6 +1525,93 @@ async function showShops() {
  * FUNCTION : CHARGE LES MAGASINS
  ************************************************************/
 async function renderShops() {
+
+  const container =
+    document.getElementById("shopsList");
+
+  container.innerHTML = "";
+
+  let shops = [];
+  let users = [];
+
+  try {
+
+    if (!navigator.onLine) {
+
+      shops =
+        await db.shops.toArray();
+
+      users =
+        await db.profiles.toArray();
+
+    } else {
+
+      const {
+        data: shopsData,
+        error
+      } = await supabaseClient
+        .from("shops")
+        .select("*")
+        .order("name");
+
+      if (error) {
+        throw error;
+      }
+
+      const {
+        data: usersData
+      } = await supabaseClient
+        .from("profiles")
+        .select("shop_id, username, role");
+
+      shops = shopsData || [];
+      users = usersData || [];
+    }
+
+    const shopsWithStats =
+      shops.map(shop => {
+
+        const shopUsers =
+          users.filter(
+            u => u.shop_id === shop.id
+          );
+
+        const admins =
+          shopUsers.filter(
+            u => u.role === "admin"
+          );
+
+        const adminNames =
+          admins
+            .map(a => a.username)
+            .join(", ");
+
+        return {
+
+          ...shop,
+
+          usersCount:
+            shopUsers.length,
+
+          adminNames:
+            adminNames || "Non défini"
+
+        };
+
+      });
+
+    displayShops(
+      shopsWithStats
+    );
+
+  } catch (error) {
+
+    console.error(error);
+
+  }
+
+}
+/*async function renderShops() {
 
   const container =
     document.getElementById("shopsList");
@@ -1304,7 +1663,7 @@ async function renderShops() {
   });
 
   displayShops(shopsWithStats);
-}
+}*/
 
 /************************************************************
  * FUNCTION : Liste des magasins abonnés
@@ -1419,8 +1778,59 @@ async function toggleShop(
 /************************************************************
  * DETECTER L'ADMIN SANS MAGASIN
  ***********************************************************/
-
 async function hasShopAssigned() {
+
+  const username = localStorage.getItem("username");
+
+  if (!username) {
+    return false;
+  }
+
+  // ✅ Mode offline
+  if (!navigator.onLine) {
+
+    const profiles =
+      await db.profiles.toArray();
+
+    const profile =
+      profiles.find(
+        p => p.username === username
+      );
+
+    return !!profile?.shop_id;
+
+  }
+
+  try {
+
+    const { data, error } =
+      await supabaseClient
+        .from("profiles")
+        .select("shop_id")
+        .eq("username", username)
+        .single();
+
+    if (error) {
+
+      console.error(error);
+
+      return false;
+
+    }
+
+    return !!data?.shop_id;
+
+  } catch (error) {
+
+    console.error(error);
+
+    return false;
+
+  }
+
+}
+
+/*async function hasShopAssigned() {
 
   const username =
     localStorage.getItem("username");
@@ -1438,7 +1848,7 @@ async function hasShopAssigned() {
   }
 
   return !!data?.shop_id;
-}
+}*/
 
 /************************************************************
  * Bloque l'application tant qu'aucun magasin n'est créé
@@ -1566,10 +1976,9 @@ async function getShopUserUsage(shopId) {
 /************************************************************
  * Affichage info consommation
  ***********************************************************/
-async function renderSubscriptionInfo() {
+/*async function renderSubscriptionInfo() {
 
-  const currentShop =
-    getCurrentShop();
+  const currentShop = getCurrentShop();
 
   if (!currentShop) return;
 
@@ -1596,6 +2005,60 @@ async function renderSubscriptionInfo() {
 
   const percentage =
     maxUsers
+      ? (currentUsers / maxUsers) * 100
+      : 0;
+
+  document.getElementById(
+    "subscriptionInfoCard"
+  ).style.display = "block";
+
+  document.getElementById(
+    "subscriptionPlanLabel"
+  ).textContent =
+    currentShop.subscription_plan || "-";
+
+  document.getElementById(
+    "currentUsersCount"
+  ).textContent =
+    currentUsers;
+
+  document.getElementById(
+    "maxUsersCount"
+  ).textContent =
+    maxUsers;
+
+  document.getElementById(
+    "subscriptionPrice"
+  ).textContent =
+    formatPrice(
+      currentShop.monthly_price || 0
+    ) + " GNF/mois";
+
+  document.getElementById(
+    "subscriptionProgressBar"
+  ).style.width =
+    percentage + "%";
+
+}*/
+async function renderSubscriptionInfo() {
+
+  const currentShop = getCurrentShop();
+
+  if (!currentShop) return;
+
+  const profiles = await db.profiles
+    .where("shop_id")
+    .equals(currentShop.id)
+    .toArray();
+
+  const currentUsers =
+    profiles.length;
+
+  const maxUsers =
+    currentShop.max_users || 0;
+
+  const percentage =
+    maxUsers > 0
       ? (currentUsers / maxUsers) * 100
       : 0;
 

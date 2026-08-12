@@ -21,7 +21,8 @@
  *
  ************************************************************/
 
-let products = JSON.parse(localStorage.getItem("products") || "[]");
+//let products = JSON.parse(localStorage.getItem("products") || "[]");
+let products = [];
 
 let showPromoOnly = false;
 let promoMode = false;
@@ -37,6 +38,34 @@ let promoMode = false;
  * - tri stock faible
  * - pagination
  ************************************************************/
+
+async function refreshShopProducts() {
+
+  const shopId =
+    await getCurrentShopId();
+
+  if (!shopId) {
+
+    products = [];
+
+    renderProducts();
+
+    return;
+
+  }
+
+  products = (
+    await db.products.toArray()
+  ).filter(
+    product =>
+      product.shop_id === shopId &&
+      !product.isArchived &&
+      !product.is_archived
+  );
+
+  renderProducts();
+
+}
 
 function renderProducts() {
 
@@ -454,9 +483,10 @@ function renderPagination(totalItems) {
  * ----------------------------------------------------------
  * Met à jour la page courante et recharge les produits
  ************************************************************/
-function changePage(page) {
+async function changePage(page) {
   currentPage = page;
-  renderProducts();
+  //renderProducts();
+  await refreshShopProducts();
 }
 
 
@@ -521,7 +551,7 @@ function populateCategoriesHistory() {
 /************************************************************
  * 🔥 FILTRE PROMO
  ************************************************************/
-function filterPromoOnly() {
+async function filterPromoOnly() {
 
   showPromoOnly = !showPromoOnly;
 
@@ -534,7 +564,8 @@ function filterPromoOnly() {
   }
 
   currentPage = 1;
-  renderProducts();
+  //renderProducts();
+  await refreshShopProducts();
 }
 
 
@@ -562,11 +593,12 @@ function showPromo() {
 /************************************************************
  * 🔍 RESET RECHERCHE
  ************************************************************/
-function clearSearch() {
+async function clearSearch() {
 
   const input = document.getElementById("searchInput");
   input.value = "";
 
-  renderProducts();
+  //renderProducts();
+  await refreshShopProducts();
   renderLowStock?.(); // ✅ compat admin
 }

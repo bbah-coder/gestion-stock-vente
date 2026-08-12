@@ -2,11 +2,68 @@
  * 📊 STOCK / HISTORIQUE
  ************************************************************/
 //CREE  MOUVEMENTS STOCK
-let stockMovements = JSON.parse(
+/*let stockMovements = JSON.parse(
   localStorage.getItem("stockMovements") || "[]"
-);
+);*/
+// Mouvements chargés au démarrage
+let stockMovements = [];
 
 let currentMovementProductIndex = null;
+
+async function initStockMovements() {
+
+  try {
+
+    const lastSync =
+      await getSetting(
+        "stock_movements_last_sync"
+      );
+
+    const movementsCount =
+      await db.stockMovements.count();
+
+    if (
+      !lastSync ||
+      movementsCount === 0
+    ) {
+
+      console.log(
+        "📥 Import initial des mouvements..."
+      );
+
+      await importStockMovementsToIndexedDB();
+
+    }
+
+    stockMovements =
+      await loadStockMovements();
+
+    syncStockMovements()
+      .catch(error => {
+
+        console.warn(
+          "⚠️ Synchronisation mouvements impossible",
+          error
+        );
+
+      });
+
+    console.log(
+      `✅ ${stockMovements.length} mouvements initialisés`
+    );
+
+  } catch (error) {
+
+    console.error(
+      "❌ Erreur initStockMovements",
+      error
+    );
+
+    stockMovements = [];
+
+  }
+
+}
 
 /************************************************************
  * FUNCTION : ajout stock
@@ -338,13 +395,7 @@ function saveStockMovement() {
 /************************************************************
  * FUNCTION : PERMET D'APPLIQUER LE MOUVEMENT
  ************************************************************/
-async function applyStockMovement(
-  index,
-  type,
-  quantity,
-  reason,
-  comment = ""
-) {
+async function applyStockMovement(index, type, quantity, reason, comment = "") {
 
   const p = products[index];
 
@@ -357,19 +408,14 @@ async function applyStockMovement(
 
   // ✅ Entrées
   if (type === "entry") {
-
     p.stock += quantity;
     p.entries += quantity;
-
   }
 
   // ✅ Sorties
   else {
-
     if (p.stock < quantity) {
-
       showToast("Stock insuffisant");
-
       return;
     }
 
@@ -379,7 +425,6 @@ async function applyStockMovement(
     console.log("REASON =", reason);
 
     switch (reason) {
-
       case "broken":
         p.broken += quantity;
         break;
@@ -399,8 +444,6 @@ async function applyStockMovement(
       case "don":
         p.don += quantity;
         break;
-
-
     }
 
   }
@@ -424,45 +467,70 @@ async function applyStockMovement(
       profile?.role ||
       localStorage.getItem("userRole") ||
       "Inconnu",
-    date: new Date().toLocaleString()
+    movement_date:
+      new Date().toISOString(),
+    date:
+      new Date().toLocaleString("fr-FR"),
+    //Gestion de sync offline vers supaBase
+    pending_sync: false
   };
   stockMovements.unshift(movements);
 
   // ✅ Synchro Supabase
-  await saveStockMovementSupabase(movements)
+  //const savedMovement = await saveStockMovementSupabase(movements);
+  let savedMovement = null;
+  try {
+    savedMovement = await saveStockMovementSupabase(movements);
+  } catch (error) {
 
-  /*stockMovements.unshift({
-    product: p.name,
-    barcode: p.barcode,
-    type,
-    reason,
-    quantity,
-    comment,
-    user:
-      profile?.username ||
-      localStorage.getItem("username") ||
-      "Inconnu",
-    role:
-      profile?.role ||
-      localStorage.getItem("userRole") ||
-      "Inconnu",
+    console.warn("📴 Mouvement enregistré localement");
+  }
 
-    date: new Date().toLocaleString()
+  if (savedMovement) {
+    await db.stockMovements.put(mapStockMovement(savedMovement));
+  }
+  else {
+    await db.stockMovements.put({
+      ...movements,
+      id: crypto.randomUUID(),
+      pending_sync: true,
+      created_at:
+        new Date().toISOString(),
+      updated_at:
+        new Date().toISOString()
+    });
 
-  });*/
+  }
 
-  localStorage.setItem(
-    "stockMovements",
-    JSON.stringify(stockMovements)
-  );
+  // ✅ Mise à jour locale immédiate
+  await db.products.put(p);
 
-  localStorage.setItem(
-    "products",
-    JSON.stringify(products)
-  );
+  // ✅ Tentative de synchronisation Supabase
+  const updatedProduct = await updateProductSupabase(p);
 
-  // ✅ Synchronisation Supabase
-  await updateProductSupabase(p);
+  // ✅ Synchronisation réussie
+  if (updatedProduct) {
+    await db.products.put(mapProduct(updatedProduct));
+
+    await db.products.update(p.id,
+      {
+        pending_sync: false
+      }
+    );
+
+  }
+  // ✅ Synchronisation échouée
+  else {
+
+    await db.products.update(p.id,
+      {
+        pending_sync: true
+      }
+    );
+
+    console.warn("📴 Produit enregistré localement - synchronisation en attente");
+
+  }
 
   render();
 

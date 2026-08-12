@@ -2,14 +2,15 @@
  * 📦 PRODUITS
  ************************************************************/
 
-let products = JSON.parse(localStorage.getItem("products") || "[]");
+//let products = JSON.parse(localStorage.getItem("products") || "[]");
+let products = [];
 let currentPromoIndex = null;
 let editIndex = null;
 
-function saveProducts() {
+/*function saveProducts() {
   localStorage.setItem("products", JSON.stringify(products));
   localStorage.setItem("products_updated_at", Date.now());
-}
+}*/
 
 //--------------------------------------
 // ✅ INIT PRODUITS
@@ -17,64 +18,93 @@ function saveProducts() {
 
 async function initProducts() {
 
-  products = await loadProducts();
+  try {
 
-  let updated = false;
+    // ✅ Premier démarrage ou IndexedDB vide
+    const lastSync = await getSetting("products_last_sync");
 
-  products.forEach(p => {
+    const productsCount = await db.products.count();
 
-    /*if (p.promo === undefined) {
-      p.promo = 0;
-      updated = true;
-    }*/
+    if (!lastSync || productsCount === 0) {
 
-    if (!p.category) {
-      p.category = "Autre";
-      updated = true;
+      console.log("📥 Import initial des produits...");
+
+      await importProductsToIndexedDB();
+
     }
 
-    if (p.initialStock === undefined) {
-      p.initialStock = p.stock;
-      updated = true;
-    }
+    // ✅ Chargement local instantané
+    products = await loadProducts();
 
-    if (p.sold === undefined) {
-      p.sold = 0;
-      updated = true;
-    }
+    // ✅ Synchronisation arrière-plan
+    syncProducts()
+      .catch(error => {
 
-    /*if (p.active === undefined) {
-      p.active = true;
-    }*/
+        console.warn(
+          "⚠️ Synchronisation produits impossible", error);
 
-    if (!p.createdAt) {
-      p.createdAt = new Date().toISOString();
-      updated = true;
-    }
+      });
 
-    if (p.isArchived === undefined) {
-      p.isArchived = p.is_archived ?? false;
-    }
+    // ✅ Compatibilité ancien modèle
+    let updated = false;
 
-    if (p.archivedAt === undefined) {
-      p.archivedAt = p.archived_at ?? null;
-    }
+    products.forEach(product => {
 
-    if (p.lastSaleAt === undefined) {
-      p.lastSaleAt = p.last_sale_at ?? null;
-    }
+      if (!product.category) {
+        product.category = "Autre";
+        updated = true;
+      }
 
-    if (p.promo === undefined) {
-      p.promo = p.promo_percent ?? 0;
-    }
+      if (product.initialStock === undefined) {
+        product.initialStock = product.stock;
+        updated = true;
+      }
 
-    console.log(p.name, p.isArchived, p.is_archived)
+      if (product.sold === undefined) {
+        product.sold = 0;
+        updated = true;
+      }
 
-  });
+      if (!product.createdAt) {
+        product.createdAt =
+          product.created_at ||
+          new Date().toISOString();
 
-  if (updated) {
-    saveProducts();
+        updated = true;
+      }
+
+      if (product.isArchived === undefined) {
+        product.isArchived =
+          product.is_archived ?? false;
+      }
+
+      if (product.archivedAt === undefined) {
+        product.archivedAt =
+          product.archived_at ?? null;
+      }
+
+      if (product.lastSaleAt === undefined) {
+        product.lastSaleAt =
+          product.last_sale_at ?? null;
+      }
+
+      if (product.promo === undefined) {
+        product.promo =
+          product.promo_percent ?? 0;
+      }
+
+    });
+
+    console.log(`✅ ${products.length} produits initialisés`);
+
+  } catch (error) {
+
+    console.error("❌ Erreur initProducts", error);
+
+    products = [];
+
   }
+
 }
 
 //--------------------------------------
@@ -118,6 +148,12 @@ function populateCategories() {
 //--------------------------------------
 
 function saveProduct() {
+
+  if (!navigator.onLine) {
+    showToast("📴 L'ajout d'une fiche produit nécessite une connexion Internet");
+
+    return;
+  }
 
   const category = document.getElementById("category").value.trim();
   const name = document.getElementById("name").value.trim();
@@ -188,6 +224,12 @@ async function saveFinal(product) {
 
   const normalizedName = product.name.toLowerCase().trim();
 
+  if (!navigator.onLine) {
+    showToast("📴 Modification d'une fiche produit nécessite une connexion Internet");
+
+    return;
+  }
+
   // ✅ recherche doublon
   const existingIndex = products.findIndex(p =>
     p.name.toLowerCase().trim() === normalizedName
@@ -221,7 +263,7 @@ async function saveFinal(product) {
     if (product.image) {
       existing.image = product.image;
     }
-    updateProductSupabase(existing);
+    await updateProductSupabase(existing);
   }
 
   // ✅ MODE AJOUT
@@ -257,7 +299,6 @@ async function saveFinal(product) {
           existingProduct.price = product.price;
         }
       }
-
 
       // ✅ fusion stock
       existingProduct.stock += product.stock;
@@ -403,6 +444,12 @@ function deleteProduct(index) {
 
 async function deletePhysicalProduct(index) {
 
+  if (!navigator.onLine) {
+    showToast("📴 La suppression d'une fiche produit nécessite une connexion Internet");
+
+    return;
+  }
+
   const p = products[index];
 
   if (!p) return;
@@ -520,6 +567,12 @@ function openAddProduct() {
 //--------------------------------------------------------------------
 
 async function importCSV() {
+
+  if (!navigator.onLine) {
+    showToast("📴 L'import des produits nécessite une connexion Internet");
+
+    return;
+  }
 
   const input = document.getElementById("fileInput");
   const file = input.files[0];
@@ -818,26 +871,13 @@ function closePromoPopup() {
 // ✅ FUNCTION : Permet d'archiver un produit inactif (sans vente depuis un certain jour)
 //---------------------------------------------------------------------------------------
 
-/*function archiveProduct(index) {
-
-  const confirmAction = confirm("Archiver ce produit ?");
-
-  if (!confirmAction) return;
-
-  products[index].active = false;
-  products[index].deletedAt = new Date().toISOString();
-
-  localStorage.setItem("products", JSON.stringify(products));
-
-  render();
-}*/
-
 async function archiveProduct(index) {
 
   const confirmAction = confirm("Archiver ce produit ?");
 
-  if (!confirmAction) return;
-
+  if (!confirmAction) {
+    return;
+  }
 
   const product = products[index];
 
@@ -845,34 +885,84 @@ async function archiveProduct(index) {
 
   product.archivedAt = new Date().toISOString();
 
-  console.log(product);
+  // ✅ Mise à jour locale immédiate
+  await db.products.put(product);
 
-  localStorage.setItem("products", JSON.stringify(products));
+  // ✅ Tentative de synchronisation Supabase
+  const updatedProduct = await updateProductSupabase(product);
 
-  //Synchronisation supabase
-  await updateProductSupabase(product);
+  if (updatedProduct) {
+
+    await db.products.update(
+      product.id,
+      {
+        pending_sync: false
+      }
+    );
+
+  } else {
+
+    await db.products.update(
+      product.id,
+      {
+        pending_sync: true
+      }
+    );
+
+    showToast("📴 Produit archivé localement. Synchronisation en attente.");
+
+  }
 
   render();
 
 }
 
+
 //--------------------------------------------------------------------
 // ✅ FUNCTION : Reactive un produit archivé
 //--------------------------------------------------------------------
-/*function restoreProduct(index) {
 
-  const confirmAction = confirm("Réactiver ce produit ?");
+async function restoreProduct(index) {
 
-  if (!confirmAction) return;
+  const product = products[index];
 
-  products[index].active = true;
-  delete products[index].deletedAt;
+  product.isArchived = false;
 
-  localStorage.setItem("products", JSON.stringify(products));
+  product.archivedAt = null;
+
+  // ✅ Mise à jour locale immédiate
+  await db.products.put(product);
+
+  // ✅ Tentative de synchronisation Supabase
+  const updatedProduct = await updateProductSupabase(product);
+
+  if (updatedProduct) {
+
+    await db.products.update(
+      product.id,
+      {
+        pending_sync: false
+      }
+    );
+
+  } else {
+
+    await db.products.update(
+      product.id,
+      {
+        pending_sync: true
+      }
+    );
+
+    showToast("📴 Produit restauré localement. Synchronisation en attente.");
+
+  }
 
   render();
-}*/
-async function restoreProduct(index) {
+
+}
+
+/*async function restoreProduct(index) {
 
   const confirmAction = confirm("Réactiver ce produit ?");
 
@@ -891,7 +981,7 @@ async function restoreProduct(index) {
 
   render();
 
-}
+}*/
 
 //--------------------------------------------------------------------
 // ✅ FUNCTION : La vue des produits archivés
@@ -1327,6 +1417,12 @@ function openExcelImport() {
 //------------------------------------------------
 
 async function importExcelProducts(event) {
+
+  if (!navigator.onLine) {
+    showToast("📴 L'import des produits nécessite une connexion Internet");
+
+    return;
+  }
 
   const file = event.target.files[0];
 

@@ -936,7 +936,8 @@ async function validerPanier() {
 
   // ✅ refresh UI
   renderCart();
-  renderProducts();
+  //renderProducts();
+  await refreshShopProducts();
   renderDashboard();
   renderSalesByDay();
   updateCartBadge();

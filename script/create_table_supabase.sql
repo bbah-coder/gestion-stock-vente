@@ -76,6 +76,9 @@ on products(barcode);
 create index idx_products_category
 on products(category);
 
+create index idx_products_updated_at
+on products(updated_at);
+
 /*Politiques RLS*/
 
 alter table products enable row level security;
@@ -167,6 +170,22 @@ before update on products
 for each row
 execute function update_updated_at_column();
 
+
+create trigger update_stock_movements_updated_at
+before update on stock_movements
+for each row
+execute function update_updated_at_column();
+
+create trigger update_profiles_updated_at
+before update on profiles
+for each row
+execute function update_updated_at_column();
+
+create trigger update_shops_updated_at
+before update on shops
+for each row
+execute function update_updated_at_column();
+
 /**********TABLE MOUVEMENT de stock********************/
 create table stock_movements (
     id uuid primary key default gen_random_uuid(),
@@ -180,7 +199,8 @@ create table stock_movements (
     username text,
     role text,
     movement_date timestamptz,
-    created_at timestamptz default now()
+    created_at timestamptz default now(),
+    updated_at timestamptz default now()
 );
 alter table stock_movements
 add constraint fk_stock_movements_shop
@@ -197,6 +217,9 @@ on stock_movements(product_barcode);
 
 create index idx_stock_movements_date
 on stock_movements(created_at desc);
+
+create index idx_stock_movements_updated_at
+on products(updated_at);
 
 alter table stock_movements
 enable row level security;

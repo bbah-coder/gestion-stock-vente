@@ -118,11 +118,15 @@ async function login() {
 
       const { data: prof } = await supabaseClient
         .from("profiles")
-        .select("id, username, role, active")
+        .select("id, username, role, active, shop_id")
         .eq("id", data.user.id)
         .single();
 
       profile = prof;
+      //Sauvegarde dans IndexedDB
+      await db.profiles.put(profile);
+
+      console.log("✅ Profil sauvegardé dans IndexedDB");
       console.log("PROFILE =", profile);
       console.log("ROLE =", profile.role);
       onlineSuccess = true;

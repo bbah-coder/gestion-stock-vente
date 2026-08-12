@@ -8,22 +8,20 @@ async function initApp() {
   console.log("🚀 App démarrée");
 
   // ✅ Sécurité
-  if (!initAuth()) return;
+  if (!initAuth())
+    return;
 
   //FORCER LA CREATION DU MAGASIN AUX ADMINS SANS MAGAISN
-  const role =
-    localStorage.getItem("userRole");
+  const role = localStorage.getItem("userRole");
 
   if (role === "admin") {
 
-    const hasShop =
-      await hasShopAssigned();
+    const hasShop = await hasShopAssigned();
 
     if (!hasShop) {
 
-      showToast(
-        "🏪 Créez votre premier magasin"
-      );
+      showToast("🏪 Créez votre premier magasin");
+
       lockAppUntilStoreCreated();
       showStoreInfo();
 
@@ -31,10 +29,23 @@ async function initApp() {
     }
   }
 
-  await loadCurrentShop();
+  try {
+    await loadCurrentShop();
+
+  } catch (error) {
+    console.warn("⚠️ Shop non chargée (offline)");
+
+  }
 
   // ✅ Vérifier compte actif
-  const ok = await initCurrentUserContext();
+  let ok = true;
+  try {
+    ok = await initCurrentUserContext();
+
+  } catch (error) {
+    console.warn("⚠️ Contexte utilisateur indisponible (offline)");
+
+  }
 
   if (!ok) return;
 
@@ -43,9 +54,16 @@ async function initApp() {
   // ✅ Init data
   await initProducts();
 
+
   // Init mvt stock
-  stockMovements =
-    await loadStockMovements();
+  await initStockMovements();
+
+  // Synchronisation en arrière-plan
+  syncProducts().catch(console.error);
+  syncStockMovements().catch(console.error);
+  syncProfiles().catch(console.error);
+
+  window.addEventListener("online", handleOnlineSync);
 
   // ✅ UI
   updateUserInfo();
@@ -58,6 +76,51 @@ async function initApp() {
 
   // ✅ Lancer affichage
   render();
+}
+
+let syncInProgress = false;
+
+async function handleOnlineSync() {
+
+  if (syncInProgress) {
+    return;
+  }
+
+  syncInProgress = true;
+
+  try {
+
+    console.log("🌐 Connexion rétablie");
+
+    showToast("🌐 Synchronisation en cours...");
+
+    await syncProducts();
+
+    await syncStockMovements();
+
+    await syncProfiles();
+
+    if (
+      typeof syncShops === "function"
+    ) {
+      await syncShops();
+    }
+
+    showToast(
+      "✅ Synchronisation terminée"
+    );
+
+  } catch (error) {
+
+    console.error(
+      "Erreur synchronisation", error);
+
+  } finally {
+
+    syncInProgress = false;
+
+  }
+
 }
 
 /************************************************************
@@ -115,17 +178,6 @@ function goToShop() {
   window.location.href = "/";
 }
 
-/*function goToShop(){
-
-  // ✅ si déjà ouverte → focus
-  if(shopWindow && !shopWindow.closed){
-    shopWindow.focus();
-    return;
-  }
-
-  // ✅ sinon ouvrir
-  shopWindow = window.open("index.html", "_blank");
-}*/
 
 function clearSearch() {
   const input = document.getElementById("searchInput");
@@ -181,25 +233,19 @@ function checkSessionTimeout() {
 
   if (!lastActivity) return;
 
-  const inactiveTime =
-    Date.now() - lastActivity;
+  const inactiveTime = Date.now() - lastActivity;
 
   if (
     inactiveTime >= WARNING_TIME &&
     inactiveTime < SESSION_Timeout
   ) {
 
-    showToast(
-      "⚠️ Votre session va expirer bientôt"
-    );
+    showToast("⚠️ Votre session va expirer bientôt");
 
   }
-
   if (inactiveTime >= SESSION_Timeout) {
 
-
     forceLogout();
-
   }
 
 }
