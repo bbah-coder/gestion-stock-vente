@@ -23,16 +23,17 @@ function saveUserSession(user) {
     "userId",
     user.id || ""
   );
+  localStorage.setItem(
+    "currentProfile",
+    JSON.stringify(user)
+  );
 
 }
 
 /************************************************************** 
  FUNCTION : Sauvegarde les informations pour le mode offline
 ***************************************************************/
-function saveOfflineUser(
-  profile,
-  password
-) {
+function saveOfflineUser(profile, password) {
 
   localStorage.setItem(
     "offlineUser",
@@ -57,6 +58,35 @@ function saveOfflineUser(
 
     })
   );
+
+}
+
+/************************************************************** 
+ FUNCTION : Connexion offline via IndexeDB
+***************************************************************/
+async function loginOffline(username, password) {
+
+  const profiles = await db.profiles.toArray();
+
+  const profile =
+    profiles.find(
+      p =>
+        p.username === username
+    );
+
+  if (!profile) {
+    return null;
+  }
+
+  const encodedPassword = btoa(password.trim());
+
+  if (
+    profile.password !== encodedPassword
+  ) {
+    return null;
+  }
+
+  return profile;
 
 }
 

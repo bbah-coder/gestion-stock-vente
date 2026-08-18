@@ -74,107 +74,30 @@ function updateLastActivity() {
 /************************************************************
  * CHARGE LES MAGS DE L'UTILISATEUR CONNECTE
  ***********************************************************/
-/*async function loadCurrentShop() {
-
-  const username =
-    localStorage.getItem("username");
-
-
-  if (!username) return null;
-
-  // Profil utilisateur
-  const { data: profile, error: profileError } =
-    await supabaseClient
-      .from("profiles")
-      .select("shop_id")
-      .eq("username", username)
-      .single();
-
-  if (profileError) {
-    return null;
-  }
-
-  //RESET FORMULAIRE SI POUR LOCALE STORAGE
-  if (!profile?.shop_id) {
-
-    console.log("🧹 Suppression storeInfo");
-
-    localStorage.removeItem("storeInfo");
-
-    return null;
-  }
-
-  // Magasin associé
-  const { data: shop, error: shopError } =
-    await supabaseClient
-      .from("shops")
-      .select("*")
-      .eq("id", profile.shop_id)
-      .single();
-
-  // ✅ Magasin désactivé
-  if (
-    !isSuperAdmin() &&
-    shop &&
-    shop.active === false
-  ) {
-
-    return {
-      suspended: true
-    };
-  }
-
-  if (shopError || !shop) {
-    return null;
-  }
-
-  //Sauvegarde dans IndexedDB
-  await db.shops.put(shop);
-
-  console.log("✅ Shop sauvegardé dans IndexedDB");
-
-  localStorage.setItem(
-    "storeInfo",
-    JSON.stringify(shop)
-  );
-
-
-  return shop;
-}*/
 
 async function loadCurrentShop() {
 
   // ✅ Mode offline
   if (!navigator.onLine) {
 
-    console.log(
-      "📴 Offline détecté - lecture locale"
-    );
+    console.log("📴 Offline détecté - lecture locale");
 
-    const profiles =
-      await db.profiles.toArray();
+    const profiles = await db.profiles.toArray();
 
-    const profile =
-      profiles[0];
+    const profile = profiles[0];
 
     if (!profile?.shop_id) {
       return null;
     }
 
     const shop =
-      await db.shops.get(
-        profile.shop_id
-      );
+      await db.shops.get(profile.shop_id);
 
     if (!shop) {
       return null;
     }
 
-    if (
-      !isSuperAdmin() &&
-      shop.active === false
-    ) {
-
+    if (!isSuperAdmin() && shop.active === false) {
       return {
         suspended: true
       };
@@ -187,10 +110,7 @@ async function loadCurrentShop() {
 
   try {
 
-    const username =
-      localStorage.getItem(
-        "username"
-      );
+    const username = localStorage.getItem("username");
 
     if (!username) {
       return null;
@@ -212,13 +132,9 @@ async function loadCurrentShop() {
 
     if (!profile?.shop_id) {
 
-      console.log(
-        "🧹 Suppression storeInfo"
-      );
+      console.log("🧹 Suppression storeInfo");
 
-      localStorage.removeItem(
-        "storeInfo"
-      );
+      localStorage.removeItem("storeInfo");
 
       return null;
 
@@ -241,20 +157,13 @@ async function loadCurrentShop() {
     // ✅ Sauvegarde locale
     await db.shops.put(shop);
 
-    console.log(
-      "✅ Shop sauvegardé dans IndexedDB"
-    );
+    console.log("✅ Shop sauvegardé dans IndexedDB");
 
     // ✅ Compatibilité temporaire
-    localStorage.setItem(
-      "storeInfo",
-      JSON.stringify(shop)
-    );
+    localStorage.setItem("storeInfo", JSON.stringify(shop));
 
     if (
-      !isSuperAdmin() &&
-      shop.active === false
-    ) {
+      !isSuperAdmin() && shop.active === false) {
 
       return {
         suspended: true
@@ -266,33 +175,23 @@ async function loadCurrentShop() {
 
   } catch (error) {
 
-    console.warn(
-      "⚠️ Erreur réseau - lecture locale"
-    );
+    console.warn("⚠️ Erreur réseau - lecture locale");
 
-    const profiles =
-      await db.profiles.toArray();
+    const profiles = await db.profiles.toArray();
 
-    const profile =
-      profiles[0];
+    const profile = profiles[0];
 
     if (!profile?.shop_id) {
       return null;
     }
 
-    const shop =
-      await db.shops.get(
-        profile.shop_id
-      );
+    const shop = await db.shops.get(profile.shop_id);
 
     if (!shop) {
       return null;
     }
 
-    if (
-      !isSuperAdmin() &&
-      shop.active === false
-    ) {
+    if (!isSuperAdmin() && shop.active === false) {
 
       return {
         suspended: true
@@ -663,54 +562,8 @@ function colorDiff(value) {
 
   try {
 
-    const username = localStorage.getItem("username");
-
-    if (!username) {
-      return true;
-    }
-
-    const { data, error } = await supabaseClient
-      .from("profiles")
-      .select("active")
-      .eq("username", username)
-      .single();
-
-    if (error) {
-      console.error("❌ Vérification compte :", error);
-      return true;
-    }
-
-    if (!data?.active) {
-
-      showToast(
-        "⛔ Votre compte a été désactivé",
-        "error"
-      );
-
-      setTimeout(async () => {
-        await logout();
-      }, 1500);
-
-      return false;
-    }
-
-    return true;
-
-  } catch (err) {
-
-    console.error("❌ checkCurrentUserStatus :", err);
-
-    return true;
-  }
-}*/
-async function checkCurrentUserStatus() {
-
-  try {
-
     const username =
-      localStorage.getItem(
-        "username"
-      );
+      localStorage.getItem("username");
 
     if (!username) {
       return true;
@@ -719,12 +572,9 @@ async function checkCurrentUserStatus() {
     // ✅ Mode offline
     if (!navigator.onLine) {
 
-      console.log(
-        "📴 Offline détecté - profil local"
-      );
+      console.log("📴 Offline détecté - profil local");
 
-      const profiles =
-        await db.profiles.toArray();
+      const profiles = await db.profiles.toArray();
 
       const profile =
         profiles.find(
@@ -750,9 +600,7 @@ async function checkCurrentUserStatus() {
     if (error) {
 
       console.error(
-        "❌ Vérification compte :",
-        error
-      );
+        "❌ Vérification compte :", error);
 
       return true;
 
@@ -760,10 +608,7 @@ async function checkCurrentUserStatus() {
 
     if (!data?.active) {
 
-      showToast(
-        "⛔ Votre compte a été désactivé",
-        "error"
-      );
+      showToast("⛔ Votre compte a été désactivé", "error");
 
       setTimeout(async () => {
 
@@ -778,10 +623,72 @@ async function checkCurrentUserStatus() {
 
   } catch (err) {
 
-    console.error(
-      "❌ checkCurrentUserStatus :",
-      err
-    );
+    console.error("❌ checkCurrentUserStatus :", err);
+
+    return true;
+
+  }
+
+  }*/
+async function checkCurrentUserStatus() {
+
+  const username = localStorage.getItem("username");
+
+  if (!username) {
+    return true;
+  }
+
+  try {
+
+    const { data, error } =
+      await supabaseClient
+        .from("profiles")
+        .select("active")
+        .eq("username", username)
+        .single();
+
+    if (error) {
+      throw error;
+    }
+
+    if (!data?.active) {
+
+      showToast(
+        "⛔ Votre compte a été désactivé", "error");
+
+      setTimeout(async () => {
+        await logout();
+      }, 1500);
+
+      return false;
+
+    }
+
+    return true;
+
+  } catch (error) {
+
+    console.warn("📴 Vérification locale du profil");
+
+    const profiles = await db.profiles.toArray();
+
+    const profile =
+      profiles.find(
+        p => p.username === username
+      );
+
+    if (!profile) {
+      return true;
+    }
+
+    if (profile.active === false) {
+
+      showToast(
+        "⛔ Votre compte a été désactivé", "error");
+
+      return false;
+
+    }
 
     return true;
 

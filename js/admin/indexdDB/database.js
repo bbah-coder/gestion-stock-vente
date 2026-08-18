@@ -58,8 +58,7 @@ async function setSetting(key, value) {
 
 async function importProductsToIndexedDB() {
 
-    const products =
-        await getProductsSupabase();
+    const products = await getProductsSupabase();
 
     await db.products.bulkPut(products);
 
@@ -74,10 +73,9 @@ async function importProductsToIndexedDB() {
                 products[0].updated_at
             );
 
-        await setSetting(
-            "products_last_sync",
-            newestUpdatedAt
-        );
+        await setSetting("products_last_sync", newestUpdatedAt);
+
+        console.log("✅ Mouvement sauvegardé dans IndexedDB");
     }
 }
 
@@ -85,8 +83,8 @@ async function importProductsToIndexedDB() {
 async function syncProducts() {
     try {
 
-        //Synchro ver supabase des produits en offline
-        await await uploadPendingProducts();
+        //Synchro vers supabase des produits en offline
+        await uploadPendingProducts();
 
         const lastSync = await getSetting("products_last_sync");
 
@@ -141,6 +139,7 @@ async function syncProducts() {
     }
 
 }
+
 
 async function loadProductsIndexedDB() {
 
@@ -239,8 +238,7 @@ async function syncStockMovements() {
                     lastSync
                 );
 
-            await setSetting(
-                "stock_movements_last_sync", newestUpdatedAt);
+            await setSetting("stock_movements_last_sync", newestUpdatedAt);
         }
 
         console.log(`✅ ${movements.length} mouvements synchronisés`);
@@ -250,6 +248,11 @@ async function syncStockMovements() {
         console.warn(
             "⚠️ Synchronisation mouvements impossible", error);
     }
+    stockMovements = await loadStockMovements();
+
+    products = await loadProducts();
+
+    render();
 }
 
 //Chrager le mvt en pending offline

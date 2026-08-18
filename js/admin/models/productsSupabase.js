@@ -2,7 +2,7 @@
 /*************************************************
  *FUNCTION : ✅ Charger les produits Supabase
  *************************************************/
-async function getProductsSupabase() {
+/*async function getProductsSupabase() {
     try {
         const { data, error } =
             await supabaseClient
@@ -25,15 +25,31 @@ async function getProductsSupabase() {
         return [];
     }
 
-}
-/*async function getProductsSupabase() {
+}*/
+async function getProductsSupabase() {
+
     try {
+
+        const shopId =
+            await getCurrentShopId();
+
+        if (!shopId) {
+
+            console.error(
+                "Aucun magasin associé"
+            );
+
+            return [];
+
+        }
 
         const { data, error } =
             await supabaseClient
                 .from("products")
                 .select("*")
+                .eq("shop_id", shopId)
                 .order("name");
+
         if (error) {
 
             console.error(
@@ -42,15 +58,21 @@ async function getProductsSupabase() {
             );
 
             return [];
+
         }
-        return data || [];
+
+        return (data || [])
+            .map(mapProduct);
+
     } catch (err) {
 
         console.error(err);
 
         return [];
+
     }
-}*/
+
+}
 
 // --------------------------------------
 // ✅ Ajouter un produit dans Supabase
@@ -412,20 +434,5 @@ function mapProduct(product) {
 
     showToast(
         "✅ Synchronisation terminée"
-    );
-}*/
-/*async function testProductsSupabase() {
-
-    const produits =
-        await getProductsSupabase();
-
-    console.log(
-        "Produits Supabase :",
-        produits
-    );
-
-    console.log(
-        "Nombre :",
-        produits.length
     );
 }*/

@@ -24,9 +24,38 @@ document.addEventListener("DOMContentLoaded", async () => {
 
 });
 
+function startAutoSyncProducts() {
+
+  setInterval(async () => {
+
+    try {
+
+      const isAllowed =
+        localStorage.getItem("isLoggedIn") === "true";
+
+      if (!isAllowed) {
+        return;
+      }
+
+      await syncProducts();
+
+    } catch (error) {
+
+      console.error(
+        "Erreur synchronisation produits",
+        error
+      );
+
+    }
+
+  }, 30000); // 30 secondes
+
+}
+
 
 function initApp() {
   showSection("products");
+  startAutoSyncProducts();
 
 }
 

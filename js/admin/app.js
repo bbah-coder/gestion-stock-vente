@@ -59,9 +59,12 @@ async function initApp() {
   await initStockMovements();
 
   // Synchronisation en arrière-plan
-  syncProducts().catch(console.error);
-  syncStockMovements().catch(console.error);
+  //syncProducts().catch(console.error);
+  //syncStockMovements().catch(console.error);
   syncProfiles().catch(console.error);
+
+  await syncProducts();
+  await syncStockMovements();
 
   window.addEventListener("online", handleOnlineSync);
 

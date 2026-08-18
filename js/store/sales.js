@@ -37,6 +37,8 @@
  *
  ************************************************************/
 
+let stockMovements = [];
+
 const today = new Date().toISOString().split("T")[0];
 document.getElementById("filterDate").value = today;
 
@@ -789,6 +791,11 @@ async function validerPanier() {
 
     product.stock -= item.quantity;
 
+    //Enregistrement local
+    await db.products.put(product);
+
+    console.log("Produit sauvegardé dans IndexedDB", product.name);
+
     if (product.sold === undefined) {
       product.sold = 0;
     }
@@ -801,7 +808,58 @@ async function validerPanier() {
     //Synchronisation supabase
     await updateProductSupabase(product);
 
+    //Création de mvt de stock
+    const profile = await getCurrentProfile();
+    const saleMovement = {
+      product: product.name,
+      barcode: product.barcode,
+      type: "exit",
+      reason: "sale",
+      quantity: item.quantity,
+      comment: "",//`Vente #${saleNumber}`,
+      user:
+        profile?.username ||
+        localStorage.getItem("username") ||
+        "Inconnu",
+      role:
+        profile?.role ||
+        localStorage.getItem("userRole") ||
+        "Inconnu",
+      movement_date:
+        new Date().toISOString(),
+      date:
+        new Date().toLocaleString("fr-FR"),
+      pending_sync: false
 
+    };
+    stockMovements.unshift(saleMovement);
+
+    let savedMovement = null;
+
+    try {
+
+      savedMovement = await saveStockMovementSupabase(saleMovement);
+
+    } catch (error) {
+      console.warn("📴 Vente enregistrée localement");
+
+    }
+    if (savedMovement) {
+
+      await db.stockMovements.put(mapStockMovement(savedMovement));
+
+    } else {
+      await db.stockMovements.put({
+        ...saleMovement,
+        id: crypto.randomUUID(),
+        pending_sync: true,
+        created_at:
+          new Date().toISOString(),
+        updated_at:
+          new Date().toISOString()
+      });
+
+    }
 
     // ✅ ✅ ✅ CALCUL ICI (UNE SEULE FOIS)
 
@@ -923,7 +981,7 @@ async function validerPanier() {
 
 
   // ✅ sauvegardes
-  localStorage.setItem("products", JSON.stringify(products));
+  //localStorage.setItem("products", JSON.stringify(products));
   localStorage.setItem("sales", JSON.stringify(sales));
 
 

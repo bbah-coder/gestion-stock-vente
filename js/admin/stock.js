@@ -14,50 +14,32 @@ async function initStockMovements() {
 
   try {
 
-    const lastSync =
-      await getSetting(
-        "stock_movements_last_sync"
-      );
+    const lastSync = await getSetting("stock_movements_last_sync");
 
-    const movementsCount =
-      await db.stockMovements.count();
+    const movementsCount = await db.stockMovements.count();
 
-    if (
-      !lastSync ||
-      movementsCount === 0
-    ) {
+    if (!lastSync || movementsCount === 0) {
 
-      console.log(
-        "📥 Import initial des mouvements..."
-      );
+      console.log("📥 Import initial des mouvements...");
 
       await importStockMovementsToIndexedDB();
 
     }
 
-    stockMovements =
-      await loadStockMovements();
+    stockMovements = await loadStockMovements();
 
     syncStockMovements()
       .catch(error => {
 
-        console.warn(
-          "⚠️ Synchronisation mouvements impossible",
-          error
-        );
+        console.warn("⚠️ Synchronisation mouvements impossible", error);
 
       });
 
-    console.log(
-      `✅ ${stockMovements.length} mouvements initialisés`
-    );
+    console.log(`✅ ${stockMovements.length} mouvements initialisés`);
 
   } catch (error) {
 
-    console.error(
-      "❌ Erreur initStockMovements",
-      error
-    );
+    console.error("❌ Erreur initStockMovements", error);
 
     stockMovements = [];
 
@@ -289,33 +271,23 @@ function openStockMovement(index) {
  ************************************************************/
 function closeStockMovement() {
 
-  document.getElementById(
-    "stockMovementModal"
-  ).style.display = "none";
+  document.getElementById("stockMovementModal").style.display = "none";
 
   currentMovementProductIndex = null;
 
 }
 
 // ADAPTER LES MOTIFS SELON LE TYPE 
-document
-  .getElementById("movementType")
-  .addEventListener("change", updateReasons);
+document.getElementById("movementType").addEventListener("change", updateReasons);
 
 /************************************************************
 * FUNCTION : Gestion des motifs du mouvement de stock
 ************************************************************/
 function updateReasons() {
 
-  const type =
-    document.getElementById(
-      "movementType"
-    ).value;
+  const type = document.getElementById("movementType").value;
 
-  const reasonSelect =
-    document.getElementById(
-      "movementReason"
-    );
+  const reasonSelect = document.getElementById("movementReason");
 
   if (type === "entry") {
 
@@ -361,9 +333,7 @@ function updateReasons() {
  ************************************************************/
 function saveStockMovement() {
 
-  const quantity = parseInt(
-    document.getElementById("movementQuantity").value
-  );
+  const quantity = parseInt(document.getElementById("movementQuantity").value);
 
   if (isNaN(quantity) || quantity <= 0) {
 
@@ -372,14 +342,11 @@ function saveStockMovement() {
     return;
   }
 
-  const type =
-    document.getElementById("movementType").value;
+  const type = document.getElementById("movementType").value;
 
-  const reason =
-    document.getElementById("movementReason").value;
+  const reason = document.getElementById("movementReason").value;
 
-  const comment =
-    document.getElementById("movementComment").value.trim();
+  const comment = document.getElementById("movementComment").value.trim();
 
   applyStockMovement(
     currentMovementProductIndex,
@@ -390,6 +357,7 @@ function saveStockMovement() {
   );
 
   closeStockMovement();
+
 }
 
 /************************************************************
@@ -543,17 +511,21 @@ async function applyStockMovement(index, type, quantity, reason, comment = "") {
  ************************************************************/
 function showProductHistory(productName) {
 
-  const historyList =
-    document.getElementById("historyList");
+  const historyList = document.getElementById("historyList");
 
   historyList.innerHTML = "";
 
-  const product = products.find(
-    p => p.name === productName
+  const product = products.find(p => p.name === productName);
+
+  const initialStockMovement = stockMovements.find(
+    m =>
+      m.product === productName &&
+      m.reason === "initial_stock"
   );
 
-  const historySummary =
-    document.getElementById("historySummary");
+  const initialStock = initialStockMovement?.quantity || 0;
+
+  const historySummary = document.getElementById("historySummary");
 
   historySummary.innerHTML = `
   <div class="history-summary">
@@ -570,7 +542,7 @@ function showProductHistory(productName) {
 
     <div>
       <strong>📦 Stock initial :</strong>
-      ${product?.initialStock || 0}
+      ${initialStock || 0}
     </div>
 
     <div>
@@ -586,7 +558,7 @@ function showProductHistory(productName) {
   );
 
   // ✅ Ajouter le stock initial
-  if (product?.initialStock > 0) {
+  /*if (product?.initialStock > 0) {
 
     console.log(product);
 
@@ -601,7 +573,7 @@ function showProductHistory(productName) {
       comment: ""
     });
 
-  }
+  }*/
 
 
   // ✅ Ajouter les ventes
@@ -613,41 +585,25 @@ function showProductHistory(productName) {
       )
     );
 
-  /*if (product.name === "Coca") {
-    product.sold = 3;
-
-    localStorage.setItem(
-      "products",
-      JSON.stringify(products)
-    );
-  }
-
-  render();*/
 
   // TRIE DES DATES DES VENTES
   salesMovements.sort(
     (a, b) => new Date(b.date) - new Date(a.date)
   );
   //PERMET DE CREER UNE ENTREE PAR VENTE
-  salesMovements.forEach(sale => {
+  /*salesMovements.forEach(sale => {
 
     const items = sale.items.filter(
       i => i.name === product.name
     );
 
-
     items.forEach(item => {
 
       movements.push({
-
         reason: "sale",
-
         quantity: item.quantity,
-
         user: sale.user,
-
         role: sale.role,
-
         date: new Date(
           sale.date
         ).toLocaleString("fr-FR")
@@ -655,7 +611,7 @@ function showProductHistory(productName) {
       });
 
     });
-  });
+  });*/
 
   if (movements.length === 0) {
 
@@ -685,8 +641,7 @@ function showProductHistory(productName) {
             0
           );
 
-        const div =
-          document.createElement("div");
+        const div = document.createElement("div");
 
         div.className = "history-item";
 

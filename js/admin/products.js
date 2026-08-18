@@ -37,7 +37,7 @@ async function initProducts() {
     products = await loadProducts();
 
     // ✅ Synchronisation arrière-plan
-    syncProducts()
+    await syncProducts()
       .catch(error => {
 
         console.warn(
@@ -326,28 +326,48 @@ async function saveFinal(product) {
       product.createdBy = localStorage.getItem("username");
       product.createdRole = localStorage.getItem("userRole");
 
-      /*createdBy:
-            profile?.username || localStorage.getItem("username") || "Inconnu",
-          createdRole:
-            profile?.role ||
-            localStorage.getItem("userRole") ||
-            "Inconnu"*/
-
-      //products.unshift(product);
       products.unshift(product);
 
+      // Sauvegarde locale du produit
+      //await db.products.put(product);
+
+      const initialMovement = {
+        id: crypto.randomUUID(),
+        product: product.name,
+        barcode: product.barcode,
+        type: "entry",
+        reason: "initial_stock",
+        quantity: product.stock,
+        user: product.createdBy,
+        role: product.createdRole,
+        movement_date:
+          new Date().toISOString(),
+        date:
+          new Date().toLocaleString("fr-FR"),
+        comment: ""
+      };
+
+      stockMovements.unshift(initialMovement);
+
+      // Sauvegarde locale du mouvement
+      await db.stockMovements.put(initialMovement);
+
       // ✅ Sauvegarde Supabase
-      saveProductToSupabase(product);
+      await saveStockMovementSupabase(initialMovement);
+      await saveProductToSupabase(product);
 
     }
   }
 
   // ✅ sauvegarde
 
-  localStorage.setItem("products", JSON.stringify(products));
-  localStorage.setItem("products_updated_at", Date.now() + "_" + Math.random());
+  //localStorage.setItem("products", JSON.stringify(products));
+  //localStorage.setItem("products_updated_at", Date.now() + "_" + Math.random());
 
   // ✅ refresh tableau
+
+  await importProductsToIndexedDB();
+
   render();
 
   // ✅ reset formulaire
