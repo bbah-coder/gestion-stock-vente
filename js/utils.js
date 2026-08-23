@@ -34,11 +34,77 @@ window.addEventListener("online", async () => {
 
 });
 
-
 const supabaseClient = supabase.createClient(
   "https://amtlfqzhuqwrudaachvy.supabase.co",
   "sb_publishable_fc5s-5QrMhO9Daiw-ADDcQ_OA6HRPpD"
 );
+
+/************************************************************
+ * ON RECUPERE LE PROFIL ADMIN
+ ***********************************************************/
+
+async function getCurrentProfile() {
+
+  const username =
+    localStorage.getItem("username");
+
+  if (!username) {
+    return null;
+  }
+
+  // ✅ Mode offline
+  if (!navigator.onLine) {
+
+    const profiles = await db.profiles.toArray();
+
+    const profile =
+      profiles.find(
+        p => p.username === username
+      );
+
+    return profile || null;
+
+  }
+
+  try {
+
+    const { data, error } =
+      await supabaseClient
+        .from("profiles")
+        .select("*")
+        .eq("username", username)
+        .single();
+
+    if (error) {
+
+      console.error(error);
+
+      return null;
+
+    }
+
+    await db.profiles.put(data);
+
+    return data;
+
+  } catch (error) {
+
+    console.error(error);
+
+    const profiles =
+      await db.profiles.toArray();
+
+    const profile =
+      profiles.find(
+        p => p.username === username
+      );
+
+    return profile || null;
+
+  }
+
+}
+
 
 /************************************************************
  * SUPPER-ADMIN
@@ -694,4 +760,24 @@ async function checkCurrentUserStatus() {
 
   }
 
+}
+
+/************************************************************
+ * Premiere lettre de chaque mot en majuscule
+ ***********************************************************/
+function capitalizeWords(text) {
+
+  if (!text) return "";
+
+  return text
+    .trim()
+    .toLowerCase()
+    .split(" ")
+    .filter(word => word)
+    .map(
+      word =>
+        word.charAt(0).toUpperCase() +
+        word.slice(1)
+    )
+    .join(" ");
 }

@@ -246,3 +246,16 @@ with check (
         where id = auth.uid()
     )
 );
+
+/**********POLICY DELETE****************/
+create policy "stock_movements_delete_policy"
+on stock_movements
+for delete
+to authenticated
+using (
+    shop_id = (
+        select shop_id
+        from profiles
+        where id = auth.uid()
+    )
+);

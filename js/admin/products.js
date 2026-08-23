@@ -143,245 +143,246 @@ function populateCategories() {
 
   });
 }
-//--------------------------------------
-// ✅ CRUD
-//--------------------------------------
 
-function saveProduct() {
+//--------------------------------------------------------------------
+//✅ CRUD PRODUIT
+// ✅ FUNCTION Enregistrement du Produit depuis le formulaire d'ajout
+//--------------------------------------------------------------------
+async function saveProduct() {
 
   if (!navigator.onLine) {
     showToast("📴 L'ajout d'une fiche produit nécessite une connexion Internet");
-
     return;
   }
 
-  const category = document.getElementById("category").value.trim();
-  const name = document.getElementById("name").value.trim();
-  //const price = document.getElementById("price").value;
-  const price = Number(document.getElementById("price").value);
-  const wholesalePrice = Number(document.getElementById("wholesalePrice").value) || 0;
-  const wholesaleMinQty = Number(document.getElementById("wholesaleMinQty").value) || 0;
+  const shopId = await getCurrentShopId();
 
-  const stock = parseInt(document.getElementById("stock").value);
+  const category = capitalizeWords(document.getElementById("category").value.trim());
+  const name = capitalizeWords(document.getElementById("name").value.trim());
+
+  const price =
+    Number(document.getElementById("price").value);
+
+  const wholesalePrice =
+    Number(document.getElementById("wholesalePrice").value) || 0;
+
+  const wholesaleMinQty =
+    Number(document.getElementById("wholesaleMinQty").value) || 0;
+
+  const stock =
+    parseInt(document.getElementById("stock").value);
 
   if (!name || !price || isNaN(stock)) {
     showToast("Remplir tous les champs");
     return;
   }
 
-  const file = document.getElementById("image").files[0];
+  let image = null;
 
-  // ✅ CAS AVEC IMAGE
+  const file =
+    document.getElementById("image").files[0];
+
+  // ✅ Lecture image si présente
   if (file) {
-    const reader = new FileReader();
 
-    reader.onload = function (e) {
+    image = await new Promise((resolve) => {
 
-      const product = {
-        name: name,
-        price: price, //prix détail
-        wholesalePrice: wholesalePrice, //prix gros
-        wholesaleMinQty: wholesaleMinQty, //seuil prix gros
-        stock: stock,
-        //barcode: crypto.randomUUID(), //Ajout QR-CODE
-        barcode: "PRD-" + Date.now().toString().slice(-6), //Ajout QR-CODE
-        image: e.target.result,
-        category: category || "Autre"
+      const reader = new FileReader();
+
+      reader.onload = (e) => {
+        resolve(e.target.result);
       };
 
-      saveFinal(product);
-    };
+      reader.readAsDataURL(file);
 
-    reader.readAsDataURL(file);
-  }
-
-  // ✅ CAS SANS IMAGE
-  else {
-
-    const product = {
-      name: name,
-      price: price, //prix détail
-      wholesalePrice: wholesalePrice, //prix gros
-      wholesaleMinQty: wholesaleMinQty, //seuil prix gros
-      stock: stock,
-      barcode: "PRD-" + Date.now().toString().slice(-6), //Ajout QR-CODE
-      category: category || "Autre"
-    };
-
-    if (editIndex !== null) {
-      product.image = products[editIndex].image;
-    }
-
-    saveFinal(product);
+    });
 
   }
-}
 
-//--------------------------------------------------------------------
-// ✅ FUNCTION Enregistrement du Produit depuis le formulaire d'ajout
-//--------------------------------------------------------------------
-async function saveFinal(product) {
+  const normalizedName =
+    name.toLowerCase().trim();
 
-  const normalizedName = product.name.toLowerCase().trim();
-
-  if (!navigator.onLine) {
-    showToast("📴 Modification d'une fiche produit nécessite une connexion Internet");
-
-    return;
-  }
-
-  // ✅ recherche doublon
-  const existingIndex = products.findIndex(p =>
-    p.name.toLowerCase().trim() === normalizedName
+  const existingIndex = products.findIndex(
+    p =>
+      p.name.toLowerCase().trim() === normalizedName
+      && p.shop_id === shopId
   );
 
+  //--------------------------------------
   // ✅ MODE MODIFICATION
+  //--------------------------------------
   if (editIndex !== null) {
 
     const existing = products[editIndex];
 
-    existing.name = product.name;
-    existing.price = product.price;
-    existing.wholesalePrice = product.wholesalePrice || 0;
-    existing.wholesaleMinQty = product.wholesaleMinQty || 0;
+    existing.name = name;
+    existing.price = price;
+    existing.stock = stock;
+    existing.category = category || "Autre";
+    existing.wholesalePrice = wholesalePrice;
+    existing.wholesaleMinQty = wholesaleMinQty;
 
-    existing.category = product.category || "Autre";
+    if (image) {
+      existing.image = image;
+    }
 
-    // ✅ stock modifié
-    existing.stock = product.stock;
-    //barCode
-    existing.barcode = existing.barcode || product.barcode;
-    // ✅ NE PAS TOUCHER AUX VENTES
     const sold = existing.sold || 0;
 
-    // ✅ recalcul cohérent du stock initial
-    existing.initialStock = product.stock + sold;
+    existing.initialStock =
+      stock + sold;
 
-    // ✅ NE PAS RESET sold
-    // existing.sold = 0 ❌ SUPPRIME CETTE LIGNE
+    await db.products.put(existing);
 
-    if (product.image) {
-      existing.image = product.image;
-    }
     await updateProductSupabase(existing);
+
+    showToast("✅ Produit modifié");
+
   }
 
+  //--------------------------------------
   // ✅ MODE AJOUT
+  //--------------------------------------
   else {
 
     if (existingIndex !== -1) {
 
-      const existingProduct = products[existingIndex];
+      const existingProduct =
+        products[existingIndex];
 
-      // ✅ MESSAGE COMPLET
       const confirmUpdate = confirm(
         `⚠️ Produit "${existingProduct.name}" existe déjà\n\n` +
         `Stock actuel : ${existingProduct.stock}\n` +
-        `Stock ajouté : ${product.stock}\n\n` +
+        `Stock ajouté : ${stock}\n\n` +
         `Voulez-vous continuer ?`
       );
 
       if (!confirmUpdate) {
-        return; // ❌ on annule tout
+        return;
       }
 
-      // ✅ BONUS : gestion prix différent
-      if (parseFloat(existingProduct.price) !== parseFloat(product.price)) {
+      if (
+        Number(existingProduct.price) !== Number(price)
+      ) {
 
         const confirmPrice = confirm(
           `⚠️ Prix différent détecté\n\n` +
           `Ancien : ${existingProduct.price}\n` +
-          `Nouveau : ${product.price}\n\n` +
+          `Nouveau : ${price}\n\n` +
           `Mettre à jour le prix ?`
         );
 
         if (confirmPrice) {
-          existingProduct.price = product.price;
+          existingProduct.price = price;
         }
       }
 
-      // ✅ fusion stock
-      existingProduct.stock += product.stock;
-      existingProduct.initialStock += product.stock;
+      existingProduct.stock += stock;
+      existingProduct.initialStock += stock;
 
-      // ✅ Synchronisation Supabase
-      await updateProductSupabase(existingProduct);
-
-      // ✅ mise à jour image (si nouvelle)
-      if (product.image) {
-        existingProduct.image = product.image;
+      if (image) {
+        existingProduct.image = image;
       }
+
+      await db.products.put(existingProduct);
+
+      await updateProductSupabase(existingProduct);
 
       showToast("✅ Stock mis à jour avec succès");
 
     } else {
 
-      // ✅ nouveau produit
-      product.initialStock = product.stock; // ✅ stock initial
-      product.sold = 0;                    // ✅ vendu
-      product.wholesalePrice ??= 0;
-      product.createdAt = new Date().toISOString(); // ✅ DATE DE CREATION
+      // ✅ NOUVEAU PRODUIT
+      const newProduct = {
+        id: crypto.randomUUID(),
+        shop_id: shopId,
+        name,
+        price,
+        stock,
+        image,
+        category: category || "Autre",
+        wholesalePrice,
+        wholesaleMinQty,
+        barcode:
+          "PRD-" + Date.now().toString().slice(-6),
 
-      // ✅ auteur création
-      product.createdBy = localStorage.getItem("username");
-      product.createdRole = localStorage.getItem("userRole");
+        initialStock: stock,
+        sold: 0,
 
-      products.unshift(product);
+        createdAt: new Date().toISOString(),
+        createdBy:
+          localStorage.getItem("username"),
+        createdRole:
+          localStorage.getItem("userRole")
+      };
 
-      // Sauvegarde locale du produit
-      //await db.products.put(product);
+      await db.products.put(newProduct);
 
       const initialMovement = {
         id: crypto.randomUUID(),
-        product: product.name,
-        barcode: product.barcode,
+        shop_id: shopId,
+
+        product: newProduct.name,
+        barcode: newProduct.barcode,
+
         type: "entry",
         reason: "initial_stock",
-        quantity: product.stock,
-        user: product.createdBy,
-        role: product.createdRole,
+
+        quantity: stock,
+
+        user: newProduct.createdBy,
+        role: newProduct.createdRole,
+
         movement_date:
           new Date().toISOString(),
+
         date:
           new Date().toLocaleString("fr-FR"),
+
         comment: ""
       };
 
-      stockMovements.unshift(initialMovement);
-
-      // Sauvegarde locale du mouvement
       await db.stockMovements.put(initialMovement);
 
-      // ✅ Sauvegarde Supabase
-      await saveStockMovementSupabase(initialMovement);
-      await saveProductToSupabase(product);
 
+      await saveProductToSupabase(newProduct);
+
+      await saveStockMovementSupabase(initialMovement);
+      //await db.stockMovements.put(saveStockmvt);
+
+      showToast("✅ Produit ajouté avec succès");
     }
   }
 
-  // ✅ sauvegarde
+  //--------------------------------------
+  // ✅ RECHARGEMENT
+  //--------------------------------------
+  //products = await loadProducts();
 
-  //localStorage.setItem("products", JSON.stringify(products));
-  //localStorage.setItem("products_updated_at", Date.now() + "_" + Math.random());
+  //stockMovements = await loadStockMovements();
 
-  // ✅ refresh tableau
-
-  await importProductsToIndexedDB();
-
+  //--------------------------------------
+  // ✅ RAFRAICHISSEMENT
+  //--------------------------------------
   render();
 
-  // ✅ reset formulaire
+  //--------------------------------------
+  // ✅ RESET FORMULAIRE
+  //--------------------------------------
   clearForm();
 
-  // ✅ scroll
-  document.getElementById("tableCard").scrollIntoView({
-    behavior: "smooth"
-  });
+  editIndex = null;
 
-  // ✅ reset bouton
-  document.getElementById("saveBtn").innerText = "Enregistrer";
+  document.getElementById("saveBtn").innerText =
+    "Enregistrer";
 
-  document.getElementById("formSection").style.border = "none";
+  document.getElementById("formSection").style.border =
+    "none";
+
+  document
+    .getElementById("tableCard")
+    ?.scrollIntoView({
+      behavior: "smooth"
+    });
 }
 
 //--------------------------------------------------------------------
@@ -461,8 +462,79 @@ function deleteProduct(index) {
 //--------------------------------------------------------------------
 // ✅ FUNCTION : Suppression physique d'un produit sans vente
 //--------------------------------------------------------------------
-
 async function deletePhysicalProduct(index) {
+
+  if (!navigator.onLine) {
+
+    showToast(
+      "📴 La suppression d'une fiche produit nécessite une connexion Internet"
+    );
+
+    return;
+  }
+
+  const product = products[index];
+
+  if (!product) return;
+
+  if ((product.sold || 0) > 0) {
+
+    showToast(
+      "❌ Impossible de supprimer un produit ayant déjà des ventes.\n\nUtilisez Archiver."
+    );
+
+    return;
+  }
+
+  const confirmDelete = confirm(
+    `⚠️ Supprimer définitivement "${product.name}" ?`
+  );
+
+  if (!confirmDelete) {
+    return;
+  }
+
+  try {
+
+    // ✅ Suppression mouvements Supabase
+    await deleteStockMovementsSupabase(product.barcode);
+
+    //console.log("Produit à supprimer de supabase :", product.name);
+
+    // ✅ Supprimer dans Supabase
+    await deleteProductSupabase(product.barcode);
+
+    // ✅ Supprimer dans IndexedDB
+    await db.products.delete(product.id);
+
+    // ✅ Supprimer les mouvements associés
+
+    // ✅ Supprimer dans IndexedDB
+    await db.stockMovements
+      .where("product_barcode")
+      .equals(product.barcode)
+      .delete();
+
+    // ✅ Supprimer du tableau mémoire
+    products.splice(index, 1);
+
+    // ✅ Rafraîchir les mouvements
+    stockMovements = await loadStockMovements();
+
+    render();
+
+    showToast(`✅ ${product.name} supprimé avec succès`);
+
+  } catch (error) {
+
+    console.error(
+      "Erreur suppression produit", error);
+
+    showToast("❌ Erreur lors de la suppression");
+  }
+}
+
+/*async function deletePhysicalProduct(index) {
 
   if (!navigator.onLine) {
     showToast("📴 La suppression d'une fiche produit nécessite une connexion Internet");
@@ -508,7 +580,7 @@ async function deletePhysicalProduct(index) {
 
   render();
 
-}
+}*/
 
 //--------------------------------------------------------------------
 // ✅ FUNCTION : Annulation d'un ajout ou modification d'un produit
@@ -589,217 +661,336 @@ function openAddProduct() {
 async function importCSV() {
 
   if (!navigator.onLine) {
-    showToast("📴 L'import des produits nécessite une connexion Internet");
+
+    showToast(
+      "📴 L'import des produits nécessite une connexion Internet"
+    );
 
     return;
   }
 
-  const input = document.getElementById("fileInput");
+  const input =
+    document.getElementById("fileInput");
+
   const file = input.files[0];
 
-  const profile = await getCurrentProfile();
-
   if (!file) {
-    showToast("Aucun fichier sélectionné");
+
+    showToast(
+      "Aucun fichier sélectionné"
+    );
+
     return;
   }
 
-  const reader = new FileReader();
+  const shopId =
+    await getCurrentShopId();
+
+  const profile =
+    await getCurrentProfile();
+
+  const reader =
+    new FileReader();
 
   reader.onload = async function (e) {
 
-    const content = e.target.result;
+    const content =
+      e.target.result;
 
-    // ✅ normaliser lignes
-    const lines = content.replace(/\r/g, "").split("\n");
+    const lines = content
+      .replace(/\r/g, "")
+      .split("\n");
 
     let count = 0;
 
-    //lines.forEach((line, index) => {
     for (const [index, line] of lines.entries()) {
 
-      const clean = line.trim();
+      const clean =
+        line.trim();
+
       if (!clean) continue;
 
-      // ✅ ignorer en-tête
       if (index === 0) continue;
 
-      const parts = clean.split(/[,;]/);
+      const parts =
+        clean.split(/[,;]/);
 
-      if (parts.length < 3) continue;
+      if (parts.length < 5) continue;
 
-      const name = parts[0].trim();
-      const price = parseFloat(parts[1].trim());
-      const wholesalePrice = parseFloat(parts[2].trim()) ? parseFloat(parts[2].trim()) : "";
-      const wholesaleMinQty = parseInt(parts[3]) ? parseInt(parts[3]) : "";
-      const stock = parseInt(parts[4]);
-      const image = parts[5] ? parts[5].trim() : "";
-      const category = parts[6] ? parts[6].trim() : "Autre";
-
-      if (!name || isNaN(price) || isNaN(stock)) continue;
-
-      const normalizedName = name.toLowerCase().trim();
-
-      // ✅ RECHERCHE DOUBLON
-      const existingIndex = products.findIndex(p =>
-        p.name.toLowerCase().trim() === normalizedName
-      );
-
-      if (existingIndex !== -1) {
-
-        const existingProduct = products[existingIndex];
-
-        // ✅ CONFIRMATION STOCK
-        const confirmStock = confirm(
-          `⚠️ Produit "${existingProduct.name}" existe déjà\n\n` +
-          `Stock actuel : ${existingProduct.stock}\n` +
-          `Stock ajouté : ${stock}\n\n` +
-          `Continuer ?`
+      const name =
+        capitalizeWords(
+          parts[0].trim()
         );
 
-        if (!confirmStock) continue;
+      const price =
+        parseFloat(parts[1]);
 
-        // ✅ CONFIRMATION PRIX
-        if (parseFloat(existingProduct.price) !== price) {
+      const wholesalePrice =
+        parseFloat(parts[2]) || 0;
 
-          const confirmPrice = confirm(
-            `⚠️ Prix différent détecté\n\n` +
-            `Ancien : ${existingProduct.price}\n` +
-            `Nouveau : ${price}\n\n` +
-            `Mettre à jour le prix ?`
-          );
+      const wholesaleMinQty =
+        parseInt(parts[3]) || 0;
 
-          if (confirmPrice) {
-            existingProduct.price = price;
-          }
-        }
+      const stock =
+        parseInt(parts[4]);
+
+      const image =
+        parts[5]
+          ? parts[5].trim()
+          : null;
+
+      const category =
+        capitalizeWords(
+          parts[6]
+            ? parts[6].trim()
+            : "Autre"
+        );
+
+      if (
+        !name ||
+        isNaN(price) ||
+        isNaN(stock)
+      ) {
+        continue;
+      }
+
+      const normalizedName =
+        name.toLowerCase().trim();
+
+      const existingIndex =
+        products.findIndex(
+          p =>
+            p.name
+              .toLowerCase()
+              .trim() === normalizedName
+        );
+
+      //--------------------------------------
+      // ✅ PRODUIT EXISTANT
+      //--------------------------------------
+      if (existingIndex !== -1) {
+
+        const existingProduct =
+          products[existingIndex];
 
         existingProduct.stock += stock;
 
-        // Mise à jour compteur entrées
         existingProduct.entries ??= 0;
         existingProduct.entries += stock;
-        //On crée un mouvement de stock
 
-        stockMovements.unshift({
-          product: existingProduct.name,
-          type: "entry",
-          reason: "achat",
-          quantity: stock,
-          comment: "Import csv",
-          user:
-            profile?.username ||
-            localStorage.getItem("username") ||
-            "Inconnu",
-          role:
-            profile?.role ||
-            localStorage.getItem("userRole") ||
-            "Inconnu",
-          date: new Date().toLocaleString("fr-FR")
-
-        });
-
-        // Ne jamais modifier le stock initial
         if (
-          existingProduct.initialStock === undefined
+          existingProduct.initialStock ===
+          undefined
         ) {
+
           existingProduct.initialStock =
             existingProduct.stock - stock;
         }
-        // ✅ sécurité sold
-        if (existingProduct.sold === undefined) {
-          existingProduct.sold = 0;
-        }
 
-        // ✅ update image (si fournie)
+        existingProduct.sold ??= 0;
+
         if (image) {
           existingProduct.image = image;
         }
-        if (category && category.trim() !== "") {
 
-          if (existingProduct.category !== category) {
+        existingProduct.category =
+          category;
 
-            const confirmUpdate = confirm(
-              `Mettre à jour la catégorie pour ${existingProduct.name} ?\n\n` +
-              `Ancienne : ${existingProduct.category}\n` +
-              `Nouvelle : ${category}`
-            );
+        const movement = {
 
-            if (confirmUpdate) {
-              existingProduct.category = category;
-            }
+          id: crypto.randomUUID(),
+          shop_id: shopId,
+          product:
+            existingProduct.name,
+          barcode:
+            existingProduct.barcode,
+          type: "entry",
+          reason: "achat",
+          quantity: stock,
+          user:
+            profile?.username ||
+            localStorage.getItem(
+              "username"
+            ) ||
+            "Inconnu",
+          role:
+            profile?.role ||
+            localStorage.getItem(
+              "userRole"
+            ) ||
+            "Inconnu",
+          movement_date:
+            new Date()
+              .toISOString(),
+          date:
+            new Date()
+              .toLocaleString(
+                "fr-FR"
+              ),
+          comment:
+            "Import CSV"
+        };
 
-          }
-        }
+        await db.stockMovements.put(
+          movement
+        );
 
-        // ✅ Synchronisation Supabase
-        await updateProductSupabase(existingProduct);
-      } else {
+        await saveStockMovementSupabase(
+          movement
+        );
 
-        // ✅ nouveau produit
+        await db.products.put(
+          existingProduct
+        );
+
+        await updateProductSupabase(
+          existingProduct
+        );
+      }
+
+      //--------------------------------------
+      // ✅ NOUVEAU PRODUIT
+      //--------------------------------------
+      else {
+
         const newProduct = {
+          id:
+            crypto.randomUUID(),
+          shop_id:
+            shopId,
           name,
           price,
           wholesalePrice,
           wholesaleMinQty,
           stock,
-          initialStock: stock,
-          entries: 0,
+          initialStock:
+            stock,
+          sold: 0,
           barcode:
             "PRD-" +
-            Date.now().toString().slice(-6),
-          sold: 0,
-          image: image || null,
+            Date.now()
+              .toString()
+              .slice(-6),
+          image,
           category,
           createdAt:
-            new Date().toLocaleString("fr-FR"),
-
+            new Date()
+              .toISOString(),
           createdBy:
             profile?.username ||
-            localStorage.getItem("username") ||
+            localStorage.getItem(
+              "username"
+            ) ||
             "Inconnu",
+
           createdRole:
             profile?.role ||
-            localStorage.getItem("userRole") ||
+            localStorage.getItem(
+              "userRole"
+            ) ||
             "Inconnu"
         };
 
-        products.push(newProduct);
+        await db.products.put(
+          newProduct
+        );
 
-        // ✅ Synchronisation Supabase
-        await saveProductToSupabase(newProduct);
+        await saveProductToSupabase(
+          newProduct
+        );
+
+        const initialMovement = {
+
+          id:
+            crypto.randomUUID(),
+
+          shop_id:
+            shopId,
+
+          product:
+            newProduct.name,
+
+          barcode:
+            newProduct.barcode,
+
+          type:
+            "entry",
+
+          reason:
+            "initial_stock",
+
+          quantity:
+            newProduct.stock,
+
+          user:
+            newProduct.createdBy,
+
+          role:
+            newProduct.createdRole,
+
+          movement_date:
+            new Date()
+              .toISOString(),
+
+          date:
+            new Date()
+              .toLocaleString(
+                "fr-FR"
+              ),
+
+          comment:
+            "Import CSV"
+        };
+
+        await db.stockMovements.put(
+          initialMovement
+        );
+
+        await saveStockMovementSupabase(
+          initialMovement
+        );
+
+        products.push(
+          newProduct
+        );
+
         count++;
       }
-
     }
 
-    // ✅ sauvegarde
-    localStorage.setItem("products", JSON.stringify(products));
-    localStorage.setItem("products_updated_at", Date.now() + "_" + Math.random());
-    localStorage.setItem(
-      "stockMovements",
-      JSON.stringify(stockMovements)
-    );
+    products =
+      await loadProducts();
 
+    stockMovements =
+      await loadStockMovements();
 
     render();
 
-    showToast(count + " nouveaux produits importés ✅");
+    showToast(
+      `${count} nouveaux produits importés ✅`
+    );
   };
 
-  reader.onerror = async function () {
-    showToast("Erreur lecture fichier");
-  };
+  reader.onerror =
+    function () {
+
+      showToast(
+        "Erreur lecture fichier"
+      );
+
+    };
 
   reader.readAsText(file);
 
-  // ✅ reset fichier
-  document.getElementById("fileInput").value = "";
+  document.getElementById(
+    "fileInput"
+  ).value = "";
 
-  // ✅ scroll
-  document.getElementById("tableCard").scrollIntoView({
-    behavior: "smooth"
-  });
+  document
+    .getElementById("tableCard")
+    ?.scrollIntoView({
+      behavior: "smooth"
+    });
 }
 
 
@@ -981,27 +1172,6 @@ async function restoreProduct(index) {
   render();
 
 }
-
-/*async function restoreProduct(index) {
-
-  const confirmAction = confirm("Réactiver ce produit ?");
-
-  if (!confirmAction) return;
-
-  const product = products[index];
-
-  product.isArchived = false;
-
-  product.archivedAt = null;
-
-  localStorage.setItem("products", JSON.stringify(products));
-
-  //Synchronisation supabase
-  await updateProductSupabase(product);
-
-  render();
-
-}*/
 
 //--------------------------------------------------------------------
 // ✅ FUNCTION : La vue des produits archivés
@@ -1235,79 +1405,6 @@ function showInactiveProducts() {
 /************************************************************
  * FUNCTION : RENDER INCTIF PRODUCT
  *************************************************************/
-/*function getInactiveProducts(days) {
-
-  const today = new Date();
-
-  return products
-    .filter(p => p.active !== false) // ✅ EXCLURE ARCHIVÉS
-    .map(p => {
-
-
-      let lastSaleDate = null;
-
-      // ✅ chercher la dernière vente
-      sales.forEach(sale => {
-
-        sale.items.forEach(item => {
-
-          if (item.name.toLowerCase().trim() === p.name.toLowerCase().trim()) {
-
-            const saleDate = new Date(sale.date);
-
-            if (!lastSaleDate || saleDate > lastSaleDate) {
-              lastSaleDate = saleDate;
-            }
-
-          }
-
-        });
-
-      });
-
-      let diffDays = 0;
-
-      // ✅ CAS 1 : produit déjà vendu
-      if (lastSaleDate) {
-
-        diffDays = Math.floor(
-          (today - lastSaleDate) / (1000 * 60 * 60 * 24)
-        );
-
-      }
-
-      // ✅ CAS 2 : jamais vendu → utiliser date création
-      else {
-
-        const createdDate = new Date(p.createdAt);
-
-        diffDays = Math.floor(
-          (today - createdDate) / (1000 * 60 * 60 * 24)
-        );
-      }
-
-      let label = "";
-
-      if (lastSaleDate) {
-        label = diffDays + " jours sans vente";
-      } else {
-        label = "Jamais vendu (" + diffDays + " jours)";
-      }
-
-
-      return {
-        ...p,
-        index: products.indexOf(p), // ✅ OBLIGATOIRE
-        days: diffDays,
-        label: label
-      };
-
-
-
-    })
-    .filter(p => p.days >= days) // ✅ filtre dynamique
-    .sort((a, b) => b.days - a.days); // ✅ tri du pire au meilleur
-}*/
 
 function getInactiveProducts(days) {
 
@@ -1439,6 +1536,7 @@ function openExcelImport() {
 async function importExcelProducts(event) {
 
   if (!navigator.onLine) {
+
     showToast("📴 L'import des produits nécessite une connexion Internet");
 
     return;
@@ -1446,16 +1544,16 @@ async function importExcelProducts(event) {
 
   const file = event.target.files[0];
 
-  const profile = await getCurrentProfile();
-
   if (!file) {
 
-    showToast(
-      "Aucun fichier sélectionné"
-    );
+    showToast("Aucun fichier sélectionné");
 
     return;
   }
+
+  const shopId = await getCurrentShopId();
+
+  const profile = await getCurrentProfile();
 
   const reader = new FileReader();
 
@@ -1486,12 +1584,14 @@ async function importExcelProducts(event) {
 
     let count = 0;
 
-    //rows.forEach(row => {
     for (const row of rows) {
+
       const name =
-        String(
-          row["Nom"] || ""
-        ).trim();
+        capitalizeWords(
+          String(
+            row["Nom"] || ""
+          ).trim()
+        );
 
       const price =
         parseFloat(
@@ -1501,12 +1601,12 @@ async function importExcelProducts(event) {
       const wholesalePrice =
         parseFloat(
           row["Prix Gros"] || 0
-        ) || "";
+        ) || 0;
 
       const wholesaleMinQty =
         parseInt(
           row["Seuil Gros"] || 0
-        ) || "";
+        ) || 0;
 
       const stock =
         parseInt(
@@ -1519,16 +1619,18 @@ async function importExcelProducts(event) {
         ).trim();
 
       const category =
-        String(
-          row["Catégorie"] || "Autre"
-        ).trim();
+        capitalizeWords(
+          String(
+            row["Catégorie"] || "Autre"
+          ).trim()
+        );
 
       if (
         !name ||
         isNaN(price) ||
         isNaN(stock)
       ) {
-        return;
+        continue;
       }
 
       const normalizedName =
@@ -1543,119 +1645,94 @@ async function importExcelProducts(event) {
             normalizedName
         );
 
+      //--------------------------------------
+      // ✅ PRODUIT EXISTANT
+      //--------------------------------------
       if (existingIndex !== -1) {
 
-        const existingProduct =
-          products[existingIndex];
-
-        const confirmStock =
-          confirm(
-            `⚠️ Produit "${existingProduct.name}" existe déjà\n\n` +
-            `Stock actuel : ${existingProduct.stock}\n` +
-            `Stock ajouté : ${stock}\n\n` +
-            `Continuer ?`
-          );
-
-        if (!confirmStock) {
-          return;
-        }
-
-        if (
-          Number(existingProduct.price) !==
-          Number(price)
-        ) {
-
-          const confirmPrice =
-            confirm(
-              `⚠️ Prix différent détecté\n\n` +
-              `Ancien : ${existingProduct.price}\n` +
-              `Nouveau : ${price}\n\n` +
-              `Mettre à jour le prix ?`
-            );
-
-          if (confirmPrice) {
-
-            existingProduct.price =
-              price;
-
-          }
-        }
+        const existingProduct = products[existingIndex];
 
         existingProduct.stock += stock;
 
-        // Mise à jour compteur entrées
         existingProduct.entries ??= 0;
         existingProduct.entries += stock;
 
-        stockMovements.unshift({
-          product: existingProduct.name,
-          type: "entry",
-          reason: "achat",
-          quantity: stock,
-          comment: "Import Excel",
-          user:
-            profile?.username ||
-            localStorage.getItem("username") ||
-            "Inconnu",
-          role:
-            profile?.role ||
-            localStorage.getItem("userRole") ||
-            "Inconnu",
-
-          date: new Date().toLocaleString("fr-FR")
-        });
-
-        // Ne jamais modifier le stock initial
         if (
-          existingProduct.initialStock === undefined
+          existingProduct.initialStock ===
+          undefined
         ) {
-          existingProduct.initialStock =
-            existingProduct.stock - stock;
+
+          existingProduct.initialStock = existingProduct.stock - stock;
         }
 
         existingProduct.sold ??= 0;
 
         if (image) {
-
-          existingProduct.image =
-            image;
-
+          existingProduct.image = image;
         }
 
-        if (
-          category &&
-          existingProduct.category !==
-          category
-        ) {
+        existingProduct.category = category;
 
-          const confirmCategory =
-            confirm(
-              `Mettre à jour la catégorie de ${existingProduct.name} ?\n\n` +
-              `Ancienne : ${existingProduct.category}\n` +
-              `Nouvelle : ${category}`
-            );
+        const movement = {
+          id: crypto.randomUUID(),
+          shop_id: shopId,
+          product: existingProduct.name,
+          barcode: existingProduct.barcode,
+          type: "entry",
+          reason: "achat",
+          quantity: stock,
+          comment:
+            "Import Excel",
+          user:
+            profile?.username ||
+            localStorage.getItem(
+              "username"
+            ) ||
+            "Inconnu",
+          role:
+            profile?.role ||
+            localStorage.getItem(
+              "userRole"
+            ) ||
+            "Inconnu",
+          movement_date:
+            new Date()
+              .toISOString(),
+          date:
+            new Date()
+              .toLocaleString(
+                "fr-FR"
+              )
+        };
 
-          if (confirmCategory) {
+        await db.stockMovements.put(movement);
 
-            existingProduct.category =
-              category;
+        await saveStockMovementSupabase(movement);
 
-          }
-        }
-        // ✅ Synchronisation Supabase
+        await db.products.put(existingProduct);
+
         await updateProductSupabase(existingProduct);
 
-      } else {
+      }
+
+      //--------------------------------------
+      // ✅ NOUVEAU PRODUIT
+      //--------------------------------------
+      else {
 
         const newProduct = {
+          id:
+            crypto.randomUUID(),
+          shop_id:
+            shopId,
           name,
           price,
           wholesalePrice,
           wholesaleMinQty,
           stock,
-          initialStock: stock,
-          entries: 0,
-
+          initialStock:
+            stock,
+          sold: 0,
           barcode:
             "PRD-" +
             Date.now()
@@ -1664,65 +1741,85 @@ async function importExcelProducts(event) {
             Math.floor(
               Math.random() * 100
             ),
-
-          sold: 0,
-
-          image: image || null,
+          image:
+            image || null,
           category,
           createdAt:
             new Date()
-              .toLocaleString("fr-FR"),
-
+              .toISOString(),
           createdBy:
             profile?.username ||
-            localStorage.getItem("username") ||
+            localStorage.getItem(
+              "username"
+            ) ||
             "Inconnu",
           createdRole:
             profile?.role ||
-            localStorage.getItem("userRole") ||
+            localStorage.getItem(
+              "userRole"
+            ) ||
             "Inconnu"
-
         };
 
-        products.push(newProduct);
+        await db.products.put(newProduct);
 
-        // ✅ Synchronisation Supabase
         await saveProductToSupabase(newProduct);
 
+        const initialMovement = {
+          id:
+            crypto.randomUUID(),
+          shop_id:
+            shopId,
+          product:
+            newProduct.name,
+          barcode:
+            newProduct.barcode,
+          type:
+            "entry",
+          reason:
+            "initial_stock",
+          quantity:
+            newProduct.stock,
+          comment:
+            "Import Excel",
+          user:
+            newProduct.createdBy,
+          role:
+            newProduct.createdRole,
+          movement_date:
+            new Date()
+              .toISOString(),
+          date:
+            new Date()
+              .toLocaleString("fr-FR")
+        };
+
+        await db.stockMovements.put(initialMovement);
+
+        await saveStockMovementSupabase(initialMovement);
+
+        products.push(
+          newProduct
+        );
+
         count++;
-
       }
-
-      //});
     }
 
-    localStorage.setItem(
-      "products",
-      JSON.stringify(products)
-    );
+    products =
+      await loadProducts();
 
-    localStorage.setItem(
-      "products_updated_at",
-      Date.now() +
-      "_" +
-      Math.random()
-    );
-
-    localStorage.setItem(
-      "stockMovements",
-      JSON.stringify(stockMovements)
-    );
+    stockMovements =
+      await loadStockMovements();
 
     render();
 
     showToast(
-      count +
-      " nouveaux produits importés ✅"
+      `${count} nouveaux produits importés ✅`
     );
-
   };
 
-  reader.onerror = async function () {
+  reader.onerror = function () {
 
     showToast(
       "Erreur lecture fichier"
@@ -1736,335 +1833,10 @@ async function importExcelProducts(event) {
     "importExcelFile"
   ).value = "";
 
-  document.getElementById(
-    "tableCard"
-  )?.scrollIntoView({
-    behavior: "smooth"
-  });
-
+  document
+    .getElementById("tableCard")
+    ?.scrollIntoView({
+      behavior: "smooth"
+    });
 }
-
-
-//------------------------------------------------
-// ✅ FONCTION DESACTIVE (MODE MOBILE ET DESKTOP)
-//------------------------------------------------
-/*function showArchived() {
-
-  //const isMobile = window.innerWidth <= 768;
-  const isMobileOrTablet = window.matchMedia("(max-width: 1200px)").matches;
-
-  const list = document.getElementById("list");
-  const mobileList = document.getElementById("mobileList");
-  const header = document.getElementById("archivedHeader");
-
-  // ✅ RESET COMPLET (FIX BUG 🔥)
-  list.innerHTML = "";
-  if (mobileList) mobileList.innerHTML = "";
-
-  // ✅ HEADER
-  header.innerHTML = `
-    <strong>🗂️ Produits archivés</strong>
-    <button onclick="render()">⬅️ Retour</button>
-  `;
-  header.style.display = "flex";
-
-  document.getElementById("pagination").style.display = "none";
-  document.getElementById("filterCategoryAdmin").style.display = "none";
-
-  const archived = products.filter(p => p.active === false);
-
-  // ✅ AUCUN RESULTAT
-  if (archived.length === 0) {
-    if (isMobileOrTablet) {
-      mobileList.innerHTML = "<p>✅ Aucun produit archivé</p>";
-    } else {
-      list.innerHTML = `
-        <tr>
-          <td colspan="8" style="padding:20px;font-weight:bold;">
-            Aucun produit archivé 📦
-          </td>
-        </tr>
-      `;
-    }
-    return;
-  }
-
-  // ✅ ✅ ✅ MODE MOBILE (NOUVEAU PROPRE)
-  if (isMobileOrTablet) {
-  renderArchivedCards(archived);
-  return;
-  }
-
-  // ✅ ✅ ✅ MODE DESKTOP (ton code amélioré)
-  document.getElementById("tableHead").innerHTML = `
-    <tr>
-      <th>QR</th>
-      <th>Image</th>
-      <th>Nom</th>
-      <th>Prix</th>
-      <th>Promo</th>
-      <th>Stock</th>
-      <th>Stock initial</th>
-      <th>Vendu</th>
-      <th>Date archivage</th>
-      <th>Action</th>
-    </tr>`;
-
-  archived.forEach(p => {
-
-    const promo = Number(p.promo) || 0;
-    const price = Number(p.price) || 0;
-
-    const finalPrice = promo > 0
-      ? price * (1 - promo / 100)
-      : price;
-
-    const realIndex = products.indexOf(p);
-
-    const row = document.createElement("tr");
-
-    row.innerHTML = `
-      <td>—</td>
-      <td>📦</td>
-
-      <td>
-        ${p.name}
-        <br>
-        <span style="font-size:11px;color:#888;">Archivé</span>
-      </td>
-
-      <td>
-        ${promo > 0
-        ? `
-            <span class="price-old">${formatPrice(price)} GNF</span><br>
-            <span class="price-new">${formatPrice(finalPrice)} GNF</span>
-          `
-        : `${formatPrice(price)} GNF`
-      }
-      </td>
-
-      <td>
-        ${promo > 0
-        ? `<span style="color:#3498db;font-weight:bold;">🔥 ${promo}%</span>`
-        : `—`
-      }
-      </td>
-
-      <td>${p.stock}</td>
-      <td>${p.initialStock || 0}</td>
-      <td>${p.sold || 0}</td>
-
-      <td style="font-size:12px;color:#555;">
-        ${p.deletedAt ? formatDate(p.deletedAt) : "-"}
-      </td>
-
-      <td>
-        <button onclick="restoreProduct(${realIndex})" style="background:#27ae60;">
-          🔄
-        </button>
-      </td>
-    `;
-
-    row.style.background = "#f8f9fa";
-
-    list.appendChild(row);
-  });
-}*/
-
-//---------------------------------------------------------
-// ✅ PRODUITS INACTIFS (DESACTIVEE MODE MOBILE ET DESKTOP)
-//---------------------------------------------------------
-/*function updateInactiveProducts() {
-
-  //const isMobile = window.innerWidth <= 768;
-  const isMobileOrTablet = window.matchMedia("(max-width: 1200px)").matches;
-
-  const days = parseInt(document.getElementById("inactiveDays").value);
-  const list = document.getElementById("list");
-
-  const inactive = getInactiveProducts(days);
-
-  const mobileList = document.getElementById("mobileList");
-
-
-  list.innerHTML = "";
-  mobileList.innerHTML = "";
-
-
-  // ✅ aucun résultat
-  if (inactive.length === 0) {
-    if (isMobileOrTablet) {
-      mobileList.innerHTML = "<p>✅ Aucun produit inactif</p>";
-    } else {
-      list.innerHTML = `<tr><td colspan="10">✅ Aucun produit inactif</td></tr>`;
-    }
-    return;
-  }
-
-  // ✅ SWITCH PRINCIPAL
-  if (isMobileOrTablet) {
-    renderInactiveCards(inactive);
-    return;
-  }
-
-  inactive.forEach(p => {
-
-    const row = document.createElement("tr");
-    const promo = Number(p.promo) || 0;
-    const price = Number(p.price) || 0;
-    const discountedPrice = promo > 0
-      ? price * (1 - promo / 100)
-      : price;
-
-    row.innerHTML = `
-  <td>—</td>
-  <td>⚠️</td>
-
-  <td>
-    ${p.name}
-    <br>
-    <span style="font-size:11px;color:#888;">
-      ${p.label}
-    </span>
-  </td>
-
-  <td>
-  ${promo > 0
-        ? `
-      <span style="text-decoration:line-through;color:#999;">
-        ${formatPrice(price)} GNF
-      </span>
-      <br>
-      <strong style="color:#27ae60;">
-        ${formatPrice(discountedPrice)} GNF
-      </strong>
-    `
-        : `${formatPrice(price)} GNF`
-      }
-  </td>
-
-  <td>${p.stock}</td>
-  <td>${p.initialStock}</td>
-  <td>${p.sold}</td>
-
-  <td>
-  <button onclick="openPromoPopup(${p.index}, ${promo})">
-    🔥 ${promo || 0}%
-  </button>
-</td>
-
-
-  <!-- ✅ INACTIF -->
-  <td style="font-weight:bold;color:#c0392b;">
-     <span style="font-size:11px;color:#888;">${p.days} jours sans vente</span>
-  </td>
-
-  <!-- ✅ ACTION -->
-  <td>
-    <button class="tooltip"
-            onclick="archiveProduct(${p.index})"
-            style="background:#e74c3c;">
-      📦
-      <span class="tooltiptext">Archiver</span>
-    </button>
-  </td>
-`;
-
-    // ✅ couleur dynamique
-
-    if (p.days > 30) {
-      row.style.background = "#f5b7b1"; // 🔴 critique
-    }
-    else if (p.days > 15) {
-      row.style.background = "#f9e79f"; // 🟡 moyen
-    }
-    else {
-      row.style.background = "#fdecea"; // léger
-    }
-
-    list.appendChild(row);
-  });
-}*/
-
-
-//FUNCTION DESACTIVEE
-/*function showInactiveProducts() {
-
-  //const isMobile = window.innerWidth <= 768;
-  const isMobileOrTablet = window.matchMedia("(max-width: 1200px)").matches;
-
-  const list = document.getElementById("list");
-  const header = document.getElementById("archivedHeader");
-
-
-  const defaultDays = 7;
-
-  header.innerHTML = `
-  <div class="inactive-header">
-
-    <div class="inactive-left">
-      <span class="inactive-title">
-        ⚠️ Produits sans vente depuis
-      </span>
-
-      <div class="inactive-input-group">
-
-   <button onclick="changeDays(-1)" class="btn-step">−</button>
-
-  <input type="number"
-         id="inactiveDays"
-         value="7"
-         min="1"
-         readonly>
-
-  <button onclick="changeDays(1)" class="btn-step">+</button>
-
-  <span>jours</span>
-
-</div>
-
-
-    <button class="btn-back" onclick="render()">
-      ⬅️ Retour
-    </button>
-
-  </div>
-`;
-
-  header.style.display = "flex";
-
-  document.getElementById("filterCategoryAdmin").style.display = "none";
-  document.getElementById("pagination").style.display = "none";
-
-
-  // ✅ switch vue
-  if (isMobileOrTablet) {
-    document.getElementById("tableStock").style.display = "none";
-    document.getElementById("mobileList").style.display = "block";
-  } else {
-    document.getElementById("tableStock").style.display = "none";
-    document.getElementById("mobileList").style.display = "block";
-
-    // ✅ header table desktop
-    document.getElementById("tableHead").innerHTML = `
-      <tr>
-        <th>QR</th>
-        <th>Image</th>
-        <th>Nom</th>
-        <th>Prix</th>
-        <th>Stock</th>
-        <th>Stock initial</th>
-        <th>Vendu</th>
-        <th>Promo</th>
-        <th>Inactif</th>
-        <th>Action</th>
-      </tr>`;
-  }
-
-  updateInactiveProducts();
-}*/
-
-
-
-
 

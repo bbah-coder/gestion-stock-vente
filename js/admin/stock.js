@@ -420,7 +420,11 @@ async function applyStockMovement(index, type, quantity, reason, comment = "") {
   const profile = await getCurrentProfile();
   console.log("PROFILE =", profile);
 
+  const shopId = await getCurrentShopId();
+
   const movements = {
+    id: crypto.randomUUID(),
+    shop_id: shopId,
     product: p.name,
     barcode: p.barcode,
     type,
@@ -445,10 +449,10 @@ async function applyStockMovement(index, type, quantity, reason, comment = "") {
   stockMovements.unshift(movements);
 
   // ✅ Synchro Supabase
-  //const savedMovement = await saveStockMovementSupabase(movements);
   let savedMovement = null;
   try {
     savedMovement = await saveStockMovementSupabase(movements);
+    console.log("Local", movements);
   } catch (error) {
 
     console.warn("📴 Mouvement enregistré localement");
@@ -456,11 +460,12 @@ async function applyStockMovement(index, type, quantity, reason, comment = "") {
 
   if (savedMovement) {
     await db.stockMovements.put(mapStockMovement(savedMovement));
+    console.log("Supabase", savedMovement);
   }
   else {
     await db.stockMovements.put({
       ...movements,
-      id: crypto.randomUUID(),
+      //id: crypto.randomUUID(),
       pending_sync: true,
       created_at:
         new Date().toISOString(),
@@ -500,7 +505,18 @@ async function applyStockMovement(index, type, quantity, reason, comment = "") {
 
   }
 
+  //--------------------------------------
+  // ✅ RECHARGEMENT
+  //--------------------------------------
+  //products = await loadProducts();
+
+  //stockMovements = await loadStockMovements();
+
+  //--------------------------------------
+  // ✅ RAFRAICHISSEMENT
+  //--------------------------------------
   render();
+
 
   showToast("✅ Mouvement enregistré");
 }
@@ -509,7 +525,7 @@ async function applyStockMovement(index, type, quantity, reason, comment = "") {
 /************************************************************
  * FUNCTION : La vue des mouvements de stock
  ************************************************************/
-function showProductHistory(productName) {
+async function showProductHistory(productName) {
 
   const historyList = document.getElementById("historyList");
 
@@ -519,7 +535,7 @@ function showProductHistory(productName) {
 
   const initialStockMovement = stockMovements.find(
     m =>
-      m.product === productName &&
+      m.product_name === productName &&
       m.reason === "initial_stock"
   );
 
@@ -554,26 +570,25 @@ function showProductHistory(productName) {
 `;
 
   let movements = stockMovements.filter(
-    m => m.product === productName
+    m =>
+      m.product_name?.trim().toLowerCase() ===
+      productName?.trim().toLowerCase()
   );
 
-  // ✅ Ajouter le stock initial
-  /*if (product?.initialStock > 0) {
+  const lastMovement = stockMovements
+    .filter(
+      m =>
+        (m.product_name || "")
+          .toLowerCase()
+          .includes(productName.toLowerCase())
+    )
+    .sort(
+      (a, b) =>
+        new Date(b.movement_date) -
+        new Date(a.movement_date)
+    )[0];
 
-    console.log(product);
-
-    movements.unshift({
-      reason: "initial_stock",
-      quantity: product.initialStock,
-      user: product.createdBy,
-      role: product.createdRole,
-      date: new Date(
-        product.createdAt || "Date inconnu"
-      ).toLocaleString("fr-FR"),
-      comment: ""
-    });
-
-  }*/
+  console.log("Dernier mouvement :", lastMovement);
 
 
   // ✅ Ajouter les ventes
@@ -585,33 +600,10 @@ function showProductHistory(productName) {
       )
     );
 
-
   // TRIE DES DATES DES VENTES
   salesMovements.sort(
     (a, b) => new Date(b.date) - new Date(a.date)
   );
-  //PERMET DE CREER UNE ENTREE PAR VENTE
-  /*salesMovements.forEach(sale => {
-
-    const items = sale.items.filter(
-      i => i.name === product.name
-    );
-
-    items.forEach(item => {
-
-      movements.push({
-        reason: "sale",
-        quantity: item.quantity,
-        user: sale.user,
-        role: sale.role,
-        date: new Date(
-          sale.date
-        ).toLocaleString("fr-FR")
-
-      });
-
-    });
-  });*/
 
   if (movements.length === 0) {
 
@@ -673,7 +665,7 @@ function showProductHistory(productName) {
               </div>
 
               <div>
-                👤 ${item.user || "Inconnu"}
+                👤 ${item.user || item.username || "Inconnu"}
              </div>
 
             <div>
@@ -681,7 +673,11 @@ function showProductHistory(productName) {
             </div>
 
               <div>
-                📅 ${item.date}
+               📅 ${item.date ||
+            new Date(
+              item.movement_date || item.created_at
+            ).toLocaleString("fr-FR")
+            }
               </div>
 
               ${item.comment

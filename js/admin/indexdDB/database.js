@@ -253,6 +253,7 @@ async function syncStockMovements() {
     products = await loadProducts();
 
     render();
+
 }
 
 //Chrager le mvt en pending offline
@@ -520,3 +521,49 @@ async function syncProfiles() {
     }
 
 }
+
+//Purge indexedDB mvt de stock
+
+async function purgeOldStockMovements() {
+
+    const limitDate = new Date();
+
+    limitDate.setMonth(
+        limitDate.getMonth() - 12
+    );
+
+    await db.stockMovements
+        .filter(
+            m =>
+                new Date(
+                    m.movement_date
+                ) < limitDate
+        )
+        .delete();
+
+}
+
+//Purge indexedDB des ventes
+
+async function purgeOldSales() {
+
+    const limitDate = new Date();
+
+    limitDate.setMonth(
+        limitDate.getMonth() - 12
+    );
+
+    await db.sales
+        .filter(
+            s =>
+                new Date(s.created_at) <
+                limitDate
+        )
+        .delete();
+
+}
+
+
+
+
+

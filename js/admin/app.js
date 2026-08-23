@@ -471,30 +471,158 @@ function initPDFDate() {
 /************************************************************
  * 🔄 SYNCHRO TABS (localStorage)
  ************************************************************/
-window.addEventListener("storage", function (event) {
+/*window.addEventListener("storage", function (event) {
 
   if (event.key === "products" || event.key === "products_updated_at") {
-    products = JSON.parse(localStorage.getItem("products") || "[]");
+   products = JSON.parse(localStorage.getItem("products") || "[]");
     render();
   }
 
   if (event.key === "sales") {
     render();
   }
-});
+});*/
 
 
 /************************************************************
- * 📡 SYNCHRO AVANCÉE (BroadcastChannel)
+ * 📡 SYNCHRO AVANCÉE (écoute Realtime)
  ************************************************************/
-const channel = new BroadcastChannel("app_sync");
 
-channel.onmessage = (event) => {
-  if (event.data === "products_updated") {
-    products = JSON.parse(localStorage.getItem("products") || "[]");
-    render();
-  }
-};
+function startProductsRealtime() {
+
+  const channel = supabaseClient
+
+    .channel("products-realtime")
+
+    // Produits
+    .on(
+      "postgres_changes",
+      {
+        event: "*",
+        schema: "public",
+        table: "products"
+      },
+      async (payload) => {
+
+        try {
+
+          console.log("📦 Produit reçu via Realtime", payload);
+
+          if (!payload.new) {
+            return;
+          }
+
+          const updatedProduct = mapProduct(payload.new);
+
+          console.log("Produit mappé :", updatedProduct);
+
+          // Mise à jour IndexedDB
+          await db.products.put(updatedProduct);
+
+          console.log("✅ Produit enregistré dans IndexedDB");
+
+          // Vérification
+          const saved = await db.products.get(updatedProduct.id);
+
+          console.log("✅ Vérification IndexedDB :", saved);
+
+          // Rechargement depuis IndexedDB
+          //products = await loadProducts();
+          const index =
+            products.findIndex(
+              p => p.id === updatedProduct.id
+            );
+
+          if (index !== -1) {
+
+            products[index] = updatedProduct;
+
+          } else {
+
+            products.unshift(updatedProduct);
+
+          }
+
+          render();
+
+        } catch (error) {
+
+          console.error("Erreur realtime produit", error);
+
+        }
+
+      }
+    )
+
+    // Mouvements de stock
+    .on(
+      "postgres_changes",
+      {
+        event: "*",
+        schema: "public",
+        table: "stock_movements"
+      },
+
+      async (payload) => {
+
+        try {
+
+          console.log("📦 Mouvement reçu via Realtime :", payload);
+
+          if (!payload.new) {
+            return;
+          }
+
+          //Mise à jour IndexedDB
+          await db.stockMovements.put(payload.new);
+
+
+          //Mise à jour du tableau mémoire
+          const index = stockMovements.findIndex(
+            m => m.id === payload.new.id
+          );
+
+          if (index !== -1) {
+
+            stockMovements[index] = payload.new;
+
+          } else {
+
+            stockMovements.unshift(payload.new);
+
+          }
+
+          console.log("✅ Mouvement enregistré dans IndexedDB", payload.new.id);
+          console.log("✅ Nombre total de mouvements :", stockMovements.length);
+
+          render();
+
+        } catch (error) {
+
+          console.error("Erreur realtime mouvement", error);
+
+        }
+
+      }
+    )
+    .subscribe((status) => {
+
+      console.log("Realtime status :", status);
+
+    });
+
+  return channel;
+}
+document.addEventListener("DOMContentLoaded", async () => {
+
+  products = await loadProducts();
+  stockMovements = await loadStockMovements();
+
+  render();
+
+  startProductsRealtime();
+
+});
 
 
 /************************************************************

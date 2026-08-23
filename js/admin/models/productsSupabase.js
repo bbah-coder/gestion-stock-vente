@@ -2,42 +2,15 @@
 /*************************************************
  *FUNCTION : ✅ Charger les produits Supabase
  *************************************************/
-/*async function getProductsSupabase() {
-    try {
-        const { data, error } =
-            await supabaseClient
-                .from("products")
-                .select("*")
-                .order("name");
-        if (error) {
-            console.error(
-                "Erreur chargement produits",
-                error
-            );
-            return [];
-        }
-        return (data || []).map(mapProduct);
-
-    } catch (err) {
-
-        console.error(err);
-
-        return [];
-    }
-
-}*/
-async function getProductsSupabase() {
+async function getProductsSupabase(shopId = null) {
 
     try {
 
-        const shopId =
-            await getCurrentShopId();
+        shopId ??= await getCurrentShopId();
 
         if (!shopId) {
 
-            console.error(
-                "Aucun magasin associé"
-            );
+            console.error("Aucun magasin associé");
 
             return [];
 
@@ -52,10 +25,7 @@ async function getProductsSupabase() {
 
         if (error) {
 
-            console.error(
-                "Erreur chargement produits",
-                error
-            );
+            console.error("Erreur chargement produits", error);
 
             return [];
 
@@ -119,7 +89,7 @@ async function saveProductToSupabase(product) {
         }
 
         const productSupabase = {
-
+            ...(product.id ? { id: product.id } : {}),
             shop_id: shopId,
             name: product.name,
             price: product.price,

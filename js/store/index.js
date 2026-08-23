@@ -20,9 +20,165 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   initApp();
 
+  window.addEventListener("online", handleOnlineSync);
+
   updateUserUI();
 
 });
+
+/************************************************************
+ * 📡 SYNCHRO AVANCÉE (écoute Realtime)
+ ************************************************************/
+
+function startProductsRealtime() {
+
+  const channel = supabaseClient
+
+    .channel("products-realtime")
+
+    // Produits
+    .on(
+      "postgres_changes",
+      {
+        event: "*",
+        schema: "public",
+        table: "products"
+      },
+      async (payload) => {
+
+        try {
+
+          console.log("📦 Produit reçu via Realtime", payload);
+
+          if (!payload.new) {
+            return;
+          }
+
+          const updatedProduct = mapProduct(payload.new);
+
+          console.log("Produit mappé :", updatedProduct);
+
+          // Mise à jour IndexedDB
+          await db.products.put(updatedProduct);
+
+          console.log("✅ Produit enregistré dans IndexedDB");
+
+          // Vérification
+          const saved = await db.products.get(updatedProduct.id);
+
+          console.log("✅ Vérification IndexedDB :", saved);
+
+          // Rechargement depuis IndexedDB
+          //products = await loadProducts();
+          const index =
+            products.findIndex(
+              p => p.id === updatedProduct.id
+            );
+
+          if (index !== -1) {
+
+            products[index] = updatedProduct;
+
+          } else {
+
+            products.unshift(updatedProduct);
+
+          }
+
+          refreshShopProducts();
+
+          renderLowStock();
+
+          updateCartBadge()
+
+        } catch (error) {
+
+          console.error("Erreur realtime produit", error);
+
+        }
+
+      }
+    )
+
+    // Mouvements de stock
+    .on(
+      "postgres_changes",
+      {
+        event: "*",
+        schema: "public",
+        table: "stock_movements"
+      },
+
+      async (payload) => {
+
+        try {
+
+          console.log("📦 Mouvement reçu via Realtime :", payload);
+
+          if (!payload.new) {
+            return;
+          }
+
+          //Mise à jour IndexedDB
+          await db.stockMovements.put(payload.new);
+
+          const index = stockMovements.findIndex(
+            m => m.id === payload.new.id
+          );
+
+          if (index !== -1) {
+
+            stockMovements[index] = payload.new;
+
+          } else {
+
+            stockMovements.unshift(payload.new);
+
+          }
+
+          console.log("✅ Mouvement enregistré dans IndexedDB", payload.new.id);
+          console.log("✅ Nombre total de mouvements :", stockMovements.length);
+
+          refreshShopProducts();
+
+          renderLowStock();
+
+          updateCartBadge();
+
+        } catch (error) {
+
+          console.error("Erreur realtime mouvement", error);
+
+        }
+
+      }
+    )
+    .subscribe((status) => {
+
+      console.log("Realtime status :", status);
+
+    });
+
+  return channel;
+}
+
+document.addEventListener("DOMContentLoaded", async () => {
+
+  products = await loadProducts();
+
+  stockMovements = await loadStockMovements();
+
+  await refreshShopProducts();
+
+  renderLowStock();
+
+  updateCartBadge();
+
+  startProductsRealtime();
+
+});
+
+
 
 function startAutoSyncProducts() {
 
@@ -492,6 +648,51 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
 });
+
+let syncInProgress = false;
+
+async function handleOnlineSync() {
+
+  if (syncInProgress) {
+    return;
+  }
+
+  syncInProgress = true;
+
+  try {
+
+    console.log("🌐 Connexion rétablie");
+
+    showToast("🌐 Synchronisation en cours...");
+
+    await syncProducts();
+
+    await syncStockMovements();
+
+    await syncProfiles();
+
+    if (
+      typeof syncShops === "function"
+    ) {
+      await syncShops();
+    }
+
+    showToast(
+      "✅ Synchronisation terminée"
+    );
+
+  } catch (error) {
+
+    console.error(
+      "Erreur synchronisation", error);
+
+  } finally {
+
+    syncInProgress = false;
+
+  }
+
+}
 
 
 

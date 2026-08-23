@@ -93,20 +93,22 @@ async function loginOffline(username, password) {
 /************************************************************** 
  FUNCTION : Redirection selon le rôle utilisateur
 ***************************************************************/
-function redirectByRole(role) {
+async function redirectByRole(role) {
 
   if (
     role === "admin" ||
     role === "super_admin"
   ) {
 
-    window.location.href =
-      "admin";
+    await bootstrapData();
+
+    window.location.href = "admin";
 
   } else {
 
-    window.location.href =
-      "index";
+    await bootstrapData();
+
+    window.location.href = "index";
 
   }
 
@@ -221,9 +223,7 @@ async function login() {
 
     // ✅ Super Admin et Admin
     // Redirection selon le rôle
-    redirectByRole(
-      profile.role
-    );
+    redirectByRole(profile.role);
 
     return;
   }

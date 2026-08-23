@@ -802,6 +802,9 @@ async function validerPanier() {
 
     product.sold += item.quantity;
 
+    //Enregistrement local
+    await db.products.put(product);
+
     //Derniere vente
     product.lastSaleAt = new Date().toISOString();
 
@@ -879,6 +882,36 @@ async function validerPanier() {
       quantity: item.quantity,
       date: new Date().toLocaleString()
     });
+
+    // ✅ Mise à jour locale immédiate
+    await db.products.put(product);
+
+    // ✅ Tentative de synchronisation Supabase
+    const updatedProduct = await updateProductSupabase(product);
+
+    // ✅ Synchronisation réussie
+    if (updatedProduct) {
+      await db.products.put(mapProduct(updatedProduct));
+
+      await db.products.update(product.id,
+        {
+          pending_sync: false
+        }
+      );
+
+    }
+    // ✅ Synchronisation échouée
+    else {
+
+      await db.products.update(product.id,
+        {
+          pending_sync: true
+        }
+      );
+
+      console.warn("📴 Produit enregistré localement - synchronisation en attente");
+
+    }
   }
 
   // ✅ sécurité total
@@ -979,9 +1012,8 @@ async function validerPanier() {
 
   //console.log("PAYMENT SAVED:", paymentMethod);
 
-
   // ✅ sauvegardes
-  //localStorage.setItem("products", JSON.stringify(products));
+
   localStorage.setItem("sales", JSON.stringify(sales));
 
 
@@ -994,7 +1026,6 @@ async function validerPanier() {
 
   // ✅ refresh UI
   renderCart();
-  //renderProducts();
   await refreshShopProducts();
   renderDashboard();
   renderSalesByDay();
@@ -1003,6 +1034,7 @@ async function validerPanier() {
   filterSalesByDate();
   renderLowStock();
   updateCartMobileBtn();
+
 
   showToast("✅ Vente validée avec succès");
 

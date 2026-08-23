@@ -1197,7 +1197,7 @@ function getCurrentShop() {
  * ON RECUPERE LE PROFIL ADMIN
  ***********************************************************/
 
-async function getCurrentProfile() {
+/*async function getCurrentProfile() {
 
   const username =
     localStorage.getItem("username");
@@ -1257,7 +1257,7 @@ async function getCurrentProfile() {
 
   }
 
-}
+}*/
 
 /************************************************************
  * SECTION GESTION DES MAGASINS 

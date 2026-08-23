@@ -15,6 +15,7 @@ async function saveStockMovementSupabase(movement) {
             await supabaseClient
                 .from("stock_movements")
                 .insert([{
+                    ...(movement.id ? { id: movement.id } : {}),
                     shop_id: shopId,
                     product_name: movement.product,
                     product_barcode: movement.barcode || null,
@@ -52,14 +53,25 @@ async function saveStockMovementSupabase(movement) {
 //--------------------------------------
 // ✅ Charger les mouvements Supabase
 //--------------------------------------
-async function getStockMovementsSupabase() {
+async function getStockMovementsSupabase(shopId = null) {
 
     try {
+
+        shopId ??= await getCurrentShopId();
+
+        if (!shopId) {
+
+            console.error("Aucun magasin associé");
+
+            return [];
+
+        }
 
         const { data, error } =
             await supabaseClient
                 .from("stock_movements")
                 .select("*")
+                .eq("shop_id", shopId)
                 .order("created_at", {
                     ascending: false
                 });
@@ -127,32 +139,6 @@ async function loadStockMovements() {
 
 }
 
-/*async function loadStockMovements() {
-
-    try {
-        const movements =
-            await db.stockMovements
-                .orderBy("movement_date")
-                .reverse()
-                .toArray();
-
-        console.log(
-            `✅ ${movements.length} mouvements chargés depuis IndexedDB`
-        );
-
-        return movements;
-
-    } catch (error) {
-
-        console.error(
-            "Erreur chargement IndexedDB",
-            error
-        );
-
-        return [];
-    }
-
-}*/
 
 function mapStockMovement(movement) {
 
@@ -177,4 +163,28 @@ function mapStockMovement(movement) {
         })
     };
 
+}
+
+// --------------------------------------
+// ✅ Supprimer un produit dans Supabase
+// --------------------------------------
+
+async function deleteStockMovementsSupabase(barcode) {
+
+    const { error } = await supabaseClient
+        .from("stock_movements")
+        .delete()
+        .eq("product_barcode", barcode);
+
+    if (error) {
+
+        console.error(
+            "Erreur suppression mouvements Supabase",
+            error
+        );
+
+        throw error;
+    }
+
+    console.log(`✅ Mouvements supprimés pour ${barcode}`);
 }
