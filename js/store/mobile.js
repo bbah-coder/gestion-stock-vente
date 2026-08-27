@@ -635,7 +635,7 @@ function renderSalesMobile() {
 
       </div>
      <div class="credit-actions">
-      <button onclick="exportTicketPDF(${sale.id})">
+      <button onclick="exportTicketPDF('${sale.id}')">
         📄 Ticket PDF
       </button>
     

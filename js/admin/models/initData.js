@@ -37,6 +37,16 @@ async function initializeLocalData() {
             await db.profiles.bulkPut(profiles);
             console.log(`✅ ${profiles.length} profils importés`);
         }
+        // Ventes
+        const sales = await getSalesSupabase(shopId);
+
+        if (sales?.length) {
+
+            await db.sales.bulkPut(sales.map(mapSale));
+
+            console.log(`✅ ${sales.length} ventes importées`);
+
+        }
 
         localStorage.setItem(
             "first_sync_done",

@@ -31,6 +31,20 @@ db.version(2).stores({
         active
     `,
 
+    sales: `
+        id,
+        shop_id,
+        sync_action,
+        created_at
+    `,
+
+    saleItems: `
+        id,
+        shop_id,
+        sale_id,
+        product_id
+    `,
+
     settings: `
         key
     `
@@ -252,7 +266,7 @@ async function syncStockMovements() {
 
     products = await loadProducts();
 
-    render();
+    //render();
 
 }
 
@@ -565,5 +579,311 @@ async function purgeOldSales() {
 
 
 
+async function importSalesToIndexedDB(sales) {
+
+    try {
+
+        if (!sales?.length) {
+
+            console.log(
+                "ℹ️ Aucune vente à importer"
+            );
+
+            return true;
+
+        }
+
+        await db.sales.bulkPut(
+            sales.map(mapSale)
+        );
+
+        console.log(
+            `✅ ${sales.length} ventes importées dans IndexedDB`
+        );
+
+        return true;
+
+    } catch (error) {
+
+        console.error(
+            "❌ Erreur import ventes IndexedDB",
+            error
+        );
+
+        return false;
+
+    }
+
+}
+
+async function getSaleItemsSupabase(shopId) {
+
+    try {
+
+        const { data, error } =
+            await supabaseClient
+                .from("sale_items")
+                .select("*")
+                .eq("shop_id", shopId)
+                .order("created_at", {
+                    ascending: false
+                });
+
+        if (error) {
+
+            console.error(
+                "❌ Erreur chargement sale_items",
+                error
+            );
+
+            return [];
+
+        }
+
+        console.log(
+            `✅ ${data.length} lignes de vente récupérées`
+        );
+
+        return data;
+
+    } catch (error) {
+
+        console.error(
+            "❌ Erreur getSaleItemsSupabase",
+            error
+        );
+
+        return [];
+
+    }
+
+}
+
+async function importSaleItemsToIndexedDB() {
+
+    try {
+
+        const shopId =
+            await getCurrentShopId();
+
+        const saleItems =
+            await getSaleItemsSupabase(shopId);
+
+        if (!saleItems?.length) {
+
+            console.log(
+                "ℹ️ Aucune ligne de vente à importer"
+            );
+
+            return true;
+
+        }
+
+        await db.saleItems.bulkPut(
+            saleItems.map(mapSaleItem)
+        );
+
+        console.log(
+            `✅ ${saleItems.length} lignes de vente importées`
+        );
+
+        return true;
+
+    } catch (error) {
+
+        console.error(
+            "❌ Erreur import saleItems",
+            error
+        );
+
+        return false;
+
+    }
+
+}
 
 
+// Récupérer les ventes à synchroniser vers Supabase
+async function getPendingSales() {
+
+    return await db.sales
+        .filter(
+            sale =>
+                sale.pending_sync === true
+        )
+        .toArray();
+
+}
+
+/*async function uploadPendingSales() {
+
+    const pendingSales = await getPendingSales();
+
+    console.log(`${pendingSales.length} ventes à synchroniser`);
+
+    const shopId = await getCurrentShopId();
+
+    if (!shopId) {
+
+        console.error("Aucun magasin associé");
+
+        return;
+
+    }
+
+    for (const sale of pendingSales) {
+
+        try {
+
+            const { error } =
+                await supabaseClient
+                    .from("sales")
+                    .insert([{
+                        id: sale.id,
+                        shop_id: shopId,
+                        sale_number:
+                            sale.sale_number,
+                        total_brut:
+                            sale.total_brut,
+                        total_remise:
+                            sale.total_remise,
+                        total_net:
+                            sale.total_net,
+                        total_items:
+                            sale.total_items,
+                        client_phone:
+                            sale.client_phone,
+                        payment_method:
+                            sale.payment_method,
+                        user_name:
+                            sale.user_name,
+                        user_role:
+                            sale.user_role,
+                        status:
+                            sale.status,
+                        created_at:
+                            sale.created_at
+                    }]);
+
+            if (error) {
+
+                console.error("❌ Erreur synchro vente", error);
+
+                continue;
+
+            }
+
+            await db.sales.update(
+                sale.id,
+                {
+                    pending_sync: false
+                }
+            );
+
+            console.log(`✅ Vente ${sale.id} synchronisée`);
+
+        } catch (error) {
+
+            console.error("❌ Erreur uploadPendingSales", error);
+
+        }
+
+    }
+
+}*/
+async function uploadPendingSales() {
+
+    const pendingSales = await getPendingSales();
+
+    console.log(`${pendingSales.length} vente(s) à synchroniser`);
+
+    for (const sale of pendingSales) {
+
+        let syncedSale = null;
+
+        if (
+            sale.sync_action === "insert"
+        ) {
+            syncedSale =
+                await saveSaleToSupabase(sale);
+
+        } else if (
+            sale.sync_action === "update"
+        ) {
+            syncedSale =
+                await updateSaleSupabase(sale);
+        }
+
+        if (!syncedSale) {
+            continue;
+        }
+
+        await db.sales.update(
+            sale.id,
+            {
+                pending_sync: false,
+
+                sync_action: null
+            }
+        );
+
+        console.log(
+            "✅ Vente synchronisée", sale.id);
+
+    }
+
+}
+
+async function syncSales() {
+
+    try {
+
+        // ✅ Upload des ventes offline
+        await uploadPendingSales();
+
+        const lastSync = await getSetting("sales_last_sync");
+
+        if (!lastSync) {
+
+            console.warn("Aucune date de synchro ventes");
+
+            return;
+
+        }
+
+        const shopId = await getCurrentShopId();
+
+        const { data, error } =
+            await supabaseClient
+                .from("sales")
+                .select("*")
+                .eq("shop_id", shopId)
+                .gt("updated_at", lastSync);
+
+        if (error) {
+
+            console.error("❌ Erreur syncSales", error);
+
+            return;
+
+        }
+
+        if (data?.length) {
+
+            await db.sales.bulkPut(
+                data.map(mapSale)
+            );
+
+            console.log(`✅ ${data.length} ventes synchronisées`);
+
+        }
+
+        await saveSetting("sales_last_sync", new Date().toISOString());
+
+    } catch (error) {
+
+        console.error("❌ Erreur syncSales", error);
+
+    }
+
+}

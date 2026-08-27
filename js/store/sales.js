@@ -39,6 +39,8 @@
 
 let stockMovements = [];
 
+//let sales = [];
+
 const today = new Date().toISOString().split("T")[0];
 document.getElementById("filterDate").value = today;
 
@@ -60,6 +62,50 @@ clearBtnCredit.addEventListener("click", () => {
   renderCreditDashboard(); // recharge ta liste
 });
 
+
+//INIT vente
+
+async function initSales() {
+
+  try {
+
+    const lastSync = await getSetting("sales_last_sync");
+
+    const salesCount = await db.sales.count();
+
+    if (
+      !lastSync ||
+      salesCount === 0
+    ) {
+
+      console.log("🛒 Import initial des ventes...");
+
+      const shopId = await getCurrentShopId();
+
+      sales = await getSalesSupabase(shopId);
+
+      await importSalesToIndexedDB(sales);
+
+    }
+
+    sales = await loadSales();
+
+    syncSales()
+      .catch(error => {
+
+        console.warn("⚠️ Synchronisation ventes impossible", error);
+
+      });
+
+    console.log(`✅ ${sales.length} ventes initialisées`);
+
+  } catch (error) {
+
+    console.error("❌ Erreur initSales", error);
+
+  }
+
+}
 
 /************************************************************
  * 🛒 AJOUT PRODUIT AU PANIER
@@ -977,7 +1023,7 @@ async function validerPanier() {
       ? creditData?.clientPhone || ""
       : clientPhone;
 
-  sales.push({
+  /*sales.push({
 
     id: Date.now(),
     user: localStorage.getItem("username"),
@@ -1008,13 +1054,108 @@ async function validerPanier() {
     },
 
     date: new Date()
-  });
+  });*/
+
+  const sale = {
+    id: crypto.randomUUID(),
+    shop_id: await getCurrentShopId(),
+    user:
+      localStorage.getItem("username"),
+    role:
+      localStorage.getItem("userRole"),
+    items: cart.map(item => ({
+      name: item.name,
+      quantity: item.quantity,
+      price: item.price,
+      isWholesale:
+        item.isWholesale || false,
+      detailPrice:
+        products[item.index]?.price || 0,
+      wholesalePrice:
+        products[item.index]?.wholesalePrice || 0,
+      remise:
+        item.remise || 0,
+      total:
+        (item.price * item.quantity)
+        - (item.remise || 0)
+    })),
+
+    totalBrut,
+    totalRemise,
+    total: totalNet,
+    totalItems,
+    clientPhone: salePhone,
+    paymentMethod,
+    payment: {
+
+      ...paymentDetails,
+
+      total: totalNet,
+
+      remaining:
+        totalNet -
+        (paymentDetails.payments?.reduce(
+          (s, p) => s + p.amount,
+          0
+        ) || 0)
+
+    },
+    status:
+      paymentMethod === "credit"
+        ? "pending"
+        : "paid",
+    //pending_sync: false,
+    date: new Date().toISOString()
+
+  };
+  await db.sales.put(sale);
+
+  sales.unshift(sale);
+
+  const savedSale = await saveSaleToSupabase(sale);
+
+  if (savedSale) {
+
+    try {
+
+      await db.sales.put(
+        mapSale(savedSale)
+      );
+
+      console.log("✅ Vente enregistrée dans IndexedDB");
+
+    } catch (error) {
+
+      console.error("❌ Erreur sauvegarde vente IndexedDB", error);
+    }
+
+  } else {
+
+    try {
+
+      await db.sales.update(
+        sale.id,
+        {
+          pending_sync: true,
+          sync_action: "insert"
+        }
+      );
+
+      console.warn("📴 Vente en attente de synchronisation");
+
+    } catch (error) {
+
+      console.error("❌ Erreur mise à jour pending_sync", error);
+
+    }
+
+  }
 
   //console.log("PAYMENT SAVED:", paymentMethod);
 
   // ✅ sauvegardes
 
-  localStorage.setItem("sales", JSON.stringify(sales));
+  //localStorage.setItem("sales", JSON.stringify(sales));
 
 
   // ✅ reset panier
@@ -1996,7 +2137,7 @@ function renderCreditDashboard() {
 }
 
 
-function addPayment(index) {
+async function addPayment(index) {
 
   const sale = sales[index];
 
@@ -2055,8 +2196,79 @@ function addPayment(index) {
   sale.payment.status =
     newRemaining <= 0 ? "PAYÉ" : "EN ATTENTE";
 
+  const remainingStatus =
+    sale.payment.remaining;
+
+  sale.status =
+    remainingStatus <= 0
+      ? "PAYÉ"
+      : "EN ATTENTE";
+
   // ✅ sauvegarde
-  localStorage.setItem("sales", JSON.stringify(sales));
+  //localStorage.setItem("sales", JSON.stringify(sales));
+  // ✅ mise à jour date modification
+  sale.updated_at =
+    new Date().toISOString();
+
+  try {
+
+    // ✅ Sauvegarde locale immédiate
+    await db.sales.put({
+      ...sale,
+      pending_sync: false
+    });
+
+    console.log("✅ Sauvegarde locale OK");
+
+    // ✅ Synchronisation Supabase
+    const savedSale = await updateSaleSupabase(sale);
+
+    console.log("Résultat updateSaleSupabase :", savedSale);
+
+    if (savedSale) {
+
+      await db.sales.put(
+        mapSale(savedSale)
+      );
+
+      console.log("✅ Vente synchronisée", savedSale.id);
+
+    } else {
+
+      await db.sales.put({
+        ...sale,
+        pending_sync: true,
+        sync_action: "update"
+      });
+
+      console.warn("📴 Vente enregistrée localement - synchronisation en attente");
+
+    }
+
+  } catch (error) {
+
+    console.error("Erreur mise à jour vente", error);
+
+
+    try {
+
+      await db.sales.put({
+        ...sale,
+        pending_sync: true,
+        sync_action: "update"
+      });
+
+      console.warn("📴 Vente enregistrée localement suite à une erreur");
+
+    } catch (dbError) {
+
+      console.error("❌ Erreur IndexedDB", dbError);
+
+      showToast("❌ Impossible d'enregistrer la vente");
+
+    }
+
+  }
 
   // ✅ refresh UI
   renderCreditDashboard();

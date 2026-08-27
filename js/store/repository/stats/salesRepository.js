@@ -18,14 +18,18 @@
  * - Tableau de ventes (Array)
  * =========================================================
  */
-function getSales(){
+async function getSales() {
 
-  try {
+  sales = await loadSales();
+
+  return sales;
+
+  /*try {
     return JSON.parse(localStorage.getItem("sales") || "[]");
   } catch(e){
     console.error("❌ erreur parsing sales", e);
     return [];
-  }
+  }*/
 }
 
 /**
@@ -33,11 +37,11 @@ function getSales(){
  * SAUVEGARDE DES VENTES
  * =========================================================
  */
-function saveSales(sales){
+function saveSales(sales) {
 
   try {
     localStorage.setItem("sales", JSON.stringify(sales || []));
-  } catch(e){
+  } catch (e) {
     console.error("❌ erreur sauvegarde sales", e);
   }
 }

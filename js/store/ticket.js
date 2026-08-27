@@ -41,9 +41,11 @@ if (input && clearBtn) {
 
 /*NORMALISATION TICKETS*/
 
-function getTickets() {
+async function getTickets() {
 
-  const sales = JSON.parse(localStorage.getItem("sales") || "[]");
+  //const sales = JSON.parse(localStorage.getItem("sales") || "[]");
+  const sales =
+    await loadSales();
 
   return sales.map(s => ({
 
@@ -83,9 +85,9 @@ function getPaymentLabel(mode) {
 }
 
 /* ✅ RENDER TICKETS PRO */
-function renderTickets() {
+async function renderTickets() {
 
-  const tickets = getTickets();
+  const tickets = await getTickets();
 
 
   const list = document.getElementById("ticketList");
@@ -324,7 +326,7 @@ function renderTickets() {
             Voir
           </button>
 
-          <button onclick="exportTicketPDF(${t.id})">
+          <button onclick="exportTicketPDF('${t.id}')">
             PDF
           </button>
         </div>
@@ -351,9 +353,9 @@ function renderTickets() {
 
 
 /* DETAIL TICKET */
-function showTicketDetail(id) {
+async function showTicketDetail(id) {
 
-  const tickets = getTickets();
+  const tickets = await getTickets();
 
   const t = tickets.find(x => String(x.id) === String(id));
 
@@ -456,7 +458,7 @@ function formatPricePDFTicket(value) {
 }
 
 /* EXPORT PDF */
-function exportTicketPDF(id) {
+async function exportTicketPDF(id) {
 
   const { jsPDF } = window.jspdf;
 
@@ -465,7 +467,7 @@ function exportTicketPDF(id) {
     format: [80, 150]
   });
 
-  const tickets = getTickets();
+  const tickets = await getTickets();
   const t = tickets.find(x => String(x.id) === String(id));
 
   const store = getStoreInfo();
@@ -646,9 +648,9 @@ document.getElementById("ticketPayment").onchange = () => {
  * SEND TICKET WHATSAPP
  ***********************************************************/
 
-function sendTicketWhatsApp(id) {
+async function sendTicketWhatsApp(id) {
 
-  const tickets = getTickets();
+  const tickets = await getTickets();
   const t = tickets.find(x => String(x.id) === String(id));
 
   if (!t) {

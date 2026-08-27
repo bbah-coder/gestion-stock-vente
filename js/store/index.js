@@ -153,6 +153,71 @@ function startProductsRealtime() {
 
       }
     )
+    // Ventes
+    .on(
+      "postgres_changes",
+      {
+        event: "*",
+        schema: "public",
+        table: "sales"
+      },
+
+      async (payload) => {
+
+        try {
+
+          console.log("🛒 Vente reçue via Realtime :", payload);
+
+          if (!payload.new) {
+            return;
+          }
+
+          const updatedSale =
+            mapSale(payload.new);
+
+          // Mise à jour IndexedDB
+          await db.sales.put(updatedSale);
+
+          const index = sales.findIndex(
+            s => s.id === updatedSale.id
+          );
+
+          if (index !== -1) {
+
+            sales[index] =
+              updatedSale;
+
+          } else {
+
+            sales.unshift(updatedSale);
+
+          }
+
+          console.log("✅ Vente enregistrée dans IndexedDB", updatedSale.id);
+
+          console.log("✅ Nombre total de ventes :", sales.length);
+
+          // Rafraîchissement UI
+          renderDashboard();
+
+          renderSalesByDay();
+
+          filterSalesByDate();
+
+          renderStatsTables();
+
+          renderCreditDashboard();
+
+        } catch (error) {
+
+          console.error(
+            "❌ Erreur realtime vente", error);
+
+        }
+
+      }
+    )
+
     .subscribe((status) => {
 
       console.log("Realtime status :", status);
@@ -167,6 +232,10 @@ document.addEventListener("DOMContentLoaded", async () => {
   products = await loadProducts();
 
   stockMovements = await loadStockMovements();
+
+  sales = await loadSales();
+
+  console.log("✅ Ventes chargées :", sales.length);
 
   await refreshShopProducts();
 
@@ -209,9 +278,12 @@ function startAutoSyncProducts() {
 }
 
 
-function initApp() {
+async function initApp() {
   showSection("products");
   startAutoSyncProducts();
+
+  // Init vente
+  await initSales();
 
 }
 
@@ -671,6 +743,8 @@ async function handleOnlineSync() {
 
     await syncProfiles();
 
+    await syncSales();
+
     if (
       typeof syncShops === "function"
     ) {
@@ -683,8 +757,7 @@ async function handleOnlineSync() {
 
   } catch (error) {
 
-    console.error(
-      "Erreur synchronisation", error);
+    console.error("Erreur synchronisation", error);
 
   } finally {
 

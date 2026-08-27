@@ -8,7 +8,7 @@
    - Conserver comportement existant
    ========================================================= */
 
-function renderStatsTables(){
+async function renderStatsTables() {
 
   // ✅ RESET
   const clear = (id) => {
@@ -29,7 +29,7 @@ function renderStatsTables(){
     return;
   }
 
-  const sales = getSales();
+  const sales = await getSales();
   const stats = computeStatsData(sales, context);
 
   renderGlobalKPI(stats, context);
@@ -47,59 +47,59 @@ function renderStatsTables(){
   /* =========================
      MODE UNIQUE
   ========================= */
-  if (context.isMobileOrTablet){
-    
-     //AFFICHAGE MOBILE
-      renderStatsMobile(stats, context);
+  if (context.isMobileOrTablet) {
+
+    //AFFICHAGE MOBILE
+    renderStatsMobile(stats, context);
   }
   else {
 
-  if (context.isMonth) {
-   
-    // ✅ Comparaisons
-    renderStatsComparisonTable(stats, context);
-    renderComparisonMonthTable(stats, context);
+    if (context.isMonth) {
 
-    // ✅ KPI
-    renderSummaryTable(stats, context);
+      // ✅ Comparaisons
+      renderStatsComparisonTable(stats, context);
+      renderComparisonMonthTable(stats, context);
 
-    // ✅ Catégories
-    renderCategoryTable(stats, context);
+      // ✅ KPI
+      renderSummaryTable(stats, context);
 
-    // ✅ AFFICHAGE
-    if(monthCompare) monthCompare.style.display = "";
-    if(yearCompare) yearCompare.style.display = "";
+      // ✅ Catégories
+      renderCategoryTable(stats, context);
 
-    if(blockMonth) blockMonth.style.display = "";
-    if(blockYear) blockYear.style.display = "none";
+      // ✅ AFFICHAGE
+      if (monthCompare) monthCompare.style.display = "";
+      if (yearCompare) yearCompare.style.display = "";
 
-    // ✅ ✅ IMPORTANT → CATÉGORIES
-    if(blockCategoryMonth) blockCategoryMonth.style.display = "";
-    if(blockCategoryYear) blockCategoryYear.style.display = "none";
+      if (blockMonth) blockMonth.style.display = "";
+      if (blockYear) blockYear.style.display = "none";
+
+      // ✅ ✅ IMPORTANT → CATÉGORIES
+      if (blockCategoryMonth) blockCategoryMonth.style.display = "";
+      if (blockCategoryYear) blockCategoryYear.style.display = "none";
 
 
-  } else if (context.isYear) {
+    } else if (context.isYear) {
 
-    // ✅ Comparaison année
-    renderStatsComparisonTable(stats, context);
+      // ✅ Comparaison année
+      renderStatsComparisonTable(stats, context);
 
-    // ✅ KPI
-    renderSummaryTable(stats, context);
+      // ✅ KPI
+      renderSummaryTable(stats, context);
 
-    // ✅ Catégories
-    renderCategoryTable(stats, context);
+      // ✅ Catégories
+      renderCategoryTable(stats, context);
 
-    // ✅ AFFICHAGE
-    if(monthCompare) monthCompare.style.display = "none";
-    if(yearCompare) yearCompare.style.display = "";
+      // ✅ AFFICHAGE
+      if (monthCompare) monthCompare.style.display = "none";
+      if (yearCompare) yearCompare.style.display = "";
 
-    if(blockMonth) blockMonth.style.display = "none";
-    if(blockYear) blockYear.style.display = "";
+      if (blockMonth) blockMonth.style.display = "none";
+      if (blockYear) blockYear.style.display = "";
 
-    // ✅ ✅ IMPORTANT → CATÉGORIES
-    if (blockCategoryMonth)
+      // ✅ ✅ IMPORTANT → CATÉGORIES
+      if (blockCategoryMonth)
         blockCategoryMonth.style.display = "none";
-    if (blockCategoryYear)
+      if (blockCategoryYear)
         blockCategoryYear.style.display = "";
 
     }
@@ -110,12 +110,12 @@ function renderStatsTables(){
 
     // ❌ anciens tableaux (toujours vides maintenant)
     if (blockMonth)
-        blockMonth.style.display = "none";
+      blockMonth.style.display = "none";
     if (blockYear)
-       blockYear.style.display = "none";
-     
+      blockYear.style.display = "none";
+
     renderTopProducts(stats, context);
-     
+
   }
 
 }
