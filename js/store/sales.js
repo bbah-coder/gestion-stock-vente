@@ -107,79 +107,6 @@ async function initSales() {
 
 }
 
-/************************************************************
- * 🛒 AJOUT PRODUIT AU PANIER
- * ----------------------------------------------------------
- * Ajoute un produit avec gestion :
- * - stock
- * - promo
- * - validation quantité
- ************************************************************/
-/*function vendre(index, btn){
-
-  const produit = products[index];
-
-  // ✅ calcul promo
-  const promo = Number(produit.promo) || 0;
-  const price = Number(produit.price) || 0;
-
-  const finalPrice = promo > 0
-    ? price * (1 - promo / 100)
-    : price;
-
-  // ✅ quantité par défaut
-  const q = 1;
-
-  // ✅ vérification stock
-  if(produit.stock <= 0){
-    alert("❌ Stock épuisé");
-    return;
-  }
-
-  const exist = cart.find(i => i.index === index);
-
-  // ✅ si déjà dans panier → vérifier cumul
-  if(exist){
-
-    if(exist.quantity + q > produit.stock){
-      alert(`❌ Stock insuffisant\nDisponible : ${produit.stock}`);
-      return;
-    }
-
-    exist.quantity += q;
-
-  } else {
-
-    if(q > produit.stock){
-      alert(`❌ Stock insuffisant\nDisponible : ${produit.stock}`);
-      return;
-    }
-
-    cart.push({
-      index,
-      name: produit.name,
-      price: parseFloat(finalPrice),
-      quantity: q
-    });
-  }
-  
-  // ✅ ✅ CHANGEMENT VISUEL DU BOUTON
-  btn.innerText = "✅ Ajouté";
-  btn.style.background = "#2ecc71";
-
-  // ✅ revenir à l’état initial après 1 seconde
-  setTimeout(() => {
-    btn.innerText = "Ajouter au panier";
-    btn.style.background = "#3498db";
-  }, 1000);
-
-
-  // ✅ sauvegarde + UI
-  localStorage.setItem("cart", JSON.stringify(cart));
-  renderCart();
-  updateCartBadge();
-}*/
-
 /*GET PRODUCT PRICE*/
 function getProductPrice(product, quantity) {
 
@@ -217,6 +144,14 @@ function getProductPrice(product, quantity) {
 
 }
 
+/************************************************************
+ * 🛒 AJOUT PRODUIT AU PANIER
+ * ----------------------------------------------------------
+ * Ajoute un produit avec gestion :
+ * - stock
+ * - promo
+ * - validation quantité
+ ************************************************************/
 /*Nouvelle version compatible Mobile*/
 function vendreWithQty(index, btn) {
 
@@ -239,13 +174,6 @@ function vendreWithQty(index, btn) {
     return;
   }
 
-  /*const promo = Number(produit.promo) || 0;
-  const price = Number(produit.price) || 0;
-
-  const finalPrice = promo > 0
-    ? price * (1 - promo / 100)
-    : price;
-    */
   const pricing = getProductPrice(produit, q);
 
   const exist = cart.find(i => i.index === index);
@@ -414,45 +342,6 @@ function addProductByBarcode(code) {
 
 // OUVERTURE SCANNER
 
-/*function openQrScanner() {
-
-  document.getElementById(
-    "qrScannerModal"
-  ).style.display = "flex";
-
-  qrScanner = new Html5Qrcode(
-    "qr-reader"
-  );
-
-  qrScanner.start(
-
-    { facingMode: "environment" },
-
-    {
-      fps: 10,
-      qrbox: 250
-    },
-
-    (decodedText) => {
-
-      console.log(
-        "QR détecté :",
-        decodedText
-      );
-
-    },
-
-    () => { }
-
-  )
-    .catch(err => {
-      console.error(
-        "Erreur caméra :",
-        err
-      );
-    });
-
-}*/
 let qrScanner = null;
 
 let lastScanned = "";
@@ -2196,13 +2085,11 @@ async function addPayment(index) {
   sale.payment.status =
     newRemaining <= 0 ? "PAYÉ" : "EN ATTENTE";
 
-  const remainingStatus =
-    sale.payment.remaining;
-
+  // ✅ mise à jour du status de la vente
   sale.status =
-    remainingStatus <= 0
-      ? "PAYÉ"
-      : "EN ATTENTE";
+    newRemaining <= 0
+      ? "paid"
+      : "pending";
 
   // ✅ sauvegarde
   //localStorage.setItem("sales", JSON.stringify(sales));

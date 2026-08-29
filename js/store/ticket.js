@@ -44,8 +44,7 @@ if (input && clearBtn) {
 async function getTickets() {
 
   //const sales = JSON.parse(localStorage.getItem("sales") || "[]");
-  const sales =
-    await loadSales();
+  const sales = await loadSales();
 
   return sales.map(s => ({
 
@@ -66,7 +65,8 @@ async function getTickets() {
 
     items: s.items || [],
 
-    clientPhone: s.clientPhone || s.payment?.clientPhone || ""
+    clientPhone: s.clientPhone || s.payment?.clientPhone || "",
+    user: s.user
 
   }));
 
@@ -511,7 +511,8 @@ async function exportTicketPDF(id) {
   y += 6;
 
   doc.setFontSize(10);
-  doc.text(cleanText(`Ticket #${t.id}`), 40, y, { align: "center" });
+  doc.text(cleanText(`Vendeur #${t.user}`), 40, y, { align: "center" });
+  //doc.text(cleanText(`Ticket #${t.id}`), 40, y, { align: "center" });
 
   y += 5;
   doc.text(
@@ -601,14 +602,14 @@ async function exportTicketPDF(id) {
 
     // ✅ bonus (si tout payé)
     if (remaining <= 0) {
-      doc.text("Credit solde", 5, y);
+      doc.text("Credit soldé", 5, y);
       y += 5;
     }
   }
 
 
   doc.setFontSize(11);
-  doc.text(cleanText(`TOTAL : ${formatPrice(totalNet)} GNF`), 5, y);
+  doc.text(cleanText(`TOTAL NET : ${formatPrice(totalNet)} GNF`), 5, y);
 
   // ✅ FOOTER
   y += 8;

@@ -446,13 +446,13 @@ function deleteProduct(index) {
   products[index].isArchived = false;
   products[index].archivedAt = new Date().toISOString();
 
-  localStorage.setItem("products", JSON.stringify(products));
+  //localStorage.setItem("products", JSON.stringify(products));
 
   render();
 
   // ✅ Sauvegarde
-  localStorage.setItem("products", JSON.stringify(products));
-  localStorage.setItem("products_updated_at", Date.now() + "_" + Math.random());
+  //localStorage.setItem("products", JSON.stringify(products));
+  // localStorage.setItem("products_updated_at", Date.now() + "_" + Math.random());
 
 
   // ✅ Rafraîchir affichage

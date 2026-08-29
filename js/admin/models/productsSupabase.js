@@ -380,6 +380,9 @@ function mapProduct(product) {
 
         promo: product.promo_percent ?? 0,
 
+        wholesalePrice: product.wholesale_price ?? 0,
+        wholesaleMinQty: product.wholesale_min_qty ?? 0,
+
         createdBy: product.created_by,
         createdRole: product.created_role
     };
