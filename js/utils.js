@@ -288,6 +288,9 @@ async function forceLogout() {
   window.location.href = "login";
 }
 
+function showError(message) {
+  showToast(message, "error");
+}
 /************************************************************
  * AFFICHE UNE NOTIFICATION TEMPORAIRE A L'UTILISATEUR
  ***********************************************************/

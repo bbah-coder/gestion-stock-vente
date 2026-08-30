@@ -25,3 +25,7 @@ add column stolen integer default 0;
 
 alter table products
 add column don integer default 0;
+
+ALTER TABLE profiles
+ADD CONSTRAINT profiles_username_unique
+UNIQUE (username);

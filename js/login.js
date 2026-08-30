@@ -297,6 +297,16 @@ document.addEventListener("DOMContentLoaded", () => {
     loginBtn.addEventListener("click", login);
   }
 
+  // ✅ LIAISON BOUTON RESET PASSWORD
+
+  const btnResetPassword = document.getElementById("btnResetPassword");
+  if (btnResetPassword) {
+    btnResetPassword.addEventListener(
+      "click",
+      resetPassword
+    );
+  }
+
   // ✅ touche ENTER
   document.addEventListener("keydown", (e) => {
     if (e.key === "Enter") {
@@ -304,4 +314,128 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
+});
+
+//Reinitialisation du mot de passe 
+
+async function resetPassword() {
+  try {
+    const phone = document.getElementById("resetPhone").value.trim();
+    const formule = document.getElementById("resetFormule").value.trim();
+    const amount = Number(document.getElementById("resetAmount").value);
+    const newPassword = document.getElementById("newPassword").value;
+    const confirmPassword = document.getElementById("confirmPassword").value;
+
+    if (!phone) {
+      showError("Veuillez renseigner le téléphone du magasin.");
+      return;
+    }
+
+    if (!formule) {
+      showError("Veuillez renseigner la formule.");
+      return;
+    }
+
+    if (!amount || amount <= 0) {
+      showError("Veuillez renseigner le montant.");
+      return;
+    }
+
+    if (newPassword.length < 6) {
+      showError("Le mot de passe doit contenir au moins 6 caractères.");
+      return;
+    }
+
+    if (newPassword !== confirmPassword) {
+      showError("Les mots de passe ne correspondent pas.");
+      return;
+    }
+
+    // Recherche du magasin
+    const { data: shop, error: shopError } =
+      await supabaseClient
+        .from("shops")
+        .select("*")
+        .eq("phone", phone)
+        .single();
+
+    if (shopError || !shop) {
+      showError("Aucun magasin trouvé avec ce numéro.");
+      return;
+    }
+
+    // Vérification formule
+    if ((shop.subscription_plan || "").toLowerCase() !== formule.toLowerCase()) {
+      showError("La formule saisie ne correspond pas.");
+      return;
+    }
+
+    // Vérification montant
+    if (Number(shop.monthly_price || 0) !== amount) {
+      showError("Le montant saisi ne correspond pas.");
+      return;
+    }
+
+    // Recherche du profil admin
+    const { data: adminProfile, error: profileError } =
+      await supabaseClient
+        .from("profiles")
+        .select("*")
+        .eq("shop_id", shop.id)
+        .eq("role", "admin")
+        .single();
+
+    if (profileError || !adminProfile) {
+      showError("Aucun administrateur associé à ce magasin.");
+      return;
+    }
+    if (!adminProfile.active) {
+      showError("Le compte administrateur est désactivé.");
+      return;
+
+    }
+
+    // Appel Edge Function ou API de réinitialisation
+    const { data, error } = await supabaseClient.functions.invoke(
+      "reset-password",
+      {
+        body: {
+          userId: adminProfile.id,
+          newPassword
+        }
+      }
+    );
+
+    if (error) {
+      throw error;
+    }
+
+    showToast("Mot de passe réinitialisé avec succès.", "success");
+
+    document.getElementById("resetPhone").value = "";
+    document.getElementById("resetFormule").value = "";
+    document.getElementById("resetAmount").value = "";
+    document.getElementById("newPassword").value = "";
+    document.getElementById("confirmPassword").value = "";
+
+    setTimeout(() => {
+      window.location.href = "login.html";
+    }, 2000);
+
+  } catch (error) {
+    console.error("Erreur reset password :", error);
+    showError(error.message || "Erreur lors de la réinitialisation.");
+  }
+}
+
+document.getElementById("initPassword").addEventListener("click", () => {
+
+  const btn = document.getElementById("initPassword");
+  const form = document.getElementById("resetPasswordForm");
+
+  form.classList.toggle("hidden");
+
+  btn.textContent = form.classList.contains("hidden")
+    ? "🔑 Mot de passe oublié ?"
+    : "❌ Fermer";
 });

@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!--SERVICE PROGRESSIVE WEB APP (PWA)-->
+    <meta name="theme-color" content="#22c55e">
+    <link rel="manifest" href="/manifest.json">
+    <link rel="icon" href="/image/icon-192.png">
+
+    <title>Boutique Manager</title>
+
+    <!--Supabase-->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+    <!--DIXIE-->
+    <script src="https://unpkg.com/dexie@latest/dist/dexie.js"></script>
+
+    <link rel="stylesheet" href="css/home.css">
+</head>
+
+<body>
+
+    <div class="home-container">
+
+        <!-- ✅ HEADER -->
+        <h1>🛍️ Boutique Manager</h1>
+
+        <p class="subtitle">
+            Gérez vos ventes, stocks et crédits clients facilement
+        </p>
+
+        <!-- ✅ IMAGE OU ILLUSTRATION -->
+        <div class="hero">
+            📦 💰 📊
+        </div>
+
+        <div class="auth-box">
+
+            <input type="text" id="registerUsername" placeholder="Nom utilisateur">
+
+            <input type="password" id="registerPassword" placeholder="Mot de passe">
+
+            <input type="hidden" id="registerRole" value="admin">
+
+            <button onclick="registerAccount()" class="btn primary">
+                👤 Créer le compte
+            </button>
+
+            <div id="userCompte" class="userCompte"></div>
+
+        </div>
+
+        <div id="toast" class="toast"></div>
+
+        <script src="js/utils.js"></script>
+        <script src="js/home.js"></script>
+
+</body>
+
+</html>

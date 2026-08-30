@@ -1005,8 +1005,7 @@ async function saveStoreInfo() {
   const address = document.getElementById("storeAddress").value.trim();
   const plan = document.getElementById("subscriptionPlan").value;
 
-  const subscription_plan =
-    getSubscriptionData(plan);
+  const subscription_plan = getSubscriptionData(plan);
 
   if (!subscription_plan) {
     showToast("Formule invalide");
@@ -1185,12 +1184,17 @@ function closeStoreInfo() {
 /************************************************************
  * FUNCTION : Charge le magasin courant
  ************************************************************/
-function getCurrentShop() {
+/*function getCurrentShop() {
 
   return JSON.parse(
     localStorage.getItem("storeInfo") || "{}"
   );
 
+}*/
+function getCurrentShop() {
+  const storeInfo = localStorage.getItem("storeInfo");
+
+  return storeInfo ? JSON.parse(storeInfo) : null;
 }
 
 /************************************************************
