@@ -139,13 +139,14 @@ function renderCards(productsList) {
     const card = document.createElement("div");
     card.className = "product-card";
 
+    const imageUrl = getProductImageUrl(p.image);
 
     card.innerHTML = `
 
     <div class="card-top">
       <div class="card-image">
         ${p.image
-        ? `<img src="${p.image}" class="card-img">`
+        ? `<img src="${imageUrl}" class="card-img">`
         : `<div class="no-image">📦</div>`
       }
       </div>

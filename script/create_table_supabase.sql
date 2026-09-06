@@ -301,14 +301,72 @@ create table sale_items (
     product_name text not null,
     barcode text,
     quantity integer not null,
-    unit_price numeric(12,2),
-    wholesale_price numeric(12,2),
-    applied_price numeric(12,2),
+    unit_price numeric(12,2) not null,
+    detail_price numeric(12,2) default 0,
+    wholesale_price numeric(12,2) default 0,
+    is_wholesale boolean default false,
     discount numeric(12,2) default 0,
-    total numeric(12,2) default 0,
-    created_at timestamptz default now(),
-    updated_at timestamptz default now()
+    line_total numeric(12,2) default 0,
+    shop_id uuid references shops(id),
+    created_at timestamptz default now()
 );
+--Fonction alimentation sale_items
+create or replace function populate_sale_items()
+returns trigger
+language plpgsql
+as $$
+declare
+    item jsonb;
+begin
+    delete from sale_items
+    where sale_id = new.id;
+    for item in
+        select *
+        from jsonb_array_elements(new.items)
+    loop
+        insert into sale_items (
+            sale_id,
+            product_id,
+            product_name,
+            quantity,
+            unit_price,
+            detail_price,
+            wholesale_price,
+            is_wholesale,
+            discount,
+            line_total,
+            shop_id
+        )
+        values (
+            new.id,
+           (item->>'productId')::uuid,
+            item->>'name',
+            coalesce((item->>'quantity')::int,0),
+            coalesce(
+                (item->>'price')::numeric, 0),
+            coalesce((item->>'detailPrice')::numeric,0),
+
+            coalesce((item->>'wholesalePrice')::numeric,0),
+
+            coalesce((item->>'isWholesale')::boolean,false),
+
+            coalesce((item->>'remise')::numeric,0),
+
+            coalesce((item->>'total')::numeric,0),
+            new.shop_id
+        );
+
+    end loop;
+    return new;
+end;
+$$;
+
+---------TRIGGER Sale_items------------
+create trigger trg_populate_sale_items
+after insert on sales
+for each row
+execute function populate_sale_items();
+
 ALTER TABLE sale_items
 ADD COLUMN shop_id UUID;
 --sales
@@ -507,4 +565,29 @@ using (
 
     )
 
+);
+
+***********Policy Image*****************
+CREATE POLICY "Authenticated can upload images"
+ON storage.objects
+FOR INSERT
+TO authenticated
+WITH CHECK (
+  bucket_id = 'product-images'
+);
+
+CREATE POLICY "Authenticated can view images"
+ON storage.objects
+FOR SELECT
+TO authenticated
+USING (
+  bucket_id = 'product-images'
+);
+
+CREATE POLICY "Public read product images"
+ON storage.objects
+FOR SELECT
+TO public
+USING (
+  bucket_id = 'product-images'
 );

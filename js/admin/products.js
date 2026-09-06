@@ -155,6 +155,8 @@ async function saveProduct() {
     return;
   }
 
+  const productId = crypto.randomUUID();
+
   const shopId = await getCurrentShopId();
 
   const category = capitalizeWords(document.getElementById("category").value.trim());
@@ -183,20 +185,28 @@ async function saveProduct() {
     document.getElementById("image").files[0];
 
   // ✅ Lecture image si présente
+  /* if (file) {
+ 
+     image = await new Promise((resolve) => {
+ 
+       const reader = new FileReader();
+ 
+       reader.onload = (e) => {
+         resolve(e.target.result);
+       };
+ 
+       reader.readAsDataURL(file);
+ 
+     });
+ 
+   }*/
+
   if (file) {
-
-    image = await new Promise((resolve) => {
-
-      const reader = new FileReader();
-
-      reader.onload = (e) => {
-        resolve(e.target.result);
-      };
-
-      reader.readAsDataURL(file);
-
-    });
-
+    image = await uploadProductImage(
+      file,
+      productId,
+      shopId
+    );
   }
 
   const normalizedName =
@@ -293,7 +303,7 @@ async function saveProduct() {
 
       // ✅ NOUVEAU PRODUIT
       const newProduct = {
-        id: crypto.randomUUID(),
+        id: productId,
         shop_id: shopId,
         name,
         price,

@@ -383,6 +383,8 @@ function mapProduct(product) {
         wholesalePrice: product.wholesale_price ?? 0,
         wholesaleMinQty: product.wholesale_min_qty ?? 0,
 
+        image: product.image_url,
+
         createdBy: product.created_by,
         createdRole: product.created_role
     };
@@ -409,3 +411,59 @@ function mapProduct(product) {
         "✅ Synchronisation terminée"
     );
 }*/
+
+async function uploadProductImage(file, productId, shopId) {
+    try {
+
+        const extension = file.name.split(".").pop();
+
+        const filePath =
+            `${shopId}/${productId}.${extension}`;
+
+        const { error } = await supabaseClient
+            .storage
+            .from("product-images")
+            .upload(
+                filePath,
+                file,
+                {
+                    upsert: true
+                }
+            );
+
+        if (error) throw error;
+
+        const { data } = supabaseClient
+            .storage
+            .from("product-images")
+            .getPublicUrl(filePath);
+
+        return data.publicUrl;
+
+    } catch (error) {
+        console.error(
+            "Erreur upload image :",
+            error
+        );
+
+        throw error;
+    }
+}
+
+
+function getProductImageUrl(path) {
+
+    if (!path) {
+        return "img/no-image.png";
+    }
+
+    // Anciennes images
+    if (path.startsWith("http")) {
+        return path;
+    }
+
+    return supabaseClient.storage
+        .from("product-images")
+        .getPublicUrl(path)
+        .data.publicUrl;
+}

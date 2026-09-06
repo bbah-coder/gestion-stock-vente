@@ -213,6 +213,7 @@ function vendreWithQty(index, btn) {
 
     cart.push({
       index,
+      productId: produit.id,
       name: produit.name,
       //price: parseFloat(finalPrice),
       price: pricing.price,
@@ -912,39 +913,6 @@ async function validerPanier() {
       ? creditData?.clientPhone || ""
       : clientPhone;
 
-  /*sales.push({
-
-    id: Date.now(),
-    user: localStorage.getItem("username"),
-    role: localStorage.getItem("userRole"),
-    items: cart.map(item => ({
-      name: item.name,
-      quantity: item.quantity,
-      // ✅ prix réellement appliqué
-      price: item.price,
-      // ✅ informations tarifaires
-      isWholesale: item.isWholesale || false,
-      detailPrice: products[item.index]?.price || 0,
-      wholesalePrice: products[item.index]?.wholesalePrice || 0,
-      remise: item.remise || 0,
-      total: (item.price * item.quantity) - (item.remise || 0)
-
-    })),
-
-    totalBrut,
-    totalRemise,
-    total: totalNet,
-    clientPhone: salePhone,
-
-    payment: {
-      ...paymentDetails,
-      total: totalNet, // ✅ crédit basé sur net
-      remaining: totalNet - (paymentDetails.payments?.reduce((s, p) => s + p.amount, 0) || 0)
-    },
-
-    date: new Date()
-  });*/
-
   const sale = {
     id: crypto.randomUUID(),
     shop_id: await getCurrentShopId(),
@@ -953,6 +921,7 @@ async function validerPanier() {
     role:
       localStorage.getItem("userRole"),
     items: cart.map(item => ({
+      productId: item.productId,
       name: item.name,
       quantity: item.quantity,
       price: item.price,
