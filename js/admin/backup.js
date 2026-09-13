@@ -50,7 +50,7 @@ function downloadBackup() {
 }
 
 // RESTORE (IMPORT FICHIER)
-function handleRestore(event) {
+async function handleRestore(event) {
 
   console.log("🔥 handleRestore déclenché");
 
@@ -61,7 +61,7 @@ function handleRestore(event) {
     return;
   }
 
-  restoreBackup(file);
+  await restoreBackup(file);
 }
 
 //Alerte si pas sauvegarde
@@ -82,40 +82,318 @@ function checkBackupReminder() {
   }
 }
 
-function restoreBackup(file) {
+async function restoreBackup(file) {
 
   console.log("✅ restore lancé");
 
+  const currentShop = getCurrentShop();
+  const profile = await getCurrentProfile();
+
+  if (!currentShop?.id) {
+    showToast("❌ Aucun magasin sélectionné");
+    return;
+  }
+
   const reader = new FileReader();
 
-  reader.onload = function (e) {
-
-    console.log("✅ fichier lu");
+  reader.onload = async function (e) {
 
     try {
 
       const data = JSON.parse(e.target.result);
 
-      console.log("✅ JSON OK", data);
+      console.log("✅ JSON chargé", data);
 
-      if (data.products) {
-        localStorage.setItem("products", JSON.stringify(data.products));
+      // ==========================
+      // PRODUITS
+      // ==========================
+      let restoredProducts = [];
+
+      if (Array.isArray(data.products)) {
+
+        await db.products.clear();
+
+        restoredProducts =
+          data.products.map(product => ({
+            id: product.id || crypto.randomUUID(),
+            ...product,
+            image: "",
+            barcode:
+              "PRD-" +
+              Date.now()
+                .toString()
+                .slice(-6),
+            entries: (data.stockLogs || [])
+              .filter(log =>
+                log.product === product.name &&
+                log.type === "AJOUT"
+              )
+              .reduce(
+                (sum, log) =>
+                  sum + Number(log.quantity || 0),
+                0
+              ),
+            shop_id: currentShop.id,
+            isArchived: product.active === false,
+            archivedAt:
+              product.deletedAt || null,
+            sold: Number(product.sold || 0),
+            createdBy:
+              profile?.username || "Système",
+            createdRole:
+              profile?.role || "Admin",
+            updated_at: new Date().toISOString()
+
+          }));
+
+
+        await db.products.bulkPut(restoredProducts);
+
+        for (const product of restoredProducts) {
+          try {
+            await saveProductToSupabase(product);
+          } catch (error) {
+            console.error(`❌ Produit ${product.name}`, error);
+          }
+        }
+
+        console.log(`✅ ${restoredProducts.length} produits restaurés`);
+
       }
 
-      if (data.sales) {
-        localStorage.setItem("sales", JSON.stringify(data.sales));
+      // ==========================
+      // VENTES
+      // ==========================
+      const productsMap =
+        new Map(
+          restoredProducts.map(product => [
+            product.name,
+            product.id
+          ])
+        );
+
+      if (Array.isArray(data.sales)) {
+
+        await db.sales.clear();
+
+        const restoredSales = data.sales.map(sale => ({
+          id: crypto.randomUUID(),
+          shop_id: currentShop.id,
+          items: (sale.items || []).map(item => ({
+            ...item,
+            productId:
+              productsMap.get(item.name) || null
+          })),
+          totalBrut:
+            Number(
+              sale.totalBrut ??
+              sale.total ??
+              0
+            ),
+          totalRemise:
+            Number(
+              sale.totalRemise ?? 0
+            ),
+          total:
+            Number(
+              sale.total ?? 0
+            ),
+          totalItems:
+            sale.totalItems ??
+            (sale.items || []).reduce(
+              (sum, item) =>
+                sum + Number(item.quantity || 0),
+              0
+            ),
+          clientPhone:
+            sale.clientPhone || "",
+          paymentMethod:
+            sale.paymentMethod ||
+            sale.payment?.type ||
+            "cash",
+          payment:
+            sale.payment || {
+              type: "cash",
+              total: sale.total || 0,
+              status: "PAYÉ",
+              remaining: 0
+            },
+          user:
+            sale.user ||
+            profile?.username ||
+            "Admin",
+          role:
+            sale.role ||
+            profile?.role ||
+            "admin",
+          status:
+            sale.status ||
+            sale.payment?.status ||
+            (
+              sale.payment?.type === "credit"
+                ? "pending"
+                : "paid"
+            ),
+          created_at:
+            sale.created_at ||
+            sale.date ||
+            new Date().toISOString(),
+          updated_at:
+            sale.updated_at ||
+            sale.date ||
+            new Date().toISOString()
+
+        }));
+
+        await db.sales.bulkPut(restoredSales);
+
+        for (const sale of restoredSales) {
+          try {
+            await saveSaleToSupabase(sale);
+          } catch (error) {
+            console.error(`❌ Vente ${sale.id}`, error);
+          }
+        }
+
+        console.log(`✅ ${restoredSales.length} ventes restaurées`);
       }
 
-      if (data.stockMovements) {
-        localStorage.setItem("stockMovements", JSON.stringify(data.stockMovements));
+      // ==========================
+      // STOCKLOGS (ancien format)
+      // ==========================
+
+      if (Array.isArray(data.stockLogs)) {
+
+        await db.stockMovements.clear();
+
+        const stockMovements = [];
+
+        // Stock initial
+        if (Array.isArray(data.products)) {
+
+          data.products.forEach(product => {
+
+            if (
+              Number(product.initialStock || 0) > 0
+            ) {
+
+              stockMovements.push({
+                id: crypto.randomUUID(),
+                shop_id: currentShop.id,
+                product: product.name,
+                type: "entry",
+                reason: "initial_stock",
+                quantity:
+                  Number(product.initialStock || 0),
+                user:
+                  profile?.username ||
+                  "Système",
+                role:
+                  profile?.role ||
+                  "Admin",
+                movement_date:
+                  product.createdAt
+                    ? new Date(product.createdAt)
+                      .toISOString()
+                    : new Date()
+                      .toISOString(),
+                date:
+                  product.createdAt
+                    ? new Date(product.createdAt)
+                      .toLocaleString("fr-FR")
+                    : new Date()
+                      .toLocaleString("fr-FR")
+              });
+
+            }
+
+          });
+        }
+
+        // Historique existant
+        data.stockLogs.forEach(log => {
+
+          stockMovements.push({
+            id: crypto.randomUUID(),
+            shop_id: currentShop.id,
+            product: log.product,
+            type:
+              log.type === "AJOUT"
+                ? "entry"
+                : 'exit',
+            reason:
+              log.type === "AJOUT"
+                ? "achat"
+                : "sale",
+            quantity:
+              Number(log.quantity || 0),
+            user:
+              profile?.username ||
+              "Inconnu",
+            role:
+              profile?.role ||
+              "Inconnu",
+            movement_date:
+              parseFrenchDate(log.date),
+            date:
+              parseFrenchDate(log.date)
+
+          });
+
+        });
+
+        await db.stockMovements.bulkPut(stockMovements);
+
+        for (const movement of stockMovements) {
+          try {
+            await saveStockMovementSupabase(movement);
+          } catch (error) {
+            console.error(`❌ Mouvement ${movement.id}`, error);
+          }
+        }
+
+        console.log(`✅ ${stockMovements.length} mouvements restaurés`);
       }
 
-      showToast("✅ Restauration réussie");
-      location.reload();
+      // ==========================
+      // STOCKMOVEMENTS (nouveau format)
+      // ==========================
 
-    } catch (err) {
-      console.error("❌ Erreur JSON", err);
-      showToast("❌ Fichier invalide");
+      if (Array.isArray(data.stockMovements)) {
+
+        await db.stockMovements.clear();
+
+        const restoredMovements =
+          data.stockMovements.map(movement => ({
+            ...movement,
+            shop_id: currentShop.id,
+            updated_at: new Date().toISOString()
+          }));
+
+        await db.stockMovements.bulkPut(restoredMovements);
+
+        for (const movement of restoredMovements) {
+          try {
+            await saveStockMovementSupabase(movement);
+          } catch (error) {
+            console.error(`❌ Mouvement ${movement.id}`, error);
+          }
+        }
+
+        console.log(`✅ ${restoredMovements.length} mouvements restaurés`);
+      }
+
+      showToast("✅ Restauration terminée avec succès", "success");
+
+      setTimeout(() => {
+        location.reload();
+      }, 1000);
+
+    } catch (error) {
+
+      console.error("❌ Erreur restauration", error);
+
+      showToast("❌ Fichier de sauvegarde invalide", "error");
     }
 
   };

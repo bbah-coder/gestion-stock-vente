@@ -185,21 +185,6 @@ async function saveProduct() {
     document.getElementById("image").files[0];
 
   // ✅ Lecture image si présente
-  /* if (file) {
- 
-     image = await new Promise((resolve) => {
- 
-       const reader = new FileReader();
- 
-       reader.onload = (e) => {
-         resolve(e.target.result);
-       };
- 
-       reader.readAsDataURL(file);
- 
-     });
- 
-   }*/
 
   if (file) {
     image = await uploadProductImage(

@@ -591,3 +591,38 @@ TO public
 USING (
   bucket_id = 'product-images'
 );
+
+***********Function stat***************
+create or replace function get_shop_stats()
+returns table (
+    shop_id uuid,
+    products_count bigint,
+    sales_count bigint,
+    movements_count bigint
+)
+language sql
+security definer
+as $$
+    select
+        s.id,
+
+        (
+            select count(*)
+            from products p
+            where p.shop_id = s.id
+        ) as products_count,
+
+        (
+            select count(*)
+            from sales sa
+            where sa.shop_id = s.id
+        ) as sales_count,
+
+        (
+            select count(*)
+            from stock_movements sm
+            where sm.shop_id = s.id
+        ) as movements_count
+
+    from shops s;
+$$;

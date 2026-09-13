@@ -905,7 +905,7 @@ async function validerPanier() {
   }
 
   // ✅ sauvegarde logs
-  localStorage.setItem("stockLogs", JSON.stringify(stockLogs));
+  //localStorage.setItem("stockLogs", JSON.stringify(stockLogs));
 
   // ✅ ✅ ✅ ENREGISTREMENT VENTE (PRO)
   const salePhone =

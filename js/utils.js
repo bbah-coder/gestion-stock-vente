@@ -627,78 +627,7 @@ function colorDiff(value) {
  * VERIFIE SI L'UTILISATEUR CONNECTE EST TOUJOURS ACTIF.
  * RETOURNE TRUE SI ACCES AUTORISE
  ***********************************************************/
-/*async function checkCurrentUserStatus() {
 
-  try {
-
-    const username =
-      localStorage.getItem("username");
-
-    if (!username) {
-      return true;
-    }
-
-    // ✅ Mode offline
-    if (!navigator.onLine) {
-
-      console.log("📴 Offline détecté - profil local");
-
-      const profiles = await db.profiles.toArray();
-
-      const profile =
-        profiles.find(
-          p => p.username === username
-        );
-
-      if (!profile) {
-        return true;
-      }
-
-      return profile.active !== false;
-
-    }
-
-    // ✅ Mode online
-    const { data, error } =
-      await supabaseClient
-        .from("profiles")
-        .select("active")
-        .eq("username", username)
-        .single();
-
-    if (error) {
-
-      console.error(
-        "❌ Vérification compte :", error);
-
-      return true;
-
-    }
-
-    if (!data?.active) {
-
-      showToast("⛔ Votre compte a été désactivé", "error");
-
-      setTimeout(async () => {
-
-        await logout();
-
-      }, 1500);
-
-      return false;
-
-    }
-    return true;
-
-  } catch (err) {
-
-    console.error("❌ checkCurrentUserStatus :", err);
-
-    return true;
-
-  }
-
-  }*/
 async function checkCurrentUserStatus() {
 
   const username = localStorage.getItem("username");
@@ -783,4 +712,20 @@ function capitalizeWords(text) {
         word.slice(1)
     )
     .join(" ");
+}
+
+
+function parseFrenchDate(dateStr) {
+
+  if (!dateStr) {
+    return new Date().toISOString();
+  }
+
+  const [datePart, timePart] = dateStr.split(" ");
+
+  const [day, month, year] = datePart.split("/");
+
+  return new Date(
+    `${year}-${month}-${day}T${timePart}`
+  ).toISOString();
 }

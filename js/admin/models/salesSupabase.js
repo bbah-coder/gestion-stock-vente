@@ -172,34 +172,29 @@ async function saveSaleToSupabase(sale) {
                     payment:
                         sale.payment,
                     status:
-                        sale.status || "paid"
+                        sale.status || "paid",
+                    created_at:
+                        sale.date ||
+                        sale.created_at ||
+                        new Date().toISOString(),
                 }])
                 .select()
                 .single();
 
         if (error) {
 
-            console.error(
-                "❌ Erreur Supabase vente :",
-                error
-            );
+            console.error("❌ Erreur Supabase vente :", error);
 
             return null;
         }
 
-        console.log(
-            "✅ Vente enregistrée dans Supabase",
-            data.id
-        );
+        console.log("✅ Vente enregistrée dans Supabase", data.id);
 
         return data;
 
     } catch (error) {
 
-        console.error(
-            "❌ Exception saveSaleToSupabase :",
-            error
-        );
+        console.error("❌ Exception saveSaleToSupabase :", error);
 
         return null;
 

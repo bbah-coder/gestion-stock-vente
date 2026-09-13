@@ -7,6 +7,7 @@ document.addEventListener("DOMContentLoaded", initApp);
 async function initApp() {
   console.log("🚀 App démarrée");
 
+
   // ✅ Sécurité
   if (!initAuth())
     return;

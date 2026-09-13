@@ -1144,25 +1144,27 @@ async function saveStoreInfo() {
 /************************************************************
  * FUNCTION : CHARGER LE MAGASIN EXISTANT
  ************************************************************/
-
 async function loadStoreForm() {
 
-  const shops = await db.shops.toArray();
+  const currentShop = getCurrentShop();
 
-  const store = shops[0];
+  if (!currentShop?.id) {
+    return;
+  }
 
-  if (!store?.id) {
+  const store = await db.shops.get(
+    currentShop.id
+  );
+
+  if (!store) {
 
     document.getElementById("storeName").value = "";
-
     document.getElementById("storePhone").value = "";
-
     document.getElementById("storeAddress").value = "";
 
     currentShopId = null;
 
     return;
-
   }
 
   currentShopId = store.id;
@@ -1172,7 +1174,6 @@ async function loadStoreForm() {
   document.getElementById("storePhone").value = store.phone || "";
 
   document.getElementById("storeAddress").value = store.address || "";
-
 }
 
 
@@ -1323,38 +1324,67 @@ async function renderShops() {
       shops = shopsData || [];
       users = usersData || [];
     }
+    const {
+      data: statsData
+    } = await supabaseClient.rpc(
+      "get_shop_stats"
+    );
 
-    const shopsWithStats =
-      shops.map(shop => {
+    const statsMap = new Map(
+      (statsData || []).map(stat => [
+        stat.shop_id,
+        stat
+      ])
+    );
 
-        const shopUsers =
-          users.filter(
-            u => u.shop_id === shop.id
-          );
+    const shopsWithStats = shops.map(shop => {
 
-        const admins =
-          shopUsers.filter(
-            u => u.role === "admin"
-          );
+      const shopUsers =
+        users.filter(
+          u => u.shop_id === shop.id
+        );
 
-        const adminNames =
-          admins
-            .map(a => a.username)
-            .join(", ");
+      const admins =
+        shopUsers.filter(
+          u => u.role === "admin"
+        );
 
-        return {
+      const adminNames =
+        admins
+          .map(a => a.username)
+          .join(", ");
 
-          ...shop,
+      const stats =
+        statsMap.get(shop.id) || {};
 
-          usersCount:
-            shopUsers.length,
+      return {
 
-          adminNames:
-            adminNames || "Non défini"
+        ...shop,
 
-        };
+        usersCount:
+          shopUsers.length,
 
-      });
+        adminNames:
+          adminNames || "Non défini",
+
+        productsCount:
+          stats.products_count || 0,
+
+        salesCount:
+          stats.sales_count || 0,
+
+        movementsCount:
+          stats.movements_count || 0,
+
+        lastSync:
+          stats.last_sync
+            ? new Date(stats.last_sync)
+              .toLocaleString("fr-FR")
+            : "-"
+
+      };
+
+    });
 
     displayShops(shopsWithStats);
 
@@ -1407,11 +1437,46 @@ function displayShops(shops) {
     <br>
 
     <small>
-      👤 Utilisateurs :
-      ${shop.usersCount}
+    👥 Utilisateurs :
+    ${shop.usersCount || 0} / ${shop.max_users || 0}
     </small>
 
     <br>
+
+    <small>
+      📦 Formule :
+       ${shop.subscription_plan || "-"}
+    </small>
+
+    <br>
+
+    <small>
+      📦 Produits :
+     ${shop.productsCount}
+    </small>
+
+    <br>
+
+   <small>
+    🧾 Ventes :
+     ${shop.salesCount}
+   </small>
+
+   <br>
+
+  <small>
+   🔄 Mouvements :
+   ${shop.movementsCount}
+  </small>
+
+  <br>
+
+  <small>
+  🕒 Dernière synchro :
+  ${shop.lastSync || "-"}
+  </small>
+
+  <br>
 
     <small>
       📅 Créé le :

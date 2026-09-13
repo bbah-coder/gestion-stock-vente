@@ -501,9 +501,7 @@ async function syncProfiles() {
 
         if (profiles.length > 0) {
 
-            await db.profiles.bulkPut(
-                profiles
-            );
+            await db.profiles.bulkPut(profiles);
 
             const newestUpdatedAt =
                 profiles.reduce(
@@ -515,22 +513,15 @@ async function syncProfiles() {
                 );
 
             await setSetting(
-                "profiles_last_sync",
-                newestUpdatedAt
-            );
+                "profiles_last_sync", newestUpdatedAt);
 
         }
 
-        console.log(
-            `✅ ${profiles.length} profils synchronisés`
-        );
+        console.log(`✅ ${profiles.length} profils synchronisés`);
 
     } catch (error) {
 
-        console.warn(
-            "⚠️ Synchronisation profils impossible",
-            error
-        );
+        console.warn("⚠️ Synchronisation profils impossible", error);
 
     }
 

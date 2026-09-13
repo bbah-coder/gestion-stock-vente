@@ -96,16 +96,21 @@ async function saveProductToSupabase(product) {
             wholesale_price: product.wholesalePrice || 0,
             wholesale_min_qty: product.wholesaleMinQty || 0,
             stock: product.stock || 0,
-            barcode: product.barcode,
+            sold: Number(product.sold || 0),
+            barcode: product.barcode || null,
+            entries: product.entries || 0,
             image_url: product.image || null,
             category: product.category || "Autre",
             is_archived: product.isArchived || false,
             archived_at: product.archivedAt || null,
             last_sale_at: product.lastSaleAt || null,
             promo_percent: product.promo || 0,
+            created_at:
+                product.createdAt ||
+                product.created_at ||
+                new Date().toISOString(),
             created_by: product.createdBy || null,
-            created_role: product.createdRole || null,
-
+            created_role: product.createdRole || null
         };
 
         await saveProductSupabase(productSupabase);
