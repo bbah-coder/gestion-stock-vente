@@ -64,9 +64,7 @@ async function loadSales() {
             .equals(shopId)
             .toArray();
 
-        console.log(
-            `✅ ${sales.length} ventes chargéess pour le magasin ${shopId}`
-        );
+        //console.log(`✅ ${sales.length} ventes chargéess pour le magasin ${shopId}`);
 
         return sales;
 
@@ -90,7 +88,7 @@ async function loadSaleItems() {
 
         const items = await db.saleItems.toArray();
 
-        console.log(`✅ ${items.length} lignes de vente chargées`);
+        //console.log(`✅ ${items.length} lignes de vente chargées`);
 
         return items;
 
@@ -122,7 +120,7 @@ async function loadSaleItems() {
             .equals(shopId)
             .toArray();
 
-        console.log(`✅ ${items.length} lignes de vente chargées`);
+        //console.log(`✅ ${items.length} lignes de vente chargées`);
 
         return items;
 
@@ -188,7 +186,7 @@ async function saveSaleToSupabase(sale) {
             return null;
         }
 
-        console.log("✅ Vente enregistrée dans Supabase", data.id);
+        //console.log("✅ Vente enregistrée dans Supabase", data.id);
 
         return data;
 
@@ -234,9 +232,7 @@ async function getSalesSupabase(shopId) {
             return [];
         }
 
-        console.log(
-            `✅ ${data.length} ventes récupérées depuis Supabase`
-        );
+        //console.log(`✅ ${data.length} ventes récupérées depuis Supabase`);
 
         return data;
 
@@ -295,8 +291,7 @@ async function updateSaleSupabase(sale) {
             return null;
         }
 
-        console.log(
-            "✅ Vente mise à jour dans Supabase :", sale.id);
+        //console.log("✅ Vente mise à jour dans Supabase :", sale.id);
 
         return data;
 

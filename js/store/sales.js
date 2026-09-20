@@ -39,8 +39,6 @@
 
 let stockMovements = [];
 
-//let sales = [];
-
 const today = new Date().toISOString().split("T")[0];
 document.getElementById("filterDate").value = today;
 
@@ -78,7 +76,7 @@ async function initSales() {
       salesCount === 0
     ) {
 
-      console.log("🛒 Import initial des ventes...");
+      //console.log("🛒 Import initial des ventes...");
 
       const shopId = await getCurrentShopId();
 
@@ -97,7 +95,7 @@ async function initSales() {
 
       });
 
-    console.log(`✅ ${sales.length} ventes initialisées`);
+    //console.log(`✅ ${sales.length} ventes initialisées`);
 
   } catch (error) {
 
@@ -730,7 +728,7 @@ async function validerPanier() {
     //Enregistrement local
     await db.products.put(product);
 
-    console.log("Produit sauvegardé dans IndexedDB", product.name);
+    //console.log("Produit sauvegardé dans IndexedDB", product.name);
 
     if (product.sold === undefined) {
       product.sold = 0;
@@ -980,7 +978,7 @@ async function validerPanier() {
         mapSale(savedSale)
       );
 
-      console.log("✅ Vente enregistrée dans IndexedDB");
+      //console.log("✅ Vente enregistrée dans IndexedDB");
 
     } catch (error) {
 
@@ -1008,13 +1006,6 @@ async function validerPanier() {
     }
 
   }
-
-  //console.log("PAYMENT SAVED:", paymentMethod);
-
-  // ✅ sauvegardes
-
-  //localStorage.setItem("sales", JSON.stringify(sales));
-
 
   // ✅ reset panier
   cart = [];
@@ -2074,12 +2065,12 @@ async function addPayment(index) {
       pending_sync: false
     });
 
-    console.log("✅ Sauvegarde locale OK");
+    //console.log("✅ Sauvegarde locale OK");
 
     // ✅ Synchronisation Supabase
     const savedSale = await updateSaleSupabase(sale);
 
-    console.log("Résultat updateSaleSupabase :", savedSale);
+    //console.log("Résultat updateSaleSupabase :", savedSale);
 
     if (savedSale) {
 
@@ -2087,7 +2078,7 @@ async function addPayment(index) {
         mapSale(savedSale)
       );
 
-      console.log("✅ Vente synchronisée", savedSale.id);
+      //console.log("✅ Vente synchronisée", savedSale.id);
 
     } else {
 

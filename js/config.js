@@ -38,14 +38,5 @@ function renderResponsive(config) {
   if (config.mobileRender) {
     config.mobileRender();
   }
-
-  /*} else {
-    if (table) table.style.display = "table";  // ✅ réaffiche TABLE
-    if (mobile) mobile.style.display = "none";
-
-    if (config.desktopRender) {
-      config.desktopRender();
-    }
-  }*/
 }
 

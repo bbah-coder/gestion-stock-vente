@@ -2,14 +2,6 @@
  * 🚀 CONTROLLER GLOBAL (UI + NAV)
  ************************************************************/
 
-
-/*document.addEventListener("DOMContentLoaded", () => {
-  //updateUserInfo();
-  initServiceWorker();
-  initApp();
-  updateUserUI();
-});*/
-
 document.addEventListener("DOMContentLoaded", async () => {
 
   initServiceWorker();
@@ -48,7 +40,7 @@ function startProductsRealtime() {
 
         try {
 
-          console.log("📦 Produit reçu via Realtime", payload);
+          //console.log("📦 Produit reçu via Realtime", payload);
 
           if (!payload.new) {
             return;
@@ -56,17 +48,17 @@ function startProductsRealtime() {
 
           const updatedProduct = mapProduct(payload.new);
 
-          console.log("Produit mappé :", updatedProduct);
+          //console.log("Produit mappé :", updatedProduct);
 
           // Mise à jour IndexedDB
           await db.products.put(updatedProduct);
 
-          console.log("✅ Produit enregistré dans IndexedDB");
+          //console.log("✅ Produit enregistré dans IndexedDB");
 
           // Vérification
           const saved = await db.products.get(updatedProduct.id);
 
-          console.log("✅ Vérification IndexedDB :", saved);
+          //console.log("✅ Vérification IndexedDB :", saved);
 
           // Rechargement depuis IndexedDB
           //products = await loadProducts();
@@ -113,7 +105,7 @@ function startProductsRealtime() {
 
         try {
 
-          console.log("📦 Mouvement reçu via Realtime :", payload);
+          //console.log("📦 Mouvement reçu via Realtime :", payload);
 
           if (!payload.new) {
             return;
@@ -136,8 +128,8 @@ function startProductsRealtime() {
 
           }
 
-          console.log("✅ Mouvement enregistré dans IndexedDB", payload.new.id);
-          console.log("✅ Nombre total de mouvements :", stockMovements.length);
+          //console.log("✅ Mouvement enregistré dans IndexedDB", payload.new.id);
+          //console.log("✅ Nombre total de mouvements :", stockMovements.length);
 
           refreshShopProducts();
 
@@ -166,7 +158,7 @@ function startProductsRealtime() {
 
         try {
 
-          console.log("🛒 Vente reçue via Realtime :", payload);
+          //console.log("🛒 Vente reçue via Realtime :", payload);
 
           if (!payload.new) {
             return;
@@ -193,9 +185,9 @@ function startProductsRealtime() {
 
           }
 
-          console.log("✅ Vente enregistrée dans IndexedDB", updatedSale.id);
+          //console.log("✅ Vente enregistrée dans IndexedDB", updatedSale.id);
 
-          console.log("✅ Nombre total de ventes :", sales.length);
+          //console.log("✅ Nombre total de ventes :", sales.length);
 
           // Rafraîchissement UI
           renderDashboard();
@@ -220,7 +212,11 @@ function startProductsRealtime() {
 
     .subscribe((status) => {
 
-      console.log("Realtime status :", status);
+      if (status === "CHANNEL_ERROR") {
+        console.error(
+          "Erreur Realtime"
+        );
+      }
 
     });
 
@@ -235,7 +231,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   sales = await loadSales();
 
-  console.log("✅ Ventes chargées :", sales.length);
+  //console.log("✅ Ventes chargées :", sales.length);
 
   await refreshShopProducts();
 
@@ -255,8 +251,7 @@ function startAutoSyncProducts() {
 
     try {
 
-      const isAllowed =
-        localStorage.getItem("isLoggedIn") === "true";
+      const isAllowed = localStorage.getItem("isLoggedIn") === "true";
 
       if (!isAllowed) {
         return;
@@ -302,17 +297,17 @@ function initServiceWorker() {
     navigator.serviceWorker.register("/service-worker.js")
       .then(reg => {
 
-        console.log("✅ SW enregistré");
+        //console.log("✅ SW enregistré");
 
         // ✅ détection nouvelle version
         if (reg.waiting) {
-          console.log("♻️ Nouvelle version disponible");
+          //console.log("♻️ Nouvelle version disponible");
           reg.waiting.postMessage({ type: "SKIP_WAITING" });
         }
 
         // ✅ nouveau SW installé
         reg.addEventListener("updatefound", () => {
-          console.log("🔄 Mise à jour SW détectée");
+          //console.log("🔄 Mise à jour SW détectée");
         });
 
       })
@@ -584,9 +579,20 @@ async function globalSearch() {
  ************************************************************/
 
 
-function logout() {
+async function logout() {
 
   if (!confirm("Voulez-vous vous déconnecter ?")) return;
+
+  //Déconnexion Supabase
+  await supabaseClient.auth.signOut();
+
+  // Vider IndexedDB
+  await Promise.all(db.tables.map(table => table.clear()));
+
+  // Vider LocalStorage
+  localStorage.clear();
+  // Vider SessionStorage
+  sessionStorage.clear();
 
   localStorage.removeItem("userRole");
   localStorage.removeItem("lastActivity");
@@ -665,39 +671,10 @@ function updateUserUI() {
   }
 }
 
-/************************************************************
- * Footer 
- ************************************************************
-document.getElementById("footerDate").innerText =
-  formatDateFR(new Date());
-
-document.getElementById("year").innerText =
-  new Date().getFullYear();
-
-// optionnel si tu gères les users
-const user = JSON.parse(localStorage.getItem("currentUser") || "{}");
-document.getElementById("footerUser").innerText =
-  user.role || "Utilisateur";*/
-
 
 /************************************************************
  * Gestion de rôle
  ************************************************************/
-
-/*document.addEventListener("DOMContentLoaded", () => {
-
-  const role = localStorage.getItem("userRole");
-
-  if(role === "vendeur"){
-
-    const btnHistory = document.getElementById("btnHistory");
-    const btnStats = document.getElementById("btnStats");
-
-    if(btnHistory) btnHistory.style.display = "none";
-    if(btnStats) btnStats.style.display = "none";
-  }
-
-});*/
 
 document.addEventListener("DOMContentLoaded", () => {
 
@@ -733,7 +710,7 @@ async function handleOnlineSync() {
 
   try {
 
-    console.log("🌐 Connexion rétablie");
+    //console.log("🌐 Connexion rétablie");
 
     showToast("🌐 Synchronisation en cours...");
 

@@ -551,9 +551,7 @@ create policy "sale_items_delete_by_shop"
 on sale_items
 for delete
 using (
-
     exists (
-
         select 1
         from sales s
         where s.id = sale_items.sale_id
@@ -562,9 +560,7 @@ using (
             from profiles
             where id = auth.uid()
         )
-
     )
-
 );
 
 ***********Policy Image*****************
@@ -626,3 +622,180 @@ as $$
 
     from shops s;
 $$;
+
+***********Policy Profiles**********
+
+/*create policy profiles_update_policy
+on public.profiles
+for update
+to authenticated
+using (
+    EXISTS (
+        SELECT 1
+        FROM profiles p
+        WHERE p.id = auth.uid()
+        AND p.role = 'super_admin'
+    )
+)
+with check (
+    EXISTS (
+        SELECT 1
+        FROM profiles p
+        WHERE p.id = auth.uid()
+        AND p.role = 'super_admin'
+    )
+);
+
+create policy profiles_update_own_shop
+on public.profiles
+for update
+to authenticated
+using (
+    auth.uid() = id
+)
+with check (
+    auth.uid() = id
+);*/
+drop policy if exists profiles_update_policy
+on public.profiles;
+
+create policy profiles_update_policy
+on public.profiles
+for update
+to authenticated
+using (
+    public.is_super_admin()
+    OR
+    (
+        public.my_role() = 'admin'
+        AND shop_id = public.my_shop_id()
+    )
+
+)
+with check (
+
+    public.is_super_admin()
+    OR
+
+    (
+        public.my_role() = 'admin'
+        AND shop_id = public.my_shop_id()
+    )
+
+);
+drop policy if exists profiles_delete_policy
+on public.profiles;
+
+create policy profiles_delete_policy
+on public.profiles
+for delete
+to authenticated
+using (
+
+    public.is_super_admin()
+
+    OR
+
+    (
+        public.my_role() = 'admin'
+        AND shop_id = public.my_shop_id()
+    )
+
+);
+
+
+--1-Fonction pour recuperer mon shop_id
+create or replace function public.my_shop_id()
+returns uuid
+language sql
+security definer
+set search_path = public
+as $$
+   select shop_id from public.profiles
+where id = auth.uid()
+$$;
+
+--2-Fonction pour checker super_admin
+create or replace function public.is_super_admin()
+returns boolean
+language sql
+security definer
+set search_path = public
+as $$
+  select exists (
+    select 1 from public.profiles 
+    where id = auth.uid() and role = 'super_admin'
+  )
+$$;
+
+
+*************Policy shops***************
+drop policy if exists "shops_update_policy" on public.shops
+create policy shops_update_policy
+on public.shops
+for update
+to authenticated
+using (
+    id = public.my_shop_id()
+    OR
+    public.is_super_admin()
+)
+with check (
+   id = public.my_shop_id()
+    OR
+    public.is_super_admin()
+);
+
+drop policy if exists "shops_delete_policy"
+on public.shops;
+
+create policy "shops_delete_policy"
+on public.shops
+for delete
+to authenticated
+using (
+
+    exists (
+        select 1
+        from profiles p
+        where p.id = auth.uid()
+        and p.role = 'super_admin'
+    )
+
+);
+
+create policy profiles_select_policy
+on public.profiles
+for select
+to authenticated
+using (
+    public.is_super_admin()
+    OR
+    (
+        public.my_role() = 'admin'
+        AND shop_id = public.my_shop_id()
+    )
+    OR
+    id = auth.uid()
+);
+
+create policy shops_insert_policy
+on public.shops
+for insert
+to authenticated
+with check (
+    auth.uid() is not null
+);
+
+alter table public.profiles
+add constraint profiles_role_check
+check (
+    role in (
+        'super_admin',
+        'admin',
+        'vendeur'
+    )
+);
+
+alter table public.shops
+add column created_by uuid;

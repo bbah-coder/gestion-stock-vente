@@ -65,7 +65,7 @@
     <button id="btnStore" onclick="showStoreInfo(); closeMobileMenu()" class="btn secondary">🏪 Info Magasin</button>
     <button class="btnManageShops" onclick="showShops(); closeMobileMenu()" style="display:none;">🏪 Magasins</button>
     <button onclick="showUsers(); closeMobileMenu()">👤 Utilisateurs</button>
-    <button onclick="showCostModule(); closeMobileMenu()">📦 Coûts d'achat </button>
+    <!--<button onclick="showCostModule(); closeMobileMenu()">📦 Coûts d'achat </button>-->
     <button onclick="switchUser()">🔁 Changer de compte</button>
     <button onclick="logout()" class="logout">🔌 Déconnexion</button>
   </div>
@@ -107,9 +107,7 @@
           <button onclick="showUsers(); closeMobileMenu()">
             👥 Utilisateurs
           </button>
-          <button onclick="showCostModule(); closeMobileMenu()">
-            📦 Coûts d'achat
-          </button>
+          <!--<button onclick="showCostModule(); closeMobileMenu()"> 📦 Coûts d'achat </button>-->
         </div>
       </div>
       <div id="userBar">
@@ -139,7 +137,7 @@
         <div class="settings-label">
           ⚠️ Actions d'initialisation (remettent les données à zéro)
         </div>
-        <button onclick="resetSalesOnly()" class="btn-action blue">
+        <!-- <button onclick="resetSalesOnly()" class="btn-action blue">
           🧾 Reset ventes
         </button>
 
@@ -153,7 +151,7 @@
 
         <button onclick="resetProducts()" class="btn-action green">
           🔄 Reset produits
-        </button>
+        </button> -->
 
       </div>
 
@@ -163,9 +161,9 @@
           💾 Sauvegarde & restauration (sécurisé)
         </div>
 
-        <button onclick="downloadBackup()" class="btn-action purple">
+        <!--<button onclick="downloadBackup()" class="btn-action purple">
           💾 Export sauvegarde
-        </button>
+        </button>-->
 
         <input type="file" id="backupInput" hidden onchange="handleRestore(event)">
 

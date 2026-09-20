@@ -5,7 +5,8 @@ document.addEventListener("DOMContentLoaded", initApp);
 
 
 async function initApp() {
-  console.log("🚀 App démarrée");
+
+  //console.log("🚀 App démarrée");
 
 
   // ✅ Sécurité
@@ -59,9 +60,6 @@ async function initApp() {
   // Init mvt stock
   await initStockMovements();
 
-  // Synchronisation en arrière-plan
-  //syncProducts().catch(console.error);
-  //syncStockMovements().catch(console.error);
   syncProfiles().catch(console.error);
 
   await syncProducts();
@@ -110,14 +108,11 @@ async function handleOnlineSync() {
       await syncShops();
     }
 
-    showToast(
-      "✅ Synchronisation terminée"
-    );
+    showToast("✅ Synchronisation terminée");
 
   } catch (error) {
 
-    console.error(
-      "Erreur synchronisation", error);
+    console.error("Erreur synchronisation", error);
 
   } finally {
 
@@ -231,18 +226,14 @@ const WARNING_TIME =
 
 function checkSessionTimeout() {
 
-  const lastActivity = Number(
-    localStorage.getItem("lastActivity")
-  );
+  const lastActivity = Number(localStorage.getItem("lastActivity"));
 
   if (!lastActivity) return;
 
   const inactiveTime = Date.now() - lastActivity;
 
   if (
-    inactiveTime >= WARNING_TIME &&
-    inactiveTime < SESSION_Timeout
-  ) {
+    inactiveTime >= WARNING_TIME && inactiveTime < SESSION_Timeout) {
 
     showToast("⚠️ Votre session va expirer bientôt");
 
@@ -256,6 +247,11 @@ function checkSessionTimeout() {
 
 //FORCER LA DECONNEXION
 function forceLogout() {
+
+  // Vider LocalStorage
+  localStorage.clear();
+  // Vider SessionStorage
+  sessionStorage.clear();
 
   localStorage.removeItem("isLoggedIn");
   localStorage.removeItem("username");
@@ -470,22 +466,6 @@ function initPDFDate() {
 
 
 /************************************************************
- * 🔄 SYNCHRO TABS (localStorage)
- ************************************************************/
-/*window.addEventListener("storage", function (event) {
-
-  if (event.key === "products" || event.key === "products_updated_at") {
-   products = JSON.parse(localStorage.getItem("products") || "[]");
-    render();
-  }
-
-  if (event.key === "sales") {
-    render();
-  }
-});*/
-
-
-/************************************************************
  * 📡 SYNCHRO AVANCÉE (écoute Realtime)
  ************************************************************/
 
@@ -507,7 +487,7 @@ function startProductsRealtime() {
 
         try {
 
-          console.log("📦 Produit reçu via Realtime", payload);
+          //console.log("📦 Produit reçu via Realtime", payload);
 
           if (!payload.new) {
             return;
@@ -515,20 +495,19 @@ function startProductsRealtime() {
 
           const updatedProduct = mapProduct(payload.new);
 
-          console.log("Produit mappé :", updatedProduct);
+          //console.log("Produit mappé :", updatedProduct);
 
           // Mise à jour IndexedDB
           await db.products.put(updatedProduct);
 
-          console.log("✅ Produit enregistré dans IndexedDB");
+          //console.log("✅ Produit enregistré dans IndexedDB");
 
           // Vérification
           const saved = await db.products.get(updatedProduct.id);
 
-          console.log("✅ Vérification IndexedDB :", saved);
+          //console.log("✅ Vérification IndexedDB :", saved);
 
           // Rechargement depuis IndexedDB
-          //products = await loadProducts();
           const index =
             products.findIndex(
               p => p.id === updatedProduct.id
@@ -568,7 +547,7 @@ function startProductsRealtime() {
 
         try {
 
-          console.log("📦 Mouvement reçu via Realtime :", payload);
+          //console.log("📦 Mouvement reçu via Realtime :", payload);
 
           if (!payload.new) {
             return;
@@ -576,7 +555,6 @@ function startProductsRealtime() {
 
           //Mise à jour IndexedDB
           await db.stockMovements.put(payload.new);
-
 
           //Mise à jour du tableau mémoire
           const index = stockMovements.findIndex(
@@ -593,8 +571,8 @@ function startProductsRealtime() {
 
           }
 
-          console.log("✅ Mouvement enregistré dans IndexedDB", payload.new.id);
-          console.log("✅ Nombre total de mouvements :", stockMovements.length);
+          //console.log("✅ Mouvement enregistré dans IndexedDB", payload.new.id);
+          //console.log("✅ Nombre total de mouvements :", stockMovements.length);
 
           render();
 
@@ -608,7 +586,11 @@ function startProductsRealtime() {
     )
     .subscribe((status) => {
 
-      console.log("Realtime status :", status);
+      if (status === "CHANNEL_ERROR") {
+        console.error(
+          "Erreur Realtime"
+        );
+      }
 
     });
 

@@ -45,8 +45,7 @@ const supabaseClient = supabase.createClient(
 
 async function getCurrentProfile() {
 
-  const username =
-    localStorage.getItem("username");
+  const username = localStorage.getItem("username");
 
   if (!username) {
     return null;
@@ -91,8 +90,7 @@ async function getCurrentProfile() {
 
     console.error(error);
 
-    const profiles =
-      await db.profiles.toArray();
+    const profiles = await db.profiles.toArray();
 
     const profile =
       profiles.find(
@@ -120,11 +118,11 @@ function isSuperAdmin() {
 
 async function initCurrentUserContext() {
 
-  console.log("🚀 initCurrentUserContext");
+  //console.log("🚀 initCurrentUserContext");
 
   const isAllowed = await checkCurrentUserStatus();
 
-  console.log("isAllowed =", isAllowed);
+  //console.log("isAllowed =", isAllowed);
 
   if (!isAllowed) return false;
 
@@ -146,7 +144,7 @@ async function loadCurrentShop() {
   // ✅ Mode offline
   if (!navigator.onLine) {
 
-    console.log("📴 Offline détecté - lecture locale");
+    //console.log("📴 Offline détecté - lecture locale");
 
     const profiles = await db.profiles.toArray();
 
@@ -156,8 +154,7 @@ async function loadCurrentShop() {
       return null;
     }
 
-    const shop =
-      await db.shops.get(profile.shop_id);
+    const shop = await db.shops.get(profile.shop_id);
 
     if (!shop) {
       return null;
@@ -198,7 +195,7 @@ async function loadCurrentShop() {
 
     if (!profile?.shop_id) {
 
-      console.log("🧹 Suppression storeInfo");
+      //console.log("🧹 Suppression storeInfo");
 
       localStorage.removeItem("storeInfo");
 
@@ -223,7 +220,7 @@ async function loadCurrentShop() {
     // ✅ Sauvegarde locale
     await db.shops.put(shop);
 
-    console.log("✅ Shop sauvegardé dans IndexedDB");
+    //console.log("✅ Shop sauvegardé dans IndexedDB");
 
     // ✅ Compatibilité temporaire
     localStorage.setItem("storeInfo", JSON.stringify(shop));
@@ -319,7 +316,7 @@ function showToast(message, type = "info") {
 
   // ✅ afficher
   toast.classList.add("show");
-  console.log("Toast affiché", toast);
+  //console.log("Toast affiché", toast);
 
   // ✅ cacher après 2.5s
   setTimeout(() => {

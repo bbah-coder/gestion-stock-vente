@@ -1,10 +1,6 @@
 /************************************************************
  * 📊 STOCK / HISTORIQUE
  ************************************************************/
-//CREE  MOUVEMENTS STOCK
-/*let stockMovements = JSON.parse(
-  localStorage.getItem("stockMovements") || "[]"
-);*/
 // Mouvements chargés au démarrage
 let stockMovements = [];
 
@@ -20,7 +16,7 @@ async function initStockMovements() {
 
     if (!lastSync || movementsCount === 0) {
 
-      console.log("📥 Import initial des mouvements...");
+      //console.log("📥 Import initial des mouvements...");
 
       await importStockMovementsToIndexedDB();
 
@@ -35,7 +31,7 @@ async function initStockMovements() {
 
       });
 
-    console.log(`✅ ${stockMovements.length} mouvements initialisés`);
+    //console.log(`✅ ${stockMovements.length} mouvements initialisés`);
 
   } catch (error) {
 
@@ -418,7 +414,6 @@ async function applyStockMovement(index, type, quantity, reason, comment = "") {
 
   // Historique des mouvements de stock
   const profile = await getCurrentProfile();
-  console.log("PROFILE =", profile);
 
   const shopId = await getCurrentShopId();
 
@@ -452,7 +447,6 @@ async function applyStockMovement(index, type, quantity, reason, comment = "") {
   let savedMovement = null;
   try {
     savedMovement = await saveStockMovementSupabase(movements);
-    console.log("Local", movements);
   } catch (error) {
 
     console.warn("📴 Mouvement enregistré localement");
@@ -460,12 +454,10 @@ async function applyStockMovement(index, type, quantity, reason, comment = "") {
 
   if (savedMovement) {
     await db.stockMovements.put(mapStockMovement(savedMovement));
-    console.log("Supabase", savedMovement);
   }
   else {
     await db.stockMovements.put({
       ...movements,
-      //id: crypto.randomUUID(),
       pending_sync: true,
       created_at:
         new Date().toISOString(),
@@ -506,17 +498,9 @@ async function applyStockMovement(index, type, quantity, reason, comment = "") {
   }
 
   //--------------------------------------
-  // ✅ RECHARGEMENT
-  //--------------------------------------
-  //products = await loadProducts();
-
-  //stockMovements = await loadStockMovements();
-
-  //--------------------------------------
   // ✅ RAFRAICHISSEMENT
   //--------------------------------------
   render();
-
 
   showToast("✅ Mouvement enregistré");
 }
@@ -588,7 +572,7 @@ async function showProductHistory(productName) {
         new Date(a.movement_date)
     )[0];
 
-  console.log("Dernier mouvement :", lastMovement);
+  //console.log("Dernier mouvement :", lastMovement);
 
 
   // ✅ Ajouter les ventes

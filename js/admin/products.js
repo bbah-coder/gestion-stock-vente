@@ -2,15 +2,9 @@
  * 📦 PRODUITS
  ************************************************************/
 
-//let products = JSON.parse(localStorage.getItem("products") || "[]");
 let products = [];
 let currentPromoIndex = null;
 let editIndex = null;
-
-/*function saveProducts() {
-  localStorage.setItem("products", JSON.stringify(products));
-  localStorage.setItem("products_updated_at", Date.now());
-}*/
 
 //--------------------------------------
 // ✅ INIT PRODUITS
@@ -27,7 +21,7 @@ async function initProducts() {
 
     if (!lastSync || productsCount === 0) {
 
-      console.log("📥 Import initial des produits...");
+      //console.log("📥 Import initial des produits...");
 
       await importProductsToIndexedDB();
 
@@ -40,8 +34,7 @@ async function initProducts() {
     await syncProducts()
       .catch(error => {
 
-        console.warn(
-          "⚠️ Synchronisation produits impossible", error);
+        console.warn("⚠️ Synchronisation produits impossible", error);
 
       });
 
@@ -95,7 +88,7 @@ async function initProducts() {
 
     });
 
-    console.log(`✅ ${products.length} produits initialisés`);
+    //console.log(`✅ ${products.length} produits initialisés`);
 
   } catch (error) {
 
@@ -162,17 +155,13 @@ async function saveProduct() {
   const category = capitalizeWords(document.getElementById("category").value.trim());
   const name = capitalizeWords(document.getElementById("name").value.trim());
 
-  const price =
-    Number(document.getElementById("price").value);
+  const price = Number(document.getElementById("price").value);
 
-  const wholesalePrice =
-    Number(document.getElementById("wholesalePrice").value) || 0;
+  const wholesalePrice = Number(document.getElementById("wholesalePrice").value) || 0;
 
-  const wholesaleMinQty =
-    Number(document.getElementById("wholesaleMinQty").value) || 0;
+  const wholesaleMinQty = Number(document.getElementById("wholesaleMinQty").value) || 0;
 
-  const stock =
-    parseInt(document.getElementById("stock").value);
+  const stock = parseInt(document.getElementById("stock").value);
 
   if (!name || !price || isNaN(stock)) {
     showToast("Remplir tous les champs");
@@ -181,8 +170,7 @@ async function saveProduct() {
 
   let image = null;
 
-  const file =
-    document.getElementById("image").files[0];
+  const file = document.getElementById("image").files[0];
 
   // ✅ Lecture image si présente
 
@@ -194,8 +182,7 @@ async function saveProduct() {
     );
   }
 
-  const normalizedName =
-    name.toLowerCase().trim();
+  const normalizedName = name.toLowerCase().trim();
 
   const existingIndex = products.findIndex(
     p =>
@@ -223,8 +210,7 @@ async function saveProduct() {
 
     const sold = existing.sold || 0;
 
-    existing.initialStock =
-      stock + sold;
+    existing.initialStock = stock + sold;
 
     await db.products.put(existing);
 
@@ -342,18 +328,10 @@ async function saveProduct() {
       await saveProductToSupabase(newProduct);
 
       await saveStockMovementSupabase(initialMovement);
-      //await db.stockMovements.put(saveStockmvt);
 
       showToast("✅ Produit ajouté avec succès");
     }
   }
-
-  //--------------------------------------
-  // ✅ RECHARGEMENT
-  //--------------------------------------
-  //products = await loadProducts();
-
-  //stockMovements = await loadStockMovements();
 
   //--------------------------------------
   // ✅ RAFRAICHISSEMENT
@@ -367,14 +345,11 @@ async function saveProduct() {
 
   editIndex = null;
 
-  document.getElementById("saveBtn").innerText =
-    "Enregistrer";
+  document.getElementById("saveBtn").innerText = "Enregistrer";
 
-  document.getElementById("formSection").style.border =
-    "none";
+  document.getElementById("formSection").style.border = "none";
 
-  document
-    .getElementById("tableCard")
+  document.getElementById("tableCard")
     ?.scrollIntoView({
       behavior: "smooth"
     });
@@ -441,14 +416,7 @@ function deleteProduct(index) {
   products[index].isArchived = false;
   products[index].archivedAt = new Date().toISOString();
 
-  //localStorage.setItem("products", JSON.stringify(products));
-
   render();
-
-  // ✅ Sauvegarde
-  //localStorage.setItem("products", JSON.stringify(products));
-  // localStorage.setItem("products_updated_at", Date.now() + "_" + Math.random());
-
 
   // ✅ Rafraîchir affichage
   render();
@@ -461,9 +429,7 @@ async function deletePhysicalProduct(index) {
 
   if (!navigator.onLine) {
 
-    showToast(
-      "📴 La suppression d'une fiche produit nécessite une connexion Internet"
-    );
+    showToast("📴 La suppression d'une fiche produit nécessite une connexion Internet");
 
     return;
   }
@@ -474,16 +440,12 @@ async function deletePhysicalProduct(index) {
 
   if ((product.sold || 0) > 0) {
 
-    showToast(
-      "❌ Impossible de supprimer un produit ayant déjà des ventes.\n\nUtilisez Archiver."
-    );
+    showToast("❌ Impossible de supprimer un produit ayant déjà des ventes.\n\nUtilisez Archiver.");
 
     return;
   }
 
-  const confirmDelete = confirm(
-    `⚠️ Supprimer définitivement "${product.name}" ?`
-  );
+  const confirmDelete = confirm(`⚠️ Supprimer définitivement "${product.name}" ?`);
 
   if (!confirmDelete) {
     return;
@@ -522,60 +484,12 @@ async function deletePhysicalProduct(index) {
 
   } catch (error) {
 
-    console.error(
-      "Erreur suppression produit", error);
+    console.error("Erreur suppression produit", error);
 
     showToast("❌ Erreur lors de la suppression");
   }
 }
 
-/*async function deletePhysicalProduct(index) {
-
-  if (!navigator.onLine) {
-    showToast("📴 La suppression d'une fiche produit nécessite une connexion Internet");
-
-    return;
-  }
-
-  const p = products[index];
-
-  if (!p) return;
-
-  if ((p.sold || 0) > 0) {
-
-    showToast(
-      "❌ Impossible de supprimer un produit ayant déjà des ventes.\n\nUtilisez Archiver."
-    );
-
-    return;
-  }
-
-  const confirmDelete = confirm(
-    `⚠️ Supprimer définitivement "${p.name}" ?`
-  );
-
-  if (!confirmDelete) {
-    return;
-  }
-
-  products.splice(index, 1);
-
-  // ✅ Synchronisation Supabase
-  await deleteProductSupabase(p.barcode);
-
-  localStorage.setItem(
-    "products",
-    JSON.stringify(products)
-  );
-
-  localStorage.setItem(
-    "products_updated_at",
-    Date.now() + "_" + Math.random()
-  );
-
-  render();
-
-}*/
 
 //--------------------------------------------------------------------
 // ✅ FUNCTION : Annulation d'un ajout ou modification d'un produit
@@ -1009,33 +923,6 @@ function openPromoPopup(index, currentValue) {
 
   document.getElementById("promoModal").style.display = "flex";
 }
-//--------------------------------------------------------------------
-// ✅ FUNCTION : Mise à jour d'une promo
-//--------------------------------------------------------------------
-/*async function updatePromo(index, value) {
-
-  let promo = parseInt(value);
-
-  if (isNaN(promo) || promo < 0) {
-    promo = 0;
-  }
-
-  if (promo > 100) {
-    promo = 100;
-  }
-
-  products[index].promo = promo;
-
-  console.log("Promo avant update :", products[index].promo);
-
-  localStorage.setItem("products", JSON.stringify(products));
-
-  //Synchronisation supaBase
-  await updateProductSupabase(products[index]);
-
-  // ✅ refresh écran pour recalcul prix
-  updateInactiveProducts();
-}*/
 
 //--------------------------------------------------------------------
 // ✅ FUNCTION : Confirmation du promo lors d'une édition
@@ -1495,7 +1382,7 @@ function getInactiveProducts(days) {
 }
 
 //---------------------------------------------------------
-// ✅ FUNCTION : Modofication jours
+// ✅ FUNCTION : Modification jours
 //---------------------------------------------------------
 
 function changeDays(delta) {
@@ -1834,4 +1721,3 @@ async function importExcelProducts(event) {
       behavior: "smooth"
     });
 }
-

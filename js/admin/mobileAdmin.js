@@ -264,8 +264,6 @@ function renderCards(productsList) {
 
 }
 
-
-/* PRODUIT INACTIF MOBILE */
 /************************************************************
  * FUNCTION : Render Produits inactifs
  ************************************************************/
@@ -664,22 +662,3 @@ function closeProductQr() {
 function printProductQr() {
   window.print();
 }
-
-
-//CODE MIGRATION
-/*products.forEach((p, index) => {
-
-  if (!p.barcode ||
-    p.barcode.includes("-")) {
-
-    p.barcode =
-      `PRD-${String(index + 1).padStart(4, "0")}`;
-
-  }
-
-});
-
-localStorage.setItem(
-  "products",
-  JSON.stringify(products)
-);*/

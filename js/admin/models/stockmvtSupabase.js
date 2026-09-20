@@ -30,7 +30,7 @@ async function saveStockMovementSupabase(movement) {
                 }])
                 .select();
 
-        console.log("✅ Mouvement sauvegardé dans Supabase");
+        //console.log("✅ Mouvement sauvegardé dans Supabase");
 
         if (error) {
             console.warn("📴 Mouvement enregistré localement. Synchronisation automatique au retour de la connexion");
@@ -120,9 +120,7 @@ async function loadStockMovements() {
                         new Date(a.movement_date)
                 );
 
-        console.log(
-            `✅ ${movements.length} mouvements chargés pour le magasin ${shopId}`
-        );
+        //console.log(`✅ ${movements.length} mouvements chargés pour le magasin ${shopId}`);
 
         return movements;
 
@@ -186,5 +184,5 @@ async function deleteStockMovementsSupabase(barcode) {
         throw error;
     }
 
-    console.log(`✅ Mouvements supprimés pour ${barcode}`);
+    //console.log(`✅ Mouvements supprimés pour ${barcode}`);
 }

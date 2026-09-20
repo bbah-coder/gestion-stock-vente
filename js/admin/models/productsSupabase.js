@@ -115,7 +115,7 @@ async function saveProductToSupabase(product) {
 
         await saveProductSupabase(productSupabase);
 
-        console.log("✅ Produit sauvegardé dans Supabase");
+        //console.log("✅ Produit sauvegardé dans Supabase");
 
     } catch (error) {
 
@@ -267,7 +267,7 @@ async function updateProductSupabase(product) {
             console.warn("📴 Produit modifié localement. Synchronisation automatique au retour de la connexion");
             return null;
         }
-        console.log("✅ Produit mis à jour", data);
+        //console.log("✅ Produit mis à jour", data);
 
         return data[0];
 
@@ -333,7 +333,7 @@ async function loadProducts() {
                 )
                 .toArray();
 
-        console.log(`✅ ${products.length} produits chargés pour le magasin ${shopId}`);
+        //console.log(`✅ ${products.length} produits chargés pour le magasin ${shopId}`);
 
         return products;
 
@@ -350,26 +350,6 @@ async function loadProducts() {
 
 }
 
-/*async function loadProducts() {
-    try {
-        const products =
-            await db.products
-                .orderBy("name")
-                .toArray();
-        console.log(
-            `✅ ${products.length} produits chargés depuis IndexedDB`
-        );
-        return products;
-    } catch (error) {
-        console.error(
-            "Erreur chargement IndexedDB",
-            error
-        );
-
-        return [];
-    }
-
-}*/
 
 // --------------------------------------
 // ✅ Map Product
@@ -398,24 +378,6 @@ function mapProduct(product) {
 //--------------------------------------
 // ✅ Synchronisation unique vers Supabase
 //--------------------------------------
-
-
-/*async function syncProductsToSupabase() {
-
-    for (const product of products) {
-
-        await updateProductSupabase(product);
-
-        console.log(
-            "Synchronisé :",
-            product.name
-        );
-    }
-
-    showToast(
-        "✅ Synchronisation terminée"
-    );
-}*/
 
 async function uploadProductImage(file, productId, shopId) {
     try {

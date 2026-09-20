@@ -12,14 +12,14 @@ async function initializeLocalData() {
             return false;
         }
 
-        console.log("🔄 Initialisation des données...");
+        //console.log("🔄 Initialisation des données...");
 
         // Produits
         const products = await getProductsSupabase(shopId);
 
         if (products?.length) {
             await db.products.bulkPut(products);
-            console.log(`✅ ${products.length} produits importés`);
+            //console.log(`✅ ${products.length} produits importés`);
         }
 
         // Mouvements de stock
@@ -27,7 +27,7 @@ async function initializeLocalData() {
 
         if (stockMovements?.length) {
             await db.stockMovements.bulkPut(stockMovements);
-            console.log(`✅ ${stockMovements.length} mouvements importés`);
+            //console.log(`✅ ${stockMovements.length} mouvements importés`);
         }
 
         // Profils
@@ -35,7 +35,7 @@ async function initializeLocalData() {
 
         if (profiles?.length) {
             await db.profiles.bulkPut(profiles);
-            console.log(`✅ ${profiles.length} profils importés`);
+            //console.log(`✅ ${profiles.length} profils importés`);
         }
         // Ventes
         const sales = await getSalesSupabase(shopId);
@@ -44,7 +44,7 @@ async function initializeLocalData() {
 
             await db.sales.bulkPut(sales.map(mapSale));
 
-            console.log(`✅ ${sales.length} ventes importées`);
+            //console.log(`✅ ${sales.length} ventes importées`);
 
         }
 
@@ -53,7 +53,7 @@ async function initializeLocalData() {
             "true"
         );
 
-        console.log("✅ Initialisation terminée");
+        //console.log("✅ Initialisation terminée");
 
         return true;
 

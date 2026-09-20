@@ -169,7 +169,6 @@ function render() {
       matchSearch &&
       matchCategory &&
       !p.isArchived
-      // p.active !== false
     );
 
   });
@@ -284,7 +283,6 @@ async function showRegister() {
   document.getElementById("formSection").style.display = "none";
   document.getElementById("costSection").style.display = "none";
 
-
   //CHARGER LES MAGASIN
   await populateShopsSelect();
 }
@@ -334,9 +332,7 @@ async function createAccount() {
     !shopId
   ) {
 
-    showToast(
-      "⚠️ Aucun magasin associé à votre compte"
-    );
+    showToast("⚠️ Aucun magasin associé à votre compte");
 
     return;
   }
@@ -347,9 +343,7 @@ async function createAccount() {
         shopId
       );
     if (!canCreate) {
-      showToast(
-        "⛔ Limite d'utilisateurs atteinte pour votre abonnement"
-      );
+      showToast("⛔ Limite d'utilisateurs atteinte pour votre abonnement");
       return;
     }
   }
@@ -380,11 +374,10 @@ async function createAccount() {
       return;
     }
 
-    console.log("✅ User créé Supabase :", email);
+    //console.log("✅ User créé Supabase :", email);
 
     // ✅ 2. Récupération user connecté
-    const { data: userData } =
-      await supabaseClient.auth.getUser();
+    const { data: userData } = await supabaseClient.auth.getUser();
 
     const userId = userData?.user?.id;
 
@@ -410,15 +403,13 @@ async function createAccount() {
         ])
         .select();
 
-    console.log("PROFILE INSERT DATA :", profileData);
-    console.log("PROFILE INSERT ERROR :", profileError);
+    //console.log("PROFILE INSERT DATA :", profileData);
+    //console.log("PROFILE INSERT ERROR :", profileError);
 
     if (profileError) {
       console.error(profileError);
 
-      showToast(
-        "❌ Erreur création profil"
-      );
+      showToast("❌ Erreur création profil");
 
       return;
     }
@@ -437,19 +428,13 @@ async function createAccount() {
       shop_id: shopId || null
     });
 
-    localStorage.setItem(
-      "users",
-      JSON.stringify(users)
-    );
+    localStorage.setItem("users", JSON.stringify(users));
 
     // ✅ Réinitialisation formulaire
     usernameEl.value = "";
     passwordEl.value = "";
 
-    showToast(
-      "✅ Compte créé avec succès",
-      "success"
-    );
+    showToast("✅ Compte créé avec succès", "success");
 
     hideRegister();
 
@@ -462,10 +447,7 @@ async function createAccount() {
 
     console.error(err);
 
-    showToast(
-      "❌ Erreur réseau",
-      "error"
-    );
+    showToast("❌ Erreur réseau", "error");
   }
 }
 
@@ -554,10 +536,9 @@ function displayUsers(users) {
  ************************************************************/
 async function renderUsers() {
 
-  console.log("✅ renderUsers appelé");
+  //console.log("✅ renderUsers appelé");
 
-  const container =
-    document.getElementById("usersList");
+  const container = document.getElementById("usersList");
 
   container.innerHTML = "";
 
@@ -624,8 +605,7 @@ async function renderUsers() {
 
     if (!user.shop_id) continue;
 
-    const usage =
-      await getShopUserUsage(user.shop_id);
+    const usage = await getShopUserUsage(user.shop_id);
 
     user.users_count = usage.currentUsers;
 
@@ -662,9 +642,7 @@ async function toggleUser(userId) {
   // ✅ Empêcher l'auto-désactivation
   if (currentUserId === userId) {
 
-    showToast(
-      "⚠️ Impossible de désactiver votre propre compte"
-    );
+    showToast("⚠️ Impossible de désactiver votre propre compte");
 
     return;
   }
@@ -765,7 +743,7 @@ async function toggleUser(userId) {
  ************************************************************/
 async function deleteUser(userId) {
 
-  console.log("🗑 Suppression userId:", userId);
+  //console.log("🗑 Suppression userId:", userId);
 
   const currentShop = getCurrentShop();
 
@@ -781,18 +759,14 @@ async function deleteUser(userId) {
   // ✅ Empêcher l'auto-suppression
   if (currentUserId === userId) {
 
-    showToast(
-      "⚠️ Impossible de supprimer votre propre compte"
-    );
+    showToast("⚠️ Impossible de supprimer votre propre compte");
 
     return;
   }
 
   if (!userId || userId === "undefined") {
 
-    showToast(
-      "Utilisateur invalide"
-    );
+    showToast("Utilisateur invalide");
 
     return;
   }
@@ -817,9 +791,7 @@ async function deleteUser(userId) {
 
   if (profileError || !profile) {
 
-    showToast(
-      "❌ Utilisateur introuvable"
-    );
+    showToast("❌ Utilisateur introuvable");
 
     return;
   }
@@ -830,9 +802,7 @@ async function deleteUser(userId) {
     !isSuperAdmin()
   ) {
 
-    showToast(
-      "❌ Action non autorisée"
-    );
+    showToast("❌ Action non autorisée");
 
     return;
   }
@@ -840,9 +810,7 @@ async function deleteUser(userId) {
   // ✅ Protection compte principal
   if (profile.username === "bbah-admin") {
 
-    showToast(
-      "⚠️ Impossible de supprimer le compte principal"
-    );
+    showToast("⚠️ Impossible de supprimer le compte principal");
 
     return;
   }
@@ -875,9 +843,7 @@ async function deleteUser(userId) {
 
     console.error(error);
 
-    showToast(
-      "❌ Erreur suppression"
-    );
+    showToast("❌ Erreur suppression");
 
     return;
   }
@@ -1000,11 +966,10 @@ async function saveStoreInfo() {
     return;
   }
 
-  const name = document.getElementById("storeName").value.trim();
+  const name = document.getElementById("storeName").value.trim().toUpperCase();
   const phone = document.getElementById("storePhone").value.trim();
-  const address = document.getElementById("storeAddress").value.trim();
+  const address = document.getElementById("storeAddress").value.trim().toUpperCase();
   const plan = document.getElementById("subscriptionPlan").value;
-
   const subscription_plan = getSubscriptionData(plan);
 
   if (!subscription_plan) {
@@ -1039,6 +1004,8 @@ async function saveStoreInfo() {
     monthly_price: subscription_plan.monthlyPrice
   };
 
+  store.created_by = (await supabaseClient.auth.getUser()).data.user.id;
+
   try {
 
     // ✅ Création d'un nouveau magasin
@@ -1059,15 +1026,14 @@ async function saveStoreInfo() {
 
       if (role === "admin") {
 
-        const currentUserId = localStorage.getItem("userId");
+        //const currentUserId = localStorage.getItem("userId");
 
-        await supabaseClient
-          .from("profiles")
-          .update({
-            shop_id: data.id
-          })
-          .eq("id", currentUserId);
-
+        await supabaseClient.rpc(
+          "assign_my_shop",
+          {
+            p_shop_id: data.id
+          }
+        );
       }
 
       //PROFIL ADMIN
@@ -1087,18 +1053,13 @@ async function saveStoreInfo() {
 
         if (!profileError) {
 
-          console.log(
-            "✅ Admin associé au magasin"
-          );
+          console.log("✅ Admin associé au magasin");
 
         }
       }
       await loadCurrentShop();
 
-      localStorage.setItem(
-        "storeInfo",
-        JSON.stringify(data)
-      );
+      localStorage.setItem("storeInfo", JSON.stringify(data));
 
       window.location.reload();
       showToast("✅ Magasin créé", "success");
@@ -1126,7 +1087,7 @@ async function saveStoreInfo() {
       showToast("✅ Magasin mis à jour", "success");
     }
 
-    console.log("✅ Magasin sauvegardé :", store);
+    //console.log("✅ Magasin sauvegardé :", store);
 
     closeStoreInfo();
 
@@ -1185,84 +1146,12 @@ function closeStoreInfo() {
 /************************************************************
  * FUNCTION : Charge le magasin courant
  ************************************************************/
-/*function getCurrentShop() {
 
-  return JSON.parse(
-    localStorage.getItem("storeInfo") || "{}"
-  );
-
-}*/
 function getCurrentShop() {
   const storeInfo = localStorage.getItem("storeInfo");
 
   return storeInfo ? JSON.parse(storeInfo) : null;
 }
-
-/************************************************************
- * ON RECUPERE LE PROFIL ADMIN
- ***********************************************************/
-
-/*async function getCurrentProfile() {
-
-  const username =
-    localStorage.getItem("username");
-
-  if (!username) {
-    return null;
-  }
-
-  // ✅ Mode offline
-  if (!navigator.onLine) {
-
-    const profiles = await db.profiles.toArray();
-
-    const profile =
-      profiles.find(
-        p => p.username === username
-      );
-
-    return profile || null;
-
-  }
-
-  try {
-
-    const { data, error } =
-      await supabaseClient
-        .from("profiles")
-        .select("*")
-        .eq("username", username)
-        .single();
-
-    if (error) {
-
-      console.error(error);
-
-      return null;
-
-    }
-
-    await db.profiles.put(data);
-
-    return data;
-
-  } catch (error) {
-
-    console.error(error);
-
-    const profiles =
-      await db.profiles.toArray();
-
-    const profile =
-      profiles.find(
-        p => p.username === username
-      );
-
-    return profile || null;
-
-  }
-
-}*/
 
 /************************************************************
  * SECTION GESTION DES MAGASINS 
@@ -1402,15 +1291,13 @@ async function renderShops() {
 
 function displayShops(shops) {
 
-  const container =
-    document.getElementById("shopsList");
+  const container = document.getElementById("shopsList");
 
   container.innerHTML = "";
 
   shops.forEach(shop => {
 
-    const div =
-      document.createElement("div");
+    const div = document.createElement("div");
 
     div.className = "shop-item";
 
@@ -1508,7 +1395,6 @@ function displayShops(shops) {
 
 }
 
-//DESACTIVER UN MAGASIN
 /************************************************************
  * FUNCTION : Activer/désactiver un magasin
  ************************************************************/
@@ -1576,56 +1462,6 @@ async function hasShopAssigned() {
   }
 
 }
-/*async function hasShopAssigned() {
-
-  const username = localStorage.getItem("username");
-
-  if (!username) {
-    return false;
-  }
-
-  // ✅ Mode offline
-  if (!navigator.onLine) {
-
-    const profiles = await db.profiles.toArray();
-
-    const profile =
-      profiles.find(
-        p => p.username === username
-      );
-
-    return !!profile?.shop_id;
-
-  }
-
-  try {
-
-    const { data, error } =
-      await supabaseClient
-        .from("profiles")
-        .select("shop_id")
-        .eq("username", username)
-        .single();
-
-    if (error) {
-
-      console.error(error);
-
-      return false;
-
-    }
-
-    return !!data?.shop_id;
-
-  } catch (error) {
-
-    console.error(error);
-
-    return false;
-
-  }
-
-}*/
 
 /************************************************************
  * Bloque l'application tant qu'aucun magasin n'est créé
@@ -1725,30 +1561,6 @@ function getSubscriptionData(plan) {
 /************************************************************
  * Retourne le nombre d'utilisateurs
  ***********************************************************/
-/*async function getShopUserUsage(shopId) {
-
-  const { data: shop } =
-    await supabaseClient
-      .from("shops")
-      .select("max_users")
-      .eq("id", shopId)
-      .single();
-
-  const { count } =
-    await supabaseClient
-      .from("profiles")
-      .select(
-        "*",
-        { count: "exact", head: true }
-      )
-      .eq("shop_id", shopId);
-
-  return {
-    currentUsers: count,
-    maxUsers: shop.max_users
-  };
-
-}*/
 
 async function getShopUserUsage(shopId) {
 
@@ -1777,11 +1589,8 @@ async function getShopUserUsage(shopId) {
 
   } catch {
 
-    const shop =
-      await db.shops.get(shopId);
-
-    const profiles =
-      await db.profiles.toArray();
+    const shop = await db.shops.get(shopId);
+    const profiles = await db.profiles.toArray();
 
     return {
       currentUsers:

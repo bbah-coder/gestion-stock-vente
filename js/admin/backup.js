@@ -52,7 +52,7 @@ function downloadBackup() {
 // RESTORE (IMPORT FICHIER)
 async function handleRestore(event) {
 
-  console.log("🔥 handleRestore déclenché");
+  //console.log("🔥 handleRestore déclenché");
 
   const file = event.target.files[0];
 
@@ -84,7 +84,7 @@ function checkBackupReminder() {
 
 async function restoreBackup(file) {
 
-  console.log("✅ restore lancé");
+  //console.log("✅ restore lancé");
 
   const currentShop = getCurrentShop();
   const profile = await getCurrentProfile();
@@ -102,7 +102,7 @@ async function restoreBackup(file) {
 
       const data = JSON.parse(e.target.result);
 
-      console.log("✅ JSON chargé", data);
+      //console.log("✅ JSON chargé", data);
 
       // ==========================
       // PRODUITS
@@ -157,7 +157,7 @@ async function restoreBackup(file) {
           }
         }
 
-        console.log(`✅ ${restoredProducts.length} produits restaurés`);
+        //console.log(`✅ ${restoredProducts.length} produits restaurés`);
 
       }
 
@@ -255,7 +255,7 @@ async function restoreBackup(file) {
           }
         }
 
-        console.log(`✅ ${restoredSales.length} ventes restaurées`);
+        //console.log(`✅ ${restoredSales.length} ventes restaurées`);
       }
 
       // ==========================
@@ -352,7 +352,7 @@ async function restoreBackup(file) {
           }
         }
 
-        console.log(`✅ ${stockMovements.length} mouvements restaurés`);
+        //console.log(`✅ ${stockMovements.length} mouvements restaurés`);
       }
 
       // ==========================
@@ -380,7 +380,7 @@ async function restoreBackup(file) {
           }
         }
 
-        console.log(`✅ ${restoredMovements.length} mouvements restaurés`);
+        //console.log(`✅ ${restoredMovements.length} mouvements restaurés`);
       }
 
       showToast("✅ Restauration terminée avec succès", "success");

@@ -119,7 +119,7 @@ async function redirectByRole(role) {
 async function login() {
 
 
-  console.log("🚀 login appelé");
+  //console.log("🚀 login appelé");
 
   const userEl = document.getElementById("username");
   const passEl = document.getElementById("password");
@@ -137,7 +137,7 @@ async function login() {
   // ✅ ✅ ✅ TENTATIVE ONLINE SÉCURISÉE
   try {
 
-    console.log("🌐 tentative ONLINE...");
+    //console.log("🌐 tentative ONLINE...");
 
     const { data, error } = await supabaseClient.auth.signInWithPassword({
       email,
@@ -158,9 +158,9 @@ async function login() {
       //Sauvegarde dans IndexedDB
       await db.profiles.put(profile);
 
-      console.log("✅ Profil sauvegardé dans IndexedDB");
-      console.log("PROFILE =", profile);
-      console.log("ROLE =", profile.role);
+      //console.log("✅ Profil sauvegardé dans IndexedDB");
+      //console.log("PROFILE =", profile);
+      //console.log("ROLE =", profile.role);
       onlineSuccess = true;
     }
 
@@ -229,11 +229,11 @@ async function login() {
   }
 
   // ✅ ✅ ✅ FALLBACK OFFLINE
-  console.log("📴 MODE OFFLINE");
+  //console.log("📴 MODE OFFLINE");
 
   const offlineUser = JSON.parse(localStorage.getItem("offlineUser"));
 
-  console.log("👤 offlineUser:", offlineUser);
+  //console.log("👤 offlineUser:", offlineUser);
 
   if (!offlineUser) {
     errorEl.innerText = "❌ Aucun utilisateur offline";
@@ -246,8 +246,8 @@ async function login() {
   const storedUsername = offlineUser.username.toLowerCase().trim();
   const storedPassword = offlineUser.password;
 
-  console.log("🔍 INPUT:", inputUsername, inputPassword);
-  console.log("🔍 STORED:", storedUsername, storedPassword);
+  //console.log("🔍 INPUT:", inputUsername, inputPassword);
+  //console.log("🔍 STORED:", storedUsername, storedPassword);
 
   if (
     inputUsername !== storedUsername ||
@@ -262,7 +262,7 @@ async function login() {
     return;
   }
 
-  console.log("✅ LOGIN OFFLINE OK");
+  //console.log("✅ LOGIN OFFLINE OK");
 
   // Sauvegarder la session
   saveUserSession(

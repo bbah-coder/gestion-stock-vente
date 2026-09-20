@@ -54,9 +54,7 @@ async function registerAccount() {
     const userId = data.user?.id;
 
     if (!userId) {
-      throw new Error(
-        "Impossible de récupérer l'identifiant utilisateur."
-      );
+      throw new Error("Impossible de récupérer l'identifiant utilisateur.");
     }
 
     // Création profil
@@ -74,16 +72,19 @@ async function registerAccount() {
     userCompte.innerText =
       "Compte créé avec succès.\n\nVotre compte est en attente de validation par le Super Administrateur.";
 
+
     document.getElementById("registerUsername").value = "";
     document.getElementById("registerPassword").value = "";
+
+    setTimeout(() => {
+      window.location.href = "login";
+    }, 5000);
+
 
   } catch (error) {
     console.error("Erreur création compte :", error);
 
-    showToast(
-      error.message || "Erreur lors de la création du compte.",
-      "error"
-    );
+    showToast(error.message || "Erreur lors de la création du compte.", "error");
   }
 }
 

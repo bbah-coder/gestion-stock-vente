@@ -314,10 +314,7 @@ function saveCurrentCalculation(method = "value", devise = "GNF") {
         calculation
     );
 
-    console.log(
-        "✅ Calcul enregistré",
-        calculation
-    );
+    //console.log("✅ Calcul enregistré",calculation);
 
     return true;
 }

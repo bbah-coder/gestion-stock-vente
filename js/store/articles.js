@@ -20,8 +20,6 @@
  * - clearSearch()                 → reset recherche
  *
  ************************************************************/
-
-//let products = JSON.parse(localStorage.getItem("products") || "[]");
 let products = [];
 
 let showPromoOnly = false;
@@ -41,8 +39,7 @@ let promoMode = false;
 
 async function refreshShopProducts() {
 
-  const shopId =
-    await getCurrentShopId();
+  const shopId = await getCurrentShopId();
 
   if (!shopId) {
 
@@ -81,11 +78,8 @@ function renderProducts() {
 
   const isMobile = window.matchMedia("(max-width: 1200px)").matches;
 
-  /*if (isMobile) {*/
   renderMobileProducts(vm);
-  /*} else {
-    renderDesktopProducts(vm);
-  }*/
+
 
   renderPagination(sorted.length);
 }
@@ -295,11 +289,6 @@ function renderDesktopProducts(data) {
         price: Number(p.price)
       });
 
-      /*new QRCode(qrEl, {
-        text: encodeURIComponent(qrData),
-        width: 60,
-        height: 60
-      });*/
       new QRCode(
         document.getElementById(qrId),
         {
@@ -411,7 +400,6 @@ function renderMobileProducts(products) {
         }
 
    </div>
-
 
        <div class="product-stock ${p.stock <= 5 ? 'stock-low' : ''}">
             Stock: ${p.stock}

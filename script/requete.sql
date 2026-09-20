@@ -29,3 +29,13 @@ add column don integer default 0;
 ALTER TABLE profiles
 ADD CONSTRAINT profiles_username_unique
 UNIQUE (username);
+
+
+select
+    policyname,
+    cmd,
+    qual,
+    with_check
+from pg_policies
+where schemaname = 'public'
+and tablename = 'profiles';

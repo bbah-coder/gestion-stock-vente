@@ -89,7 +89,7 @@ async function importProductsToIndexedDB() {
 
         await setSetting("products_last_sync", newestUpdatedAt);
 
-        console.log("✅ Mouvement sauvegardé dans IndexedDB");
+        //console.log("✅ Mouvement sauvegardé dans IndexedDB");
     }
 }
 
@@ -103,8 +103,7 @@ async function syncProducts() {
         const lastSync = await getSetting("products_last_sync");
 
         if (!lastSync) {
-            console.warn("Aucune date de synchro");
-
+            //console.warn("Aucune date de synchro");
             return;
         }
 
@@ -144,7 +143,7 @@ async function syncProducts() {
                 "products_last_sync", newestUpdatedAt);
 
         }
-        console.log(`✅ ${products.length} produits synchronisés`);
+        //console.log(`✅ ${products.length} produits synchronisés`);
 
     } catch (error) {
 
@@ -164,9 +163,7 @@ async function loadProductsIndexedDB() {
                 .orderBy("name")
                 .toArray();
 
-        console.log(
-            `✅ ${products.length} produits chargés depuis IndexedDB`
-        );
+        //console.log(`✅ ${products.length} produits chargés depuis IndexedDB`);
 
         return products;
 
@@ -209,9 +206,7 @@ async function importStockMovementsToIndexedDB() {
         );
     }
 
-    console.log(
-        `✅ ${movements.length} mouvements importés`
-    );
+    //console.log(`✅ ${movements.length} mouvements importés`);
 
 }
 
@@ -224,7 +219,7 @@ async function syncStockMovements() {
         const lastSync = await getSetting("stock_movements_last_sync");
 
         if (!lastSync) {
-            console.warn("Aucune date de synchro mouvements");
+            //console.warn("Aucune date de synchro mouvements");
             return;
         }
         const { data, error } =
@@ -255,7 +250,7 @@ async function syncStockMovements() {
             await setSetting("stock_movements_last_sync", newestUpdatedAt);
         }
 
-        console.log(`✅ ${movements.length} mouvements synchronisés`);
+        //console.log(`✅ ${movements.length} mouvements synchronisés`);
 
     } catch (error) {
 
@@ -275,7 +270,7 @@ async function uploadPendingStockMovements() {
 
     const pendingMovements = await getPendingStockMovements();
 
-    console.log(`${pendingMovements.length} mouvements à synchroniser`);
+    //console.log(`${pendingMovements.length} mouvements à synchroniser`);
 
     const shopId = await getCurrentShopId();
 
@@ -321,8 +316,7 @@ async function uploadPendingStockMovements() {
                 }
             );
 
-            console.log(
-                "✅ Mouvement synchronisé", movement.id);
+            //console.log("✅ Mouvement synchronisé", movement.id);
 
         } catch (error) {
 
@@ -349,7 +343,7 @@ async function uploadPendingProducts() {
 
     const pendingProducts = await getPendingProducts();
 
-    console.log(`${pendingProducts.length} produits à synchroniser`);
+    //console.log(`${pendingProducts.length} produits à synchroniser`);
 
     for (const product of pendingProducts) {
 
@@ -366,8 +360,7 @@ async function uploadPendingProducts() {
             }
         );
 
-        console.log(
-            "✅ Produit synchronisé", product.name);
+        //console.log("✅ Produit synchronisé", product.name);
 
     }
 
@@ -434,9 +427,7 @@ async function importProfilesToIndexedDB() {
 
         }
 
-        console.log(
-            `✅ ${profiles.length} profils importés`
-        );
+        //console.log(`✅ ${profiles.length} profils importés`);
 
     } catch (error) {
 
@@ -460,9 +451,7 @@ async function syncProfiles() {
 
         if (!lastSync) {
 
-            console.warn(
-                "Aucune date de synchro profils"
-            );
+            //console.warn("Aucune date de synchro profils");
 
             return;
 
@@ -517,7 +506,7 @@ async function syncProfiles() {
 
         }
 
-        console.log(`✅ ${profiles.length} profils synchronisés`);
+        //console.log(`✅ ${profiles.length} profils synchronisés`);
 
     } catch (error) {
 
@@ -576,9 +565,7 @@ async function importSalesToIndexedDB(sales) {
 
         if (!sales?.length) {
 
-            console.log(
-                "ℹ️ Aucune vente à importer"
-            );
+            //console.log("ℹ️ Aucune vente à importer");
 
             return true;
 
@@ -588,9 +575,7 @@ async function importSalesToIndexedDB(sales) {
             sales.map(mapSale)
         );
 
-        console.log(
-            `✅ ${sales.length} ventes importées dans IndexedDB`
-        );
+        //console.log(`✅ ${sales.length} ventes importées dans IndexedDB`);
 
         return true;
 
@@ -631,9 +616,7 @@ async function getSaleItemsSupabase(shopId) {
 
         }
 
-        console.log(
-            `✅ ${data.length} lignes de vente récupérées`
-        );
+        //console.log(`✅ ${data.length} lignes de vente récupérées`);
 
         return data;
 
@@ -662,9 +645,7 @@ async function importSaleItemsToIndexedDB() {
 
         if (!saleItems?.length) {
 
-            console.log(
-                "ℹ️ Aucune ligne de vente à importer"
-            );
+            //console.log("ℹ️ Aucune ligne de vente à importer");
 
             return true;
 
@@ -674,9 +655,7 @@ async function importSaleItemsToIndexedDB() {
             saleItems.map(mapSaleItem)
         );
 
-        console.log(
-            `✅ ${saleItems.length} lignes de vente importées`
-        );
+        //console.log(`✅ ${saleItems.length} lignes de vente importées`);
 
         return true;
 
@@ -706,87 +685,11 @@ async function getPendingSales() {
 
 }
 
-/*async function uploadPendingSales() {
-
-    const pendingSales = await getPendingSales();
-
-    console.log(`${pendingSales.length} ventes à synchroniser`);
-
-    const shopId = await getCurrentShopId();
-
-    if (!shopId) {
-
-        console.error("Aucun magasin associé");
-
-        return;
-
-    }
-
-    for (const sale of pendingSales) {
-
-        try {
-
-            const { error } =
-                await supabaseClient
-                    .from("sales")
-                    .insert([{
-                        id: sale.id,
-                        shop_id: shopId,
-                        sale_number:
-                            sale.sale_number,
-                        total_brut:
-                            sale.total_brut,
-                        total_remise:
-                            sale.total_remise,
-                        total_net:
-                            sale.total_net,
-                        total_items:
-                            sale.total_items,
-                        client_phone:
-                            sale.client_phone,
-                        payment_method:
-                            sale.payment_method,
-                        user_name:
-                            sale.user_name,
-                        user_role:
-                            sale.user_role,
-                        status:
-                            sale.status,
-                        created_at:
-                            sale.created_at
-                    }]);
-
-            if (error) {
-
-                console.error("❌ Erreur synchro vente", error);
-
-                continue;
-
-            }
-
-            await db.sales.update(
-                sale.id,
-                {
-                    pending_sync: false
-                }
-            );
-
-            console.log(`✅ Vente ${sale.id} synchronisée`);
-
-        } catch (error) {
-
-            console.error("❌ Erreur uploadPendingSales", error);
-
-        }
-
-    }
-
-}*/
 async function uploadPendingSales() {
 
     const pendingSales = await getPendingSales();
 
-    console.log(`${pendingSales.length} vente(s) à synchroniser`);
+    //console.log(`${pendingSales.length} vente(s) à synchroniser`);
 
     for (const sale of pendingSales) {
 
@@ -818,8 +721,7 @@ async function uploadPendingSales() {
             }
         );
 
-        console.log(
-            "✅ Vente synchronisée", sale.id);
+        //console.log("✅ Vente synchronisée", sale.id);
 
     }
 
@@ -836,7 +738,7 @@ async function syncSales() {
 
         if (!lastSync) {
 
-            console.warn("Aucune date de synchro ventes");
+            //console.warn("Aucune date de synchro ventes");
 
             return;
 
@@ -865,7 +767,7 @@ async function syncSales() {
                 data.map(mapSale)
             );
 
-            console.log(`✅ ${data.length} ventes synchronisées`);
+            //console.log(`✅ ${data.length} ventes synchronisées`);
 
         }
 

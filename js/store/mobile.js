@@ -22,22 +22,6 @@ function toggleMenu() {
   }
 }
 
-
-/*function focusSearch(){
-  const input = document.getElementById("searchInputMobile");
-  if(input) input.focus();
-}
-
-function syncSearch(){
-  const mobileInput = document.getElementById("searchInputMobile");
-  const desktopInput = document.getElementById("searchInput");
-
-  if(mobileInput && desktopInput){
-    desktopInput.value = mobileInput.value;
-    globalSearch(); // ✅ relance la recherche
-  }
-}*/
-
 function openSearch() {
   const bar = document.getElementById("searchBar");
   const input = document.getElementById("searchInputMobile");
@@ -220,10 +204,9 @@ function renderCartMobile() {
 
   const container = document.getElementById("cartMobileList");
 
-
-  console.log("➡️ renderCartMobile appelé");
-  console.log("➡️ cart =", cart);
-  console.log("➡️ container =", container);
+  // console.log("➡️ renderCartMobile appelé");
+  //console.log("➡️ cart =", cart);
+  //console.log("➡️ container =", container);
 
 
   if (!container) {
@@ -379,7 +362,7 @@ function renderCartMobile() {
   }
 
   updateFloatingCart();
-  console.log("cart =", cart);
+  //console.log("cart =", cart);
 }
 
 
@@ -471,7 +454,7 @@ function updateAddToCartButton() {
     }
   });
 
-  console.log("👉 bouton panier visible ?", hasQty);
+  //console.log("👉 bouton panier visible ?", hasQty);
 
   btn.style.display = hasQty ? "block" : "none";
   localStorage.setItem("cart", JSON.stringify(cart));
@@ -834,14 +817,6 @@ function renderCreditMobile(credits, totalCredit) {
     ? sortedCredits
     : sortedCredits.slice(0, creditPerPage);
 
-  /*console.table(
-    visibleCredits.map(c => ({
-      client: c.clientName,
-      remaining: c.remaining,
-      dueDate: c.dueDate
-    }))
-  );*/
-
   /*==========================
   GROUPER PAR STATUT METIER
   ==========================*/
@@ -1121,12 +1096,3 @@ document.getElementById("historyLoadMore").onclick = () => {
 
   window.scrollTo({ top: 0, behavior: "smooth" });
 };
-
-
-
-
-
-
-
-
-

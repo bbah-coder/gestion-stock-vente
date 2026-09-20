@@ -359,7 +359,7 @@ async function showTicketDetail(id) {
 
   const t = tickets.find(x => String(x.id) === String(id));
 
-  console.log("DETAIL TICKET:", t);
+  //console.log("DETAIL TICKET:", t);
 
   if (!t) {
     showToast("❌ Ticket introuvable");
@@ -378,7 +378,7 @@ async function showTicketDetail(id) {
 
     t.items.forEach(item => {
 
-      console.log(item);
+      //console.log(item);
 
       const qty = item.quantity || item.qty || 0;
       const price = item.price || 0;
