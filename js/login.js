@@ -102,13 +102,13 @@ async function redirectByRole(role) {
 
     await bootstrapData();
 
-    window.location.href = "admin";
+    window.location.href = "admin.html";
 
   } else {
 
     await bootstrapData();
 
-    window.location.href = "index";
+    window.location.href = "index.html";
 
   }
 
