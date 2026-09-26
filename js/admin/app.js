@@ -174,7 +174,7 @@ let shopWindow = null; // ✅ référence fenêtre boutique
 ************************************************************/
 
 function goToShop() {
-  window.location.href = "/";
+  window.location.href = "home.html";
 }
 
 

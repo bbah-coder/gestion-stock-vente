@@ -78,7 +78,7 @@ async function registerAccount() {
 
     setTimeout(() => {
       window.location.href = "login.html";
-    }, 5000);
+    }, 3000);
 
 
   } catch (error) {

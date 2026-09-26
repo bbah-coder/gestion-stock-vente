@@ -391,7 +391,7 @@ function forceLogout() {
   localStorage.removeItem("userRole");
   localStorage.removeItem("userId");
 
-  window.location.href = "login";
+  window.location.href = "login.html";
 }
 /************************************************************
  * 🎮 NAVIGATION
@@ -598,8 +598,8 @@ async function logout() {
   localStorage.removeItem("lastActivity");
   localStorage.removeItem("isLoggedIn");
 
-  //window.location.href = "login.html";
-  window.location.href = "home";
+  window.location.href = "login.html";
+  //window.location.href = "index.html";
 }
 
 function updateUserInfo() {
