@@ -11,11 +11,11 @@ const ASSETS = [
   "/",
   "/manifest.json",
 
-  "/admin",
-  "/home",
-  "/login",
-  "/register",
-  "/index",
+  "/admin.html",
+  "/home.html",
+  "/login.html",
+  "/register.html",
+  "/index.html",
 
   /* CSS */
   "/css/admin.css",

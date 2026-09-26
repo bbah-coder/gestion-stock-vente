@@ -77,7 +77,7 @@ async function registerAccount() {
     document.getElementById("registerPassword").value = "";
 
     setTimeout(() => {
-      window.location.href = "login";
+      window.location.href = "login.html";
     }, 5000);
 
 
