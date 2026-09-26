@@ -11,6 +11,12 @@ const ASSETS = [
   "/",
   "/manifest.json",
 
+  "/admin",
+  "/home",
+  "/login",
+  "/register",
+  "/index",
+
   /* CSS */
   "/css/admin.css",
   "/css/home.css",
@@ -37,6 +43,13 @@ const ASSETS = [
   "/js/admin/pdf.js",
   "/js/admin/app.js",
   "/js/admin/mobileAdmin.js",
+  "/js/admin/indexdDB/database.js",
+  "/js/admin/models/profilesSupabase.js",
+  "/js/admin/models/productsSupabase.js",
+  "/js/admin/models/stockmvtSupabase.js",
+  "/js/admin/controllers/costController.js",
+  "/js/admin/models/salesSupabase.js",
+  "/js/admin/models/initData.js",
 
   /* JS STORE */
   "/js/store/articles.js",

@@ -1,11 +1,10 @@
 {
   "name": "Boutique Manager",
-  "short_name": "POS",
+  "short_name": "Boutique Manager",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#22c55e",
-
   "icons": [
     {
       "src": "/image/icon-192.png",
