@@ -246,8 +246,17 @@ function checkSessionTimeout() {
 }
 
 //FORCER LA DECONNEXION
-function forceLogout() {
+async function forceLogout() {
 
+  // Déconnexion Supabase
+  await supabaseClient.auth.signOut();
+
+  // Vider IndexedDB
+  await Promise.all(
+    db.tables.map(table =>
+      table.clear()
+    )
+  );
   // Vider LocalStorage
   localStorage.clear();
   // Vider SessionStorage
@@ -258,7 +267,7 @@ function forceLogout() {
   localStorage.removeItem("userRole");
   localStorage.removeItem("userId");
 
-  window.location.href = "login";
+  window.location.href = "login.html";
 }
 
 
@@ -653,3 +662,45 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
 });
+
+document.addEventListener(
+  "visibilitychange",
+  () => {
+
+    if (
+      document.visibilityState === "hidden"
+    ) {
+
+      localStorage.setItem(
+        "lastBackgroundTime",
+        Date.now()
+      );
+
+    }
+
+    if (
+      document.visibilityState === "visible"
+    ) {
+
+      const lastTime =
+        Number(
+          localStorage.getItem(
+            "lastBackgroundTime"
+          )
+        );
+
+      const inactiveTime =
+        Date.now() - lastTime;
+
+      if (
+        inactiveTime >= SESSION_Timeout
+      ) {
+
+        forceLogout();
+
+      }
+
+    }
+
+  }
+);
