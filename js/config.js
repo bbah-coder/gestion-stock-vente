@@ -20,6 +20,7 @@ const itemsPerPageDetail = 10;
 const itemsPerPageHistory = 10;
 const itemsPerPageToday = 10;
 const itemsPerPageHistoryStock = 10;
+let visibleProducts = 10;
 
 
 /* Fonction Générique pour responsive Mobile */

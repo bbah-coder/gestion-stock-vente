@@ -72,16 +72,22 @@ function renderProducts() {
 
   const sorted = sortProducts(data);
 
-  const paginated = paginateProducts(sorted);
+  //const paginated = paginateProducts(sorted);
 
-  const vm = computeProductVM(paginated);
+  // Affichage limité
+  const displayedProducts = sorted.slice(0, visibleProducts);
+
+  //const vm = computeProductVM(paginated);
+  const vm = computeProductVM(displayedProducts);
 
   const isMobile = window.matchMedia("(max-width: 1200px)").matches;
 
   renderMobileProducts(vm);
 
 
-  renderPagination(sorted.length);
+  //renderPagination(sorted.length);
+  //Bouton Afficher plus
+  renderLoadMore(sorted.length);
 }
 
 function updateProductTitle() {
@@ -589,4 +595,36 @@ async function clearSearch() {
   //renderProducts();
   await refreshShopProducts();
   renderLowStock?.(); // ✅ compat admin
+}
+
+function renderLoadMore(totalProducts) {
+
+  const container = document.getElementById("pagination");
+
+  if (!container) return;
+
+  if (visibleProducts >= totalProducts) {
+
+    container.innerHTML = "";
+
+    return;
+  }
+
+  container.innerHTML = `
+    <button
+      class="btn btn-primary"
+      onclick="showMoreProducts()"
+    >
+      📦 Afficher plus
+      (${totalProducts - visibleProducts} restants)
+    </button>
+  `;
+}
+
+function showMoreProducts() {
+
+  visibleProducts += 10;
+
+  render();
+
 }

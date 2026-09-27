@@ -224,21 +224,24 @@ function render() {
     currentPage = totalPages;
   }
 
-  const start =
+  /*const start =
     (currentPage - 1) * itemsPerPage;
 
   const paginated =
     filtered.slice(
       start,
       start + itemsPerPage
-    );
+    );*/
+  const displayedProducts =
+    filtered.slice(0, visibleProducts);
 
   // ✅ Toujours afficher la vue cartes
   document.getElementById("tableStock").style.display = "none";
   document.getElementById("mobileList").style.display = "block";
 
   // ✅ Aucun résultat
-  if (paginated.length === 0) {
+  if (displayedProducts.length === 0) {
+    /*if (paginated.length === 0) {*/
 
     document.getElementById("mobileList").innerHTML = `
       <div style="
@@ -255,10 +258,13 @@ function render() {
   }
 
   // ✅ Affichage cartes
-  renderCards(paginated);
+  //renderCards(paginated);
+  renderCards(displayedProducts);
 
   // ✅ Pagination
-  renderPagination(filtered.length);
+  //renderPagination(filtered.length);
+  renderLoadMore(filtered.length);
+
 
   // ✅ Catégories
   populateCategories();
@@ -1660,5 +1666,38 @@ async function renderSubscriptionInfo() {
     "subscriptionProgressBar"
   ).style.width =
     percentage + "%";
+
+}
+
+
+function renderLoadMore(totalProducts) {
+
+  const container = document.getElementById("pagination");
+
+  if (!container) return;
+
+  if (visibleProducts >= totalProducts) {
+
+    container.innerHTML = "";
+
+    return;
+  }
+
+  container.innerHTML = `
+    <button
+      class="btn btn-primary"
+      onclick="showMoreProducts()"
+    >
+      📦 Afficher plus
+      (${totalProducts - visibleProducts} restants)
+    </button>
+  `;
+}
+
+function showMoreProducts() {
+
+  visibleProducts += 10;
+
+  render();
 
 }
