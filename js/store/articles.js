@@ -621,10 +621,10 @@ function renderLoadMore(totalProducts) {
   `;
 }
 
-function showMoreProducts() {
+async function showMoreProducts() {
 
   visibleProducts += 10;
 
-  render();
+  await refreshShopProducts();
 
 }
