@@ -120,9 +120,9 @@ async function restoreBackup(file) {
             image: "",
             barcode:
               "PRD-" +
-              Date.now()
-                .toString()
-                .slice(-6),
+              Date.now() +
+              "-" +
+              Math.floor(Math.random() * 10000),
             entries: (data.stockLogs || [])
               .filter(log =>
                 log.product === product.name &&
