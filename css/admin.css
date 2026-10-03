@@ -145,6 +145,7 @@ input {
   margin: 8px 0;
   padding: 8px;
   width: 100%;
+  font-size: 16px;
   border-radius: 8px;
   border: 1px solid #ccc;
 }
@@ -387,7 +388,7 @@ td:nth-child(2) {
   color: #fff;
   padding: 5px 8px;
   border-radius: 6px;
-  font-size: 12px;
+  font-size: 16px;
 
   position: absolute;
   bottom: 120%;
