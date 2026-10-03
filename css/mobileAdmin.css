@@ -1,8 +1,8 @@
-@media (max-width: 1200px){
+@media (max-width: 1200px) {
 
   .header,
-  .search-container{
-     display: none !important;
+  .search-container {
+    display: none !important;
   }
 
 }
@@ -69,21 +69,38 @@
 }
 
 /* ✅ COULEURS */
-.btn-action.blue    { background:#3498db; }
-.btn-action.orange  { background:#f39c12; }
-.btn-action.red     { background:#e74c3c; }
-.btn-action.green   { background:#27ae60; }
-.btn-action.purple  { background:#8e44ad; }
-.btn-action.dark    { background:#2c3e50; }
+.btn-action.blue {
+  background: #3498db;
+}
+
+.btn-action.orange {
+  background: #f39c12;
+}
+
+.btn-action.red {
+  background: #e74c3c;
+}
+
+.btn-action.green {
+  background: #27ae60;
+}
+
+.btn-action.purple {
+  background: #8e44ad;
+}
+
+.btn-action.dark {
+  background: #2c3e50;
+}
 
 /* ✅ HOVER PRO */
 .btn-action:hover {
   transform: translateY(-2px);
-  box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
 }
 
 /* ✅ MOBILE => FULL WIDTH MAIS PROPRE */
-@media (max-width:1200px){
+@media (max-width:1200px) {
 
   .settings-grid,
   .settings-group {
@@ -92,7 +109,8 @@
   }
 
   .btn-action {
-    width: 90%;          /* ✅ pas full width brut */
+    width: 90%;
+    /* ✅ pas full width brut */
     max-width: 320px;
   }
 
@@ -107,8 +125,8 @@
 
   margin-bottom: 5px;
   margin-top: 5px;
-  
-  
+
+
   border-bottom: 1px dashed #ddd;
   padding-bottom: 5px;
 
@@ -130,27 +148,29 @@
 
 /* ✅ CARD PRODUIT */
 
-@media (max-width:1200px){
+@media (max-width:1200px) {
 
   table {
     display: none;
   }
-  
+
   .card {
     display: none;
   }
 
 }
+
 .product-card {
   background: white;
   border-radius: 12px;
   margin-bottom: 12px;
   overflow: hidden;
 
-  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-  
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+
   display: flex;
-  flex-direction: column; /* ✅ OBLIGATOIRE */
+  flex-direction: column;
+  /* ✅ OBLIGATOIRE */
 
 }
 
@@ -165,7 +185,8 @@
   display: flex;
   gap: 12px;
   align-items: center;
-  width: 100%; /* ✅ important */
+  width: 100%;
+  /* ✅ important */
 }
 
 
@@ -260,10 +281,11 @@
   padding: 12px;
   margin-bottom: 12px;
 
-  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-  
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+
   display: flex;
-  flex-direction: column; /* ✅ OBLIGATOIRE */
+  flex-direction: column;
+  /* ✅ OBLIGATOIRE */
 
 }
 
@@ -370,9 +392,20 @@
 }
 
 /* ✅ COULEURS ACTION */
-.card-actions button:nth-child(1){ background:#f39c12; color:white; }
-.card-actions button:nth-child(2){ background:#2ecc71; color:white; }
-.card-actions button:nth-child(3){ background:#e74c3c; color:white; }
+.card-actions button:nth-child(1) {
+  background: #f39c12;
+  color: white;
+}
+
+.card-actions button:nth-child(2) {
+  background: #2ecc71;
+  color: white;
+}
+
+.card-actions button:nth-child(3) {
+  background: #e74c3c;
+  color: white;
+}
 
 /*@media (max-width:768px){
   .mobile-list {
@@ -380,7 +413,7 @@
   }
 }*/
 
-@media (max-width:1200px){
+@media (max-width:1200px) {
   #historyCard {
     display: none !important;
   }
@@ -400,7 +433,8 @@
 
 
 .card-footer {
-  margin-top: auto; /* ✅ magie ici */
+  margin-top: auto;
+  /* ✅ magie ici */
 }
 
 
@@ -433,7 +467,8 @@
 
 /* ✅ bouton promo style desktop */
 .btn-promo {
-  background: #3498db;   /* ✅ bleu */
+  background: #3498db;
+  /* ✅ bleu */
   color: white;
 
   border: none;
@@ -473,15 +508,16 @@
 /*MOBILE BOUTON MENU */
 
 
-@media (max-width:1200px){
+@media (max-width:1200px) {
 
   /* ✅ HEADER CARD */
   .card-header {
     display: flex;
-    flex-direction: column; /* ✅ empile */
+    flex-direction: column;
+    /* ✅ empile */
     align-items: flex-start;
     gap: 10px;
-    
+
     padding-bottom: 5px;
     border-bottom: 1px solid #eee;
 
@@ -495,14 +531,15 @@
 
   /* ✅ FILTRE SOUS TITRE */
   #filterCategoryAdmin {
-    order: 2; /* ✅ passe APRES titre */
+    order: 2;
+    /* ✅ passe APRES titre */
     width: 100%;
 
     padding: 10px;
     border-radius: 10px;
 
     background: white;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
     margin-bottom: 10px;
   }
 
@@ -530,7 +567,8 @@
   }
 
 }
-@media (max-width:1200px){
+
+@media (max-width:1200px) {
 
   #filterCategoryAdmin {
     width: 100%;
@@ -541,16 +579,17 @@
     font-size: 14px;
 
     background: white;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
   }
 
 }
 
-@media (max-width:1200px){
+@media (max-width:1200px) {
 
   .header-actions {
     display: grid;
-    grid-template-columns: repeat(3, 1fr); /* ✅ 3 colonnes */
+    grid-template-columns: repeat(3, 1fr);
+    /* ✅ 3 colonnes */
     gap: 8px;
 
     margin-top: 10px;
@@ -563,7 +602,8 @@
     font-size: 12px;
 
     display: flex;
-    flex-direction: column;  /* ✅ icône + texte*/
+    flex-direction: column;
+    /* ✅ icône + texte*/
     justify-content: center;
     align-items: center;
 
@@ -573,7 +613,7 @@
 }
 
 
-@media (max-width:1200px){
+@media (max-width:1200px) {
 
   #pdfContainer {
     margin: 10px;
@@ -588,7 +628,7 @@
     padding: 10px 12px;
     border-radius: 12px;
 
-    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
   }
 
   .date-container span {
@@ -625,7 +665,7 @@
   }
 
   .card {
-    margin-bottom: 80px; /* ✅ espace pour menu */
+    margin-bottom: 80px;
   }
 
 }*/
@@ -638,7 +678,8 @@
 
 /* ✅ bouton upload */
 .btn-upload {
-  background: #3498db;      /* ✅ bleu visible */
+  background: #3498db;
+  /* ✅ bleu visible */
   color: white;
 
   border: none;
@@ -710,7 +751,8 @@
 
   font-size: 14px;
 
-  box-sizing: border-box; /* ✅ empêche débordement */
+  box-sizing: border-box;
+  /* ✅ empêche débordement */
 }
 
 /* ✅ upload */
@@ -757,7 +799,8 @@
   align-items: center;
 
   gap: 10px;
-  flex-wrap: wrap; /* ✅ pour mobile */
+  flex-wrap: wrap;
+  /* ✅ pour mobile */
 }
 
 /* ✅ bloc gauche */
@@ -822,7 +865,8 @@
 }
 
 .card-footer button {
-  flex: 1;  /* ✅ clé */
+  flex: 1;
+  /* ✅ clé */
   padding: 10px;
 
   border-radius: 12px;
@@ -845,10 +889,12 @@
 }
 
 .btn-add {
-  background: #2ecc71;   /* ✅ vert */
+  background: #2ecc71;
+  /* ✅ vert */
   color: white;
 }
- /*CSS INPUT PRODUCT INACTI*/
+
+/*CSS INPUT PRODUCT INACTI*/
 .inactive-input-group {
   display: flex;
   align-items: center;
@@ -889,13 +935,15 @@
   transform: scale(0.95);
 }
 
-.btn-step:nth-child(1){
-  background: #e74c3c; /* - */
+.btn-step:nth-child(1) {
+  background: #e74c3c;
+  /* - */
   color: white;
 }
 
-.btn-step:nth-child(3){
-  background: #2ecc71; /* + */
+.btn-step:nth-child(3) {
+  background: #2ecc71;
+  /* + */
   color: white;
 }
 
@@ -907,7 +955,7 @@
   margin: 10px;
   padding: 10px;
 
-  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
 }
 
 /* ✅ desktop */
@@ -919,7 +967,7 @@
 }
 
 /* ✅ mobile */
-@media (max-width:1200px){
+@media (max-width:1200px) {
 
   .footer-content {
     flex-direction: column;
@@ -960,13 +1008,17 @@
   box-sizing: border-box;
 
   width: 100%;
-  height: 34px;              /* ✅ réduit hauteur */
+  height: 34px;
+  /* ✅ réduit hauteur */
 
-  /*padding: 0 34px 0 12px*/    /* ✅ horizontal uniquement */
+  /*padding: 0 34px 0 12px*/
+  /* ✅ horizontal uniquement */
   padding: 20px;
 
-  border-radius: 10px;       /* ✅ clé : moins arrondi */
-  border: 1px solid #ccc;    /* ✅ plus léger */
+  border-radius: 10px;
+  /* ✅ clé : moins arrondi */
+  border: 1px solid #ccc;
+  /* ✅ plus léger */
 
   font-size: 13px;
   background: #f1f3f5;
@@ -978,14 +1030,17 @@
 .search-wrapper-admin {
   position: relative;
   padding: 10px 12px;
-  /*background: #ededed;*/  /* ✅ plus doux */
+  /*background: #ededed;*/
+  /* ✅ plus doux */
   border-radius: 12px;
-  
+
 }
 
 .search-wrapper-admin input:focus {
-  outline: none;             /* ✅ supprime le contour bleu navigateur */
-  border: 2px solid #000;    /* ✅ noir au focus */
+  outline: none;
+  /* ✅ supprime le contour bleu navigateur */
+  border: 2px solid #000;
+  /* ✅ noir au focus */
 }
 
 /*.search-wrapper input {
@@ -1028,4 +1083,3 @@
 
   box-shadow: 0 -4px 10px rgba(0,0,0,0.2);
 }
-
