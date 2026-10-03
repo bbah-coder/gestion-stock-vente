@@ -686,6 +686,8 @@ body::before {
   width: 100%;
   max-width: 400px;
 
+  overflow-y: auto;
+
   background: white;
   border-radius: 16px;
 
