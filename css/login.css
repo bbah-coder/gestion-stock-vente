@@ -55,6 +55,7 @@ input {
 input:focus {
   outline: none;
   border-color: #2ecc71;
+  font-size: 16px;
 }
 
 button {
@@ -98,7 +99,7 @@ button:active {
   background: transparent;
   border: none;
   color: #6c757d;
-  font-size: 13px;
+  font-size: 16px;
   cursor: pointer;
   margin-top: 10px;
   text-align: center;
@@ -122,7 +123,7 @@ button:active {
 .reset-info {
   text-align: center;
   color: #718096;
-  font-size: 14px;
+  font-size: 16px;
   margin-bottom: 20px;
 }
 
@@ -166,7 +167,7 @@ button:active {
   padding: 14px;
   border: 1px solid #dcdfe6;
   border-radius: 12px;
-  font-size: 15px;
+  font-size: 16px;
   background: #fff;
   transition: all 0.2s ease;
 }

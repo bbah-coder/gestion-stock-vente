@@ -586,7 +586,7 @@ body::before {
 /* REMISE */
 .cart-remise {
   margin-top: 6px;
-  font-size: 12px;
+  font-size: 16px;
 
   display: flex;
   align-items: center;
@@ -603,6 +603,7 @@ body::before {
 .cart-remise input {
   width: 60px;
   height: 28px;
+  font-size: 16px;
   padding: 4px;
   border-radius: 6px;
   border: 1px solid #ddd;
