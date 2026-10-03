@@ -800,25 +800,6 @@ document.addEventListener(
   }
 );
 
-document.addEventListener("focusin", (e) => {
-
-  if (
-    e.target.matches("input, textarea")
-  ) {
-
-    setTimeout(() => {
-
-      e.target.scrollIntoView({
-        behavior: "smooth",
-        block: "center"
-      });
-
-    }, 300);
-
-  }
-
-});
-
 
 
 
