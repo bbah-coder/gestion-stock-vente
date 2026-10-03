@@ -139,7 +139,6 @@ tbody tr:hover {
 
 }
 
-
 input {
   display: block;
   margin: 8px 0;
@@ -148,6 +147,15 @@ input {
   font-size: 16px;
   border-radius: 8px;
   border: 1px solid #ccc;
+}
+
+input,
+textarea,
+select,
+input:focus,
+textarea:focus,
+select:focus {
+  font-size: 16px;
 }
 
 button {
