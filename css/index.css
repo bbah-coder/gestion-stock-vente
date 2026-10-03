@@ -828,6 +828,7 @@ td:first-child {
   min-width: 180px;
   max-width: 240px;
   flex: 1;
+  font-size: 16px;
   /* ✅ s’adapte desktop */
 }
 
@@ -856,7 +857,7 @@ td:first-child {
 
     padding: 12px 14px;
     border-radius: 25px;
-    font-size: 14px;
+    font-size: 16px;
     box-sizing: border-box;
   }
 
@@ -877,7 +878,7 @@ td:first-child {
 
 .ticket-date-right {
   font-weight: bold;
-  font-size: 14px;
+  font-size: 16px;
   text-transform: capitalize;
   color: #333;
 }
@@ -907,7 +908,7 @@ td:first-child {
     padding: 10px 12px;
     border-radius: 10px;
     border: 1px solid #ccc;
-    font-size: 14px;
+    font-size: 16px;
   }
 
   /* ✅ champ recherche téléphone */
@@ -999,7 +1000,7 @@ td:first-child {
   padding: 10px 12px;
   border-radius: 10px;
   border: 1px solid #ccc;
-  font-size: 14px;
+  font-size: 16px;
 }
 
 /*}*/
@@ -1164,7 +1165,7 @@ td:first-child {
   padding: 12px;
   border: 1px solid #dcdcdc;
   border-radius: 10px;
-  font-size: 15px;
+  font-size: 16px;
   box-sizing: border-box;
 }
 
