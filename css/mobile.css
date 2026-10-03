@@ -268,7 +268,7 @@
   border: 1px solid #ccc;
   /* ✅ plus léger */
 
-  font-size: 13px;
+  font-size: 16px;
   background: #f1f3f5;
 
   display: block;
@@ -364,7 +364,7 @@
 
 /* ✅ quantité (remplace input) */
 .qty-display {
-  font-size: 13px;
+  font-size: 16px;
   font-weight: 600;
   min-width: 18px;
   text-align: center;
@@ -592,7 +592,7 @@ body::before {
   align-items: center;
   gap: 6px;
   /* espace entre input et % */
-  font-size: 13px;
+  font-size: 16px;
   flex-wrap: nowrap;
   /* ✅ empêche retour ligne */
 
@@ -743,7 +743,7 @@ body::before {
   border-radius: 10px;
   border: 1px solid #ddd;
 
-  font-size: 14px;
+  font-size: 16px;
 }
 
 /* FOOTER */
