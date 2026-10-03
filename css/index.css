@@ -31,8 +31,8 @@ body {
   padding-bottom: 120px;
   /* ✅ espace pour footer*/
 
-  /*min-height: 100vh;*/
-  height: var(--app-height);
+  min-height: 100vh;
+
   display: flex;
   flex-direction: column;
 
@@ -44,8 +44,8 @@ body {
   display: flex;
   flex-direction: column;
   padding-bottom: 120px;
-  /*min-height: 100vh;*/
-  height: var(--app-height);
+  min-height: 100vh;
+
 }
 
 

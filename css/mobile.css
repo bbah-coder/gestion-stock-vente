@@ -667,7 +667,7 @@ body::before {
   position: fixed;
   inset: 0;
 
-  height: var(--app-height);
+  min-height: 100vh;
 
   background: rgba(0, 0, 0, .4);
 
@@ -693,8 +693,7 @@ body::before {
 
   padding: 20px;
 
-  /*max-height: 80vh;*/
-  max-height: calc(var(--app-height) - 40px);
+  max-height: 80vh;
 
   overflow-y: auto;
 

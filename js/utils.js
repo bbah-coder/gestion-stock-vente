@@ -726,29 +726,3 @@ function parseFrenchDate(dateStr) {
     `${year}-${month}-${day}T${timePart}`
   ).toISOString();
 }
-
-function handleKeyboardResize() {
-
-  const viewport = window.visualViewport;
-
-  if (!viewport) return;
-
-  function updateViewportHeight() {
-
-    document.documentElement.style.setProperty(
-      "--app-height",
-      `${viewport.height}px`
-    );
-
-  }
-
-  updateViewportHeight();
-
-  viewport.addEventListener(
-    "resize",
-    updateViewportHeight
-  );
-
-}
-
-handleKeyboardResize();
