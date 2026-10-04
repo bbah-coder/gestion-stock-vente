@@ -65,6 +65,7 @@ h1 {
   padding: 10px;
   border-radius: 8px;
   border: 1px solid #ddd;
+  font-size: 16px;
 }
 
 .hidden {
@@ -98,8 +99,6 @@ h1 {
 .separator span {
   padding: 0 15px;
 }
-
-/*CSS SECTION TOAST Remplacement FENETRE POPUP*/
 
 /*CSS SECTION TOAST Remplacement FENETRE POPUP*/
 
