@@ -656,7 +656,6 @@
           </select>
 
           <label>Motif</label>
-
           <select id="movementReason">
             <option value="achat">Achat fournisseur</option>
             <option value="retour">Retour client</option>
@@ -666,6 +665,27 @@
             <option value="stolen">Vol</option>
             <option value="don">Don</option>
           </select>
+
+          <!--Bloc à afficher si retour client-->
+          <div id="returnFields" style="display:none;">
+
+            <label>Type de retour</label>
+
+            <select id="returnType">
+              <option value="refund">💵 Remboursement client</option>
+              <option value="exchange">🔄 Échange produit</option>
+              <option value="credit_note">🎫 Avoir client</option>
+            </select>
+
+            <div id="returnAmountContainer">
+              <label>Montant concerné (GNF)</label>
+              <small id="returnAmountInfo" class="auto-calculated-info">
+                💡 Le montant est calculé automatiquement et ne peut pas être modifié.
+              </small>
+              <input type="number" id="returnAmount" min="0" placeholder="Montant du retour">
+            </div>
+
+          </div>
 
           <!--<label>Quantité</label>-->
 

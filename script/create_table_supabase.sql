@@ -190,6 +190,7 @@ execute function update_updated_at_column();
 create table stock_movements (
     id uuid primary key default gen_random_uuid(),
     shop_id uuid not null references shops(id),
+    product_id uuid not null reference products(id),
     product_name text not null,
     product_barcode text,
     type text not null,
@@ -202,10 +203,19 @@ create table stock_movements (
     created_at timestamptz default now(),
     updated_at timestamptz default now()
 );
+alter table public.stock_movements
+add column if not exists product_id uuid;
+
 alter table stock_movements
 add constraint fk_stock_movements_shop
 foreign key (shop_id)
 references shops(id)
+on delete cascade;
+
+alter table stock_movements
+add constraint fk_stock_movements_products
+foreign key (product_id)
+references products(id)
 on delete cascade;
 
 /*********INDEX**********************/
@@ -594,7 +604,9 @@ returns table (
     shop_id uuid,
     products_count bigint,
     sales_count bigint,
-    movements_count bigint
+    movements_count bigint,
+    sales_return_count bigint,
+    last_sync timestamptz
 )
 language sql
 security definer
@@ -618,7 +630,44 @@ as $$
             select count(*)
             from stock_movements sm
             where sm.shop_id = s.id
-        ) as movements_count
+        ) as movements_count,
+
+        (
+            select count(*)
+            from sale_returns sr
+            where sr.shop_id = s.id
+        ) as sales_return_count,
+
+        greatest(
+
+            coalesce(
+                (
+                    select max(updated_at)
+                    from products p
+                    where p.shop_id = s.id
+                ),
+                '1970-01-01'::timestamptz
+            ),
+
+            coalesce(
+                (
+                    select max(updated_at)
+                    from stock_movements sm
+                    where sm.shop_id = s.id
+                ),
+                '1970-01-01'::timestamptz
+            ),
+
+            coalesce(
+                (
+                    select max(updated_at)
+                    from sale_returns sr
+                    where sr.shop_id = s.id
+                ),
+                '1970-01-01'::timestamptz
+            )
+
+        ) as last_sync
 
     from shops s;
 $$;
@@ -799,3 +848,68 @@ check (
 
 alter table public.shops
 add column created_by uuid;
+
+***********Table sale_returns*******************
+create table if not exists public.sale_returns (
+    id uuid primary key default gen_random_uuid(),
+    shop_id uuid not null,
+    product_id uuid not null,
+    product_name text not null,
+    quantity integer not null default 1,
+    unit_price numeric(12,2) not null default 0,
+    total_amount numeric(12,2) not null default 0,
+    return_type text not null,
+    reason text,
+    created_by text,
+    created_at timestamptz default now(),
+    updated_at timestamptz default now()
+
+);
+alter table public.sale_returns
+add column if not exists product_id uuid;
+
+alter table public.sale_returns
+add constraint sale_returns_type_check
+check (
+    return_type in (
+        'refund',
+        'exchange',
+        'credit_note'
+    )
+);
+****************RLS*************************
+alter table public.sale_returns
+enable row level security;
+
+create policy sale_returns_select_policy
+on public.sale_returns
+for select
+to authenticated
+using (
+    shop_id = public.my_shop_id()
+    OR
+    public.is_super_admin()
+);
+
+create policy sale_returns_insert_policy
+on public.sale_returns
+for insert
+to authenticated
+with check (
+    shop_id = public.my_shop_id()
+    OR
+    public.is_super_admin()
+);
+
+alter table public.sale_returns
+add constraint fk_sale_returns_shop
+foreign key (shop_id)
+references public.shops(id)
+on delete cascade;
+
+alter table public.sale_returns
+add constraint fk_sale_returns_product
+foreign key (product_id)
+references public.products(id)
+on delete cascade;
+

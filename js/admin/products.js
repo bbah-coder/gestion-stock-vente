@@ -301,6 +301,7 @@ async function saveProduct() {
       const initialMovement = {
         id: crypto.randomUUID(),
         shop_id: shopId,
+        product_id: newProduct.id,
 
         product: newProduct.name,
         barcode: newProduct.barcode,
@@ -709,6 +710,7 @@ async function importCSV() {
 
           id: crypto.randomUUID(),
           shop_id: shopId,
+          product_id: existingProduct.id,
           product:
             existingProduct.name,
           barcode:
@@ -815,7 +817,7 @@ async function importCSV() {
 
           shop_id:
             shopId,
-
+          product_id: newProduct.id,
           product:
             newProduct.name,
 
@@ -1558,6 +1560,7 @@ async function importExcelProducts(event) {
         const movement = {
           id: crypto.randomUUID(),
           shop_id: shopId,
+          product_id: existingProduct.id,
           product: existingProduct.name,
           barcode: existingProduct.barcode,
           type: "entry",
@@ -1652,6 +1655,7 @@ async function importExcelProducts(event) {
             crypto.randomUUID(),
           shop_id:
             shopId,
+          product_id: newProduct.id,
           product:
             newProduct.name,
           barcode:
@@ -1720,4 +1724,19 @@ async function importExcelProducts(event) {
     ?.scrollIntoView({
       behavior: "smooth"
     });
+}
+
+//Affichage retour client
+function getReturnedQuantity(productId, saleReturns) {
+
+  return saleReturns
+    .filter(
+      r => r.product_id === productId
+    )
+    .reduce(
+      (sum, r) =>
+        sum + Number(r.quantity || 0),
+      0
+    );
+
 }

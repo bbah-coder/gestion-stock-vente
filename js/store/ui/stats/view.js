@@ -24,7 +24,9 @@ function renderGlobalKPI(stats, context) {
     encoursCurrent,
     currentTickets,
     nbDays,
-    caNet
+    caNet,
+    totalRefunds,
+    totalEncaisseNet
   } = stats;
 
   const {
@@ -36,40 +38,40 @@ function renderGlobalKPI(stats, context) {
 
   // ✅ reconstitution titre complet (comme avant)
   const title = isMonth
-    ? `📊 Ventes - ${monthLabel}`
-    : `📊 Ventes - ${yearLabel}`;
+    ? `📊 Synthèse du mois - ${monthLabel}`
+    : `📊 Synthèse de l'année - ${yearLabel}`;
 
   const header = document.getElementById("statsTitle");
   if (header) {
     header.innerText = title;
   }
 
-
   document.getElementById("globalTotal").innerHTML = `
     <div style="line-height:1.7;">
 
-     
-
       <div>💰 <strong>CA brut :</strong> ${formatPrice(totalBrut)} GNF</div>
-
-      <div style="color:red;">
-        💸 <strong>Remise :</strong>
-        ${totalRemise > 0 ? "- " + formatPrice(totalRemise) : "-"}
-      </div>
       
+      ${totalRemise > 0 ? `
+      <div style="color:red;">
+        💸 <strong>Remise :</strong> - ${formatPrice(totalRemise)} GNF </div>` : ""}
+      </div>
+
+        ${totalRefunds > 0 ? `
+            <div style="color:#ef4444;">↩️ <strong>Retours remboursés :</strong> - ${formatPrice(totalRefunds)} GNF </div>` : ""}
+
       <div>
         📊 <strong>CA net :</strong>
         ${formatPrice(caNet)} GNF
       </div>
 
-      <div style="color:green;">
-        ✅ <strong>CA encaissé :</strong>
-        ${formatPrice(total)} GNF
-      </div>
-
-      <div style="color:orange;">
+       <div style="color:orange;">
         🟠 <strong>Encours crédit :</strong>
         ${formatPrice(encoursCurrent)} GNF
+      </div>
+
+      <div style="color:green;">
+        ✅ <strong>CA encaissé :</strong>
+        ${formatPrice(totalEncaisseNet)} GNF
       </div>
 
       <div>
@@ -109,8 +111,10 @@ function renderStatsMobile(stats, context) {
     productStatsMonth,
     productStatsYear,
     caNet,
+    totalRefunds,
     totalCADetail,
     totalCAGros,
+    totalEncaisseNet,
 
     detailTickets,
     wholesaleTickets,
@@ -137,7 +141,7 @@ function renderStatsMobile(stats, context) {
       : lastYearTotalCA;
 
   const amountDiff =
-    total - referenceCA;
+    totalEncaisseNet - referenceCA;
 
   const displayAmountDiff =
     `${amountDiff >= 0 ? "+" : "-"}${formatPrice(Math.abs(amountDiff))} GNF`;
@@ -145,7 +149,7 @@ function renderStatsMobile(stats, context) {
 
   const evolutionValue =
     referenceCA > 0
-      ? ((total - referenceCA) / referenceCA) * 100
+      ? ((totalEncaisseNet - referenceCA) / referenceCA) * 100
       : 0;
 
   const evolutionColor =
@@ -154,7 +158,7 @@ function renderStatsMobile(stats, context) {
       : "#ef4444";  // rouge
 
   const top3 = Object.entries(sourceProducts || {})
-    .sort((a, b) => b[1].encaisse - a[1].encaisse)
+    .sort((a, b) => b[1].encaisseNet - a[1].encaisseNet)
     .slice(0, 3);
 
   const medals = ["🥇", "🥈", "🥉"];
@@ -167,7 +171,7 @@ function renderStatsMobile(stats, context) {
       </div>
 
       <div class="top-product-ca">
-        ${formatPrice(p[1].encaisse)} GNF
+        ${formatPrice(p[1].encaisseNet)} GNF
       </div>
 
     </div>
@@ -191,41 +195,19 @@ function renderStatsMobile(stats, context) {
         <span style="color:red;">
           💸 Remise : - ${formatPrice(totalRemise)} GNF
         </span><br>
-         ${totalCADetail > 0 ? `
-         <div>
-            🛒 CA Détail :
-              <strong>${formatPrice(totalCADetail)} GNF</strong>
-         </div>
-         ` : ""}
-       ${totalCAGros > 0 ? `
-       <div>
-        📦 CA Gros :
-       <strong>${formatPrice(totalCAGros)} GNF</strong>
-       </div>
-      ` : ""}
 
-        📊 Net : <strong>${formatPrice(caNet)} GNF</strong><br>
-        ✅ Encaissé : <strong>${formatPrice(total)} GNF</strong><br>
-        🟠 Crédit : <strong>${formatPrice(encoursCurrent)} GNF</strong>
+        <span style="color:#ef4444;">
+         ↩️ Retours client : - ${formatPrice(totalRefunds)} GNF
+       </span><br>
+
+        📊 CA Net : <strong>${formatPrice(caNet)} GNF</strong><br>
+        🟠 Crédit : <strong>${formatPrice(encoursCurrent)} GNF</strong><br>
+        ✅ Encaissé : <strong>${formatPrice(totalEncaisseNet)} GNF</strong>
+        
       </div>
 
       <div class="bloc">
         🧾 Tickets : ${currentTickets || 0}<br>
-         ${detailTickets > 0 ? `
-         <div>
-          🛒 Détail :
-            ${detailTickets} ticket(s) /
-            ${detailArticles} article(s)
-         </div>
-        ` : ""}
-
-        ${wholesaleTickets > 0 ? `
-        <div>
-          📦 Gros :
-         ${wholesaleTickets} ticket(s) /
-         ${wholesaleArticles} article(s)
-       </div>
-      ` : ""}
 
         📅 Jours ouverts : ${stats.nbDays}
       </div>
@@ -234,7 +216,7 @@ function renderStatsMobile(stats, context) {
         📊 Vs ${labelCompare} :
 
         <div>
-          ${formatPrice(total)} GNF vs ${isMonth ? formatPrice(prevTotalCA) : formatPrice(lastYearTotalCA)} GNF
+          ${formatPrice(totalEncaisseNet)} GNF vs ${isMonth ? formatPrice(prevTotalCA) : formatPrice(lastYearTotalCA)} GNF
         </div>
         <div style="
             color:${amountDiff >= 0 ? '#16a34a' : '#ef4444'};
@@ -244,7 +226,7 @@ function renderStatsMobile(stats, context) {
 
         <strong style="color:${evolutionColor}">
         ${getEvolution(
-    total,
+    totalEncaisseNet,
     isMonth ? prevTotalCA : lastYearTotalCA
   )}
      </strong>
@@ -278,6 +260,7 @@ function renderStatsComparisonTable(stats, context) {
 
   const {
     total,
+    totalEncaisseNet,
     currentTickets,
     nbDays,
     encoursCurrent,
@@ -332,7 +315,7 @@ function renderStatsComparisonTable(stats, context) {
           </td>
 
           <td>
-            ✅ <strong>${formatPrice(total)} GNF encaissé</strong>
+            ✅ <strong>${formatPrice(totalEncaisseNet)} GNF encaissé</strong>
            ${encoursCurrent > 0
       ? `<div style="color:orange; font-size:12px;">
                    🟠 ${formatPrice(encoursCurrent)} crédit
@@ -400,6 +383,7 @@ function renderComparisonMonthTable(stats, context) {
 
   const {
     total,
+    totalEncaisseNet,
     currentTickets,
     nbDays,
     encoursCurrent,
@@ -418,7 +402,7 @@ function renderComparisonMonthTable(stats, context) {
     return ((current - prev) / prev * 100).toFixed(1) + "%";
   }
 
-  const encaisseCurrent = total;
+  const encaisseCurrent = totalEncaisseNet;
   const encaissePrev = prevTotalCA;
 
   const perDayCurrent = nbDays ? encaisseCurrent / nbDays : 0;
@@ -492,6 +476,8 @@ function renderSummaryTable(stats, context) {
 
   const {
     total,
+    totalEncaisseNet,
+    totalRefunds,
     totalBrut,
     totalRemise,
     currentTickets,
@@ -512,6 +498,7 @@ function renderSummaryTable(stats, context) {
 
   const firstCol = isMonth ? "Mois" : "Année";
 
+
   container.innerHTML = `
     <h3>${title}</h3>
 
@@ -521,6 +508,7 @@ function renderSummaryTable(stats, context) {
           <th>${firstCol}</th>
           <th>CA brut</th>
           <th>Remise</th>
+          <th>Retours</th>
           <th>CA net</th>
           <th>Nb tickets</th>
           <th>Nb jours ouvrés</th>
@@ -533,8 +521,12 @@ function renderSummaryTable(stats, context) {
           <td style="color:red;">
             ${totalRemise > 0 ? "- " + formatPrice(totalRemise) : "-"}
           </td>
+
+          <td style="color:red;">
+            ${totalRefunds > 0 ? "- " + formatPrice(totalRefunds) : "-"}
+          </td>
           <td>
-            ✅ <strong>${formatPrice(total)} GNF encaissé</strong>
+            ✅ <strong>${formatPrice(totalEncaisseNet)} GNF encaissé</strong>
             ${encoursCurrent > 0
       ? `<div style="color:orange;font-size:12px;">
                    🟠 ${formatPrice(encoursCurrent)} crédit
@@ -580,7 +572,7 @@ function renderCategoryTable(stats, context) {
   container.innerHTML = "";
 
   const sorted = Object.entries(data || {})
-    .sort((a, b) => b[1].encaisse - a[1].encaisse);
+    .sort((a, b) => b[1].encaisseNet - a[1].encaisseNet);
 
   sorted.forEach(([cat, value], index) => {
 
@@ -592,8 +584,16 @@ function renderCategoryTable(stats, context) {
       <td style="color:red;">
         ${value.remise > 0 ? "- " + formatPrice(value.remise) : "-"}
       </td>
+      <td style="color:#ef4444;">
+   ${value.returns > 0
+        ? "- " +
+        formatPrice(value.returns) +
+        " GNF"
+        : "-"
+      }
+     </td>
       <td>
-        ✅ <strong>${formatPrice(value.encaisse)} GNF encaissé</strong>
+        ✅ <strong>${formatPrice(value.encaisseNet)} GNF encaissé</strong>
         ${value.credit > 0
         ? `<div style="color:orange;font-size:12px;">
                🟠 ${formatPrice(value.credit)} crédit
@@ -651,10 +651,10 @@ function renderTopProducts(stats, context) {
 
   // ✅ TOP CA
   const topCA = [...entries]
-    .sort((a, b) => b[1].encaisse - a[1].encaisse)
+    .sort((a, b) => b[1].encaisseNet - a[1].encaisseNet)
     .slice(0, 10);
 
-  const totalCA = entries.reduce((sum, [, v]) => sum + v.encaisse, 0);
+  const totalCA = entries.reduce((sum, [, v]) => sum + v.encaisseNet, 0);
 
   container.innerHTML = `
     <h3 style="margin-top:30px;">${topTitle}</h3> 
@@ -689,12 +689,13 @@ function renderTopProducts(stats, context) {
        <table class="stats-table">
       <thead>
         <tr>
-          <th colspan="6">💰 Top 10 Produits (CA)</th>
+          <th colspan="7">💰 Top 10 Produits (CA)</th>
         </tr>
         <tr>
           <th>Produit</th>
           <th>CA brut</th>
           <th>Remise</th>
+          <th>Retours</th>
           <th>CA net</th> 
           <th>%CA</th>
           <th>Stock restant</th>
@@ -721,9 +722,16 @@ function renderTopProducts(stats, context) {
         : "-"
       }
             </td>
+
+          <td style="color:#ef4444;">
+              ${v.returns > 0
+        ? "- " +
+        formatPrice(v.returns) + " GNF" : "-"
+      }
+          </td>
             
             <td>
-              <strong class="price-cell">✅ ${formatPrice(v.encaisse)} GNF encaissé</strong>
+              <strong class="price-cell">✅ ${formatPrice(v.encaisseNet)} GNF encaissé</strong>
                 ${v.credit > 0 ? `
                 <div style="color:orange; font-size:12px;">
                    🟠 ${formatPrice(v.credit)} crédit

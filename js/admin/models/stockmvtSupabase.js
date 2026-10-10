@@ -17,6 +17,7 @@ async function saveStockMovementSupabase(movement) {
                 .insert([{
                     ...(movement.id ? { id: movement.id } : {}),
                     shop_id: shopId,
+                    product_id: movement.product_id || null,
                     product_name: movement.product,
                     product_barcode: movement.barcode || null,
                     type: movement.type,
@@ -185,4 +186,120 @@ async function deleteStockMovementsSupabase(barcode) {
     }
 
     //console.log(`✅ Mouvements supprimés pour ${barcode}`);
+}
+
+async function saveSaleReturnSupabase(returnData) {
+
+    try {
+
+        const { data, error } =
+            await supabaseClient
+                .from("sale_returns")
+                .insert([returnData])
+                .select();
+
+        if (error) {
+            console.error(
+                "Erreur insertion retour", error);
+            return null;
+        }
+
+        return data[0];
+
+    } catch (err) {
+
+        console.error(err);
+
+        return null;
+    }
+
+}
+
+async function getSaleReturnsSupabase(shopId = null) {
+
+    try {
+
+        shopId ??= await getCurrentShopId();
+
+        if (!shopId) {
+
+            console.error(
+                "Aucun magasin associé"
+            );
+
+            return [];
+
+        }
+
+        const { data, error } =
+            await supabaseClient
+                .from("sale_returns")
+                .select("*")
+                .eq("shop_id", shopId)
+                .order("created_at", {
+                    ascending: false
+                });
+
+        if (error) {
+
+            console.error(
+                "Erreur chargement retours",
+                error
+            );
+
+            return [];
+
+        }
+
+        return data || [];
+
+    } catch (err) {
+
+        console.error(err);
+
+        return [];
+
+    }
+
+}
+
+async function loadSaleReturns() {
+
+    try {
+
+        const shopId =
+            await getCurrentShopId();
+
+        if (!shopId) {
+            return [];
+        }
+
+        const returns =
+            (await db.saleReturns
+                .toArray())
+
+                .filter(
+                    saleReturn =>
+                        saleReturn.shop_id === shopId
+                )
+
+                .sort(
+                    (a, b) =>
+                        new Date(b.created_at) -
+                        new Date(a.created_at)
+                );
+
+        return returns;
+
+    } catch (error) {
+
+        console.error(
+            "Erreur chargement retours",
+            error
+        );
+
+        return [];
+
+    }
+
 }

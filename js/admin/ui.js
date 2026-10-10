@@ -1251,6 +1251,7 @@ async function renderShops() {
 
       const stats =
         statsMap.get(shop.id) || {};
+      console.log(stats);
 
       return {
 
@@ -1271,6 +1272,9 @@ async function renderShops() {
         movementsCount:
           stats.movements_count || 0,
 
+        salesReturnCount:
+          stats.sales_return_count || 0,
+
         lastSync:
           stats.last_sync
             ? new Date(stats.last_sync)
@@ -1280,6 +1284,7 @@ async function renderShops() {
       };
 
     });
+
 
     displayShops(shopsWithStats);
 
@@ -1360,6 +1365,11 @@ function displayShops(shops) {
   <small>
    🔄 Mouvements :
    ${shop.movementsCount}
+  </small> <br>
+
+   <small>
+   ↩️ Retours client :
+   ${shop.salesReturnCount}
   </small>
 
   <br>

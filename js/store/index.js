@@ -145,6 +145,72 @@ function startProductsRealtime() {
 
       }
     )
+    //Retour client
+    // Retours clients
+    .on(
+      "postgres_changes",
+      {
+        event: "*",
+        schema: "public",
+        table: "sale_returns"
+      },
+
+      async (payload) => {
+
+        try {
+
+          if (!payload.new) {
+            return;
+          }
+
+          // Mise à jour IndexedDB
+          await db.saleReturns.put(
+            payload.new
+          );
+
+          // Mise à jour tableau mémoire
+          const index =
+            saleReturns.findIndex(
+              r => r.id === payload.new.id
+            );
+
+          if (index !== -1) {
+
+            saleReturns[index] =
+              payload.new;
+
+          } else {
+
+            saleReturns.unshift(
+              payload.new
+            );
+
+          }
+
+          // Recharger les données calculées
+          // Rafraîchissement UI
+          renderDashboard();
+
+          renderSalesByDay();
+
+          filterSalesByDate();
+
+          renderStatsTables();
+
+          renderCreditDashboard();
+
+
+        } catch (error) {
+
+          console.error(
+            "Erreur realtime retour",
+            error
+          );
+
+        }
+
+      }
+    )
     // Ventes
     .on(
       "postgres_changes",
@@ -228,6 +294,8 @@ document.addEventListener("DOMContentLoaded", async () => {
   products = await loadProducts();
 
   stockMovements = await loadStockMovements();
+
+  saleReturns = await loadSaleReturns();
 
   sales = await loadSales();
 
@@ -731,6 +799,8 @@ async function handleOnlineSync() {
     await syncProducts();
 
     await syncStockMovements();
+
+    await syncSaleReturns();
 
     await syncProfiles();
 

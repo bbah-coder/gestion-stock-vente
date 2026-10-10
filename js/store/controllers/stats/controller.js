@@ -30,7 +30,9 @@ async function renderStatsTables() {
   }
 
   const sales = await getSales();
-  const stats = computeStatsData(sales, context);
+  const saleReturns = await db.saleReturns.toArray() || [];
+
+  const stats = computeStatsData(sales, saleReturns, context);
 
   renderGlobalKPI(stats, context);
 

@@ -60,10 +60,14 @@ async function initApp() {
   // Init mvt stock
   await initStockMovements();
 
+  await initSaleReturns();
+
+  // ✅ Synchronisation
   syncProfiles().catch(console.error);
 
   await syncProducts();
   await syncStockMovements();
+  await syncSaleReturns();
 
   window.addEventListener("online", handleOnlineSync);
 
@@ -99,6 +103,8 @@ async function handleOnlineSync() {
     await syncProducts();
 
     await syncStockMovements();
+
+    await syncSaleReturns();
 
     await syncProfiles();
 
@@ -593,6 +599,61 @@ function startProductsRealtime() {
 
       }
     )
+    // Retours clients
+    .on(
+      "postgres_changes",
+      {
+        event: "*",
+        schema: "public",
+        table: "sale_returns"
+      },
+
+      async (payload) => {
+
+        try {
+
+          if (!payload.new) {
+            return;
+          }
+
+          // Mise à jour IndexedDB
+          await db.saleReturns.put(
+            payload.new
+          );
+
+          // Mise à jour tableau mémoire
+          const index =
+            saleReturns.findIndex(
+              r => r.id === payload.new.id
+            );
+
+          if (index !== -1) {
+
+            saleReturns[index] =
+              payload.new;
+
+          } else {
+
+            saleReturns.unshift(
+              payload.new
+            );
+
+          }
+
+          // Recharger les données calculées
+          render();
+
+        } catch (error) {
+
+          console.error(
+            "Erreur realtime retour",
+            error
+          );
+
+        }
+
+      }
+    )
     .subscribe((status) => {
 
       if (status === "CHANNEL_ERROR") {
@@ -701,6 +762,53 @@ document.addEventListener(
       }
 
     }
+
+  }
+);
+
+document.addEventListener(
+  "DOMContentLoaded",
+  () => {
+
+    const reasonSelect =
+      document.getElementById(
+        "movementReason"
+      );
+
+    if (!reasonSelect) return;
+
+    reasonSelect.addEventListener(
+      "change",
+      function () {
+
+        document.getElementById(
+          "returnFields"
+        ).style.display =
+
+          this.value === "retour"
+
+            ? "block"
+
+            : "none";
+
+      }
+    );
+
+  }
+);
+
+const returnType = document.getElementById("returnType");
+
+const returnAmountContainer = document.getElementById("returnAmountContainer");
+
+returnType.addEventListener(
+  "change",
+  function () {
+
+    returnAmountContainer.style.display =
+      this.value === "refund"
+        ? "block"
+        : "none";
 
   }
 );

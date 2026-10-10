@@ -6,6 +6,8 @@ let stockMovements = [];
 
 let currentMovementProductIndex = null;
 
+let saleReturns = [];
+
 async function initStockMovements() {
 
   try {
@@ -42,6 +44,61 @@ async function initStockMovements() {
   }
 
 }
+
+/************************************************************
+ * FUNCTION : Init saleRetours
+ ************************************************************/
+async function initSaleReturns() {
+
+  try {
+
+    const lastSync = await getSetting("sale_returns_last_sync");
+
+    const returnsCount = await db.saleReturns.count();
+
+    if (
+      !lastSync ||
+      returnsCount === 0
+    ) {
+
+      //console.log(
+      // "📥 Import initial des retours..."
+      // );
+
+      await importSaleReturnsToIndexedDB();
+
+    }
+
+    saleReturns =
+      await loadSaleReturns();
+
+    syncSaleReturns()
+      .catch(error => {
+
+        console.warn(
+          "⚠️ Synchronisation retours impossible",
+          error
+        );
+
+      });
+
+    //console.log(
+    //   `✅ ${saleReturns.length} retours initialisés`
+    // );
+
+  } catch (error) {
+
+    console.error(
+      "❌ Erreur initSaleReturns",
+      error
+    );
+
+    saleReturns = [];
+
+  }
+
+}
+
 
 /************************************************************
  * FUNCTION : ajout stock
@@ -239,6 +296,40 @@ function openStockMovement(index) {
 
   currentMovementProductIndex = index;
 
+  const returnAmountInput = document.getElementById("returnAmount");
+  returnAmountInput.readOnly = true;
+
+  document.getElementById("movementQuantity").oninput = () => {
+    const quantity =
+      Number(
+        document.getElementById(
+          "movementQuantity"
+        ).value || 0
+      );
+
+    const product = products[currentMovementProductIndex];
+
+    if (!product) return;
+
+    let unitPrice = Number(product.price || 0);
+
+    // ✅ Prix gros
+    if (
+      product.wholesalePrice &&
+      product.wholesaleMinQty &&
+      quantity >= product.wholesaleMinQty
+    ) {
+
+      unitPrice = Number(product.wholesalePrice);
+
+    }
+
+    document.getElementById(
+      "returnAmount"
+    ).value =
+      quantity * unitPrice;
+  };
+
   document.getElementById(
     "movementType"
   ).value = "entry";
@@ -254,6 +345,15 @@ function openStockMovement(index) {
   document.getElementById(
     "movementComment"
   ).value = "";
+
+  document.getElementById("returnAmount").value = "";
+
+  document.getElementById("returnType").value = "refund";
+
+  // Masquer les champs retour au départ
+  document.getElementById(
+    "returnFields"
+  ).style.display = "none";
 
   document.getElementById(
     "stockMovementModal"
@@ -327,7 +427,7 @@ function updateReasons() {
 /************************************************************
  * FUNCTION : Enregistre le mouvement
  ************************************************************/
-function saveStockMovement() {
+async function saveStockMovement() {
 
   const quantity = parseInt(document.getElementById("movementQuantity").value);
 
@@ -343,6 +443,102 @@ function saveStockMovement() {
   const reason = document.getElementById("movementReason").value;
 
   const comment = document.getElementById("movementComment").value.trim();
+
+  // NOUVEAU
+  const returnType = document.getElementById("returnType")?.value || null;
+
+  const returnAmount = Number(document.getElementById("returnAmount")?.value || 0);
+
+
+  // ✅ Validation retour client AVANT mouvement
+  if (type === "entry" && reason === "retour") {
+
+    const product = products[currentMovementProductIndex];
+
+    const saleReturns = await db.saleReturns.toArray() || [];
+
+    const sold = Number(product.sold || 0);
+
+    const returned =
+      saleReturns
+        .filter(
+          r => r.product_id === product.id
+        )
+        .reduce(
+          (sum, r) =>
+            sum + Number(r.quantity || 0),
+          0
+        );
+
+    const availableToReturn = Math.max(0, sold - returned);
+
+    // ✅ Aucun retour possible
+    if (availableToReturn <= 0) {
+
+      showToast("Aucun retour possible pour ce produit");
+      return;
+    }
+
+    // ✅ Quantité supérieure au disponible
+    if (quantity > availableToReturn) {
+
+      showToast(`Retour impossible. Maximum autorisé : ${availableToReturn}`);
+
+      return;
+    }
+
+    const profile = await getCurrentProfile();
+
+    const currentShop = await getCurrentShop();
+
+    const saleReturn = {
+      id: crypto.randomUUID(),
+      shop_id: currentShop.id,
+      product_id: product.id,
+      product_name: product.name,
+      quantity,
+      unit_price:
+        quantity > 0
+          ? returnAmount / quantity
+          : 0,
+      total_amount: returnAmount,
+      return_type: returnType,
+      reason: comment,
+      created_by:
+        profile?.username ||
+        "Système",
+      created_at:
+        new Date().toISOString(),
+      updated_at:
+        new Date().toISOString()
+
+    };
+
+    // Alimentation indexedDB
+    await db.saleReturns.put(saleReturn);
+
+    //Alimentation supabase
+    const savedReturn = await saveSaleReturnSupabase(saleReturn);
+
+    if (savedReturn) {
+
+      await db.saleReturns.put({
+        ...savedReturn,
+        pending_sync: false
+      });
+
+    } else {
+
+      await db.saleReturns.update(
+        saleReturn.id,
+        {
+          pending_sync: true
+        }
+      );
+
+    }
+
+  }
 
   applyStockMovement(
     currentMovementProductIndex,
@@ -420,6 +616,7 @@ async function applyStockMovement(index, type, quantity, reason, comment = "") {
   const movements = {
     id: crypto.randomUUID(),
     shop_id: shopId,
+    product_id: p.id,
     product: p.name,
     barcode: p.barcode,
     type,

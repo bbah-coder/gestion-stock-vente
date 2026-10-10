@@ -1049,6 +1049,13 @@ function renderHistoryMobile(data) {
             Remise : ${day.remise > 0 ? "- " + formatPrice(day.remise) : "-"} GNF
           </div>
            ` : ""}
+          ${day.retours > 0 ? `
+          <div style="color:red;">
+            Retours : ${day.retours > 0 ? "- " + formatPrice(day.retours) : "-"} GNF
+          </div>
+           ` : ""}
+
+          
         </div>
 
         <button onclick="showDetail('${day.rawDate}')">

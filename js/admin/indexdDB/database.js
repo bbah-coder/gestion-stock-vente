@@ -1,6 +1,6 @@
 const db = new Dexie("POS_DB");
 
-db.version(2).stores({
+db.version(3).stores({
 
     products: `
         id,
@@ -43,6 +43,14 @@ db.version(2).stores({
         shop_id,
         sale_id,
         product_id
+    `,
+
+    saleReturns: `
+        id,
+        shop_id,
+        product_id,
+        return_type,
+        created_at
     `,
 
     settings: `
@@ -778,5 +786,231 @@ async function syncSales() {
         console.error("❌ Erreur syncSales", error);
 
     }
+
+}
+
+
+async function importSaleReturnsToIndexedDB() {
+
+    const saleReturns =
+        await getSaleReturnsSupabase();
+
+    await db.saleReturns.bulkPut(
+        saleReturns
+    );
+
+    if (saleReturns.length > 0) {
+
+        const newestUpdatedAt =
+            saleReturns.reduce(
+                (max, saleReturn) =>
+                    saleReturn.updated_at > max
+                        ? saleReturn.updated_at
+                        : max,
+                saleReturns[0].updated_at
+            );
+
+        await setSetting(
+            "sale_returns_last_sync",
+            newestUpdatedAt
+        );
+
+    }
+
+}
+
+async function syncSaleReturns() {
+
+    try {
+
+        // ✅ Synchronisation des retours créés hors ligne
+        await uploadPendingSaleReturns();
+
+        const lastSync =
+            await getSetting(
+                "sale_returns_last_sync"
+            );
+
+        if (!lastSync) {
+
+            //console.warn(
+            //    "Aucune date de synchro retours"
+            // );
+
+            return;
+        }
+
+        const { data, error } =
+            await supabaseClient
+                .from("sale_returns")
+                .select("*")
+                .gt(
+                    "updated_at",
+                    lastSync
+                );
+
+        if (error) {
+
+            console.error(error);
+
+            return;
+        }
+
+        const returns = data || [];
+
+        if (returns.length > 0) {
+
+            await db.saleReturns.bulkPut(
+                returns
+            );
+
+            const newestUpdatedAt =
+                returns.reduce(
+
+                    (max, saleReturn) =>
+
+                        saleReturn.updated_at > max
+                            ? saleReturn.updated_at
+                            : max,
+
+                    lastSync
+                );
+
+            await setSetting(
+                "sale_returns_last_sync",
+                newestUpdatedAt
+            );
+
+        }
+
+        //console.log(
+        //    `✅ ${returns.length} retours synchronisés`
+        // );
+
+    } catch (error) {
+
+        console.warn(
+            "⚠️ Synchronisation retours impossible",
+            error
+        );
+
+    }
+
+    saleReturns =
+        await loadSaleReturns();
+
+    //render();
+
+}
+
+async function uploadPendingSaleReturns() {
+
+    const pendingReturns =
+        await getPendingSaleReturns();
+
+    //console.log(
+    //    `${pendingReturns.length} retours à synchroniser`
+    // );
+
+    const shopId =
+        await getCurrentShopId();
+
+    if (!shopId) {
+
+        console.error(
+            "Aucun magasin associé"
+        );
+
+        return;
+    }
+
+    for (const saleReturn of pendingReturns) {
+
+        try {
+
+            const { error } =
+                await supabaseClient
+                    .from("sale_returns")
+                    .insert([{
+
+                        id: saleReturn.id,
+
+                        shop_id: shopId,
+
+                        product_id:
+                            saleReturn.product_id,
+
+                        product_name:
+                            saleReturn.product_name,
+
+                        quantity:
+                            saleReturn.quantity,
+
+                        unit_price:
+                            saleReturn.unit_price,
+
+                        total_amount:
+                            saleReturn.total_amount,
+
+                        return_type:
+                            saleReturn.return_type,
+
+                        reason:
+                            saleReturn.reason || "",
+
+                        created_by:
+                            saleReturn.created_by,
+
+                        created_at:
+                            saleReturn.created_at,
+
+                        updated_at:
+                            saleReturn.updated_at
+
+                    }]);
+
+            if (error) {
+
+                console.error(
+                    "❌ Erreur synchro retour",
+                    saleReturn.id,
+                    error
+                );
+
+                continue;
+            }
+
+            await db.saleReturns.update(
+                saleReturn.id,
+                {
+                    pending_sync: false
+                }
+            );
+
+            //console.log(
+            //    "✅ Retour synchronisé",
+            //    saleReturn.id
+            // );
+
+        } catch (error) {
+
+            console.warn(
+                "📴 Synchronisation retour impossible",
+                error
+            );
+
+        }
+
+    }
+
+}
+
+async function getPendingSaleReturns() {
+
+    return await db.saleReturns
+        .filter(
+            r => r.pending_sync === true
+        )
+        .toArray();
 
 }

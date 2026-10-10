@@ -113,9 +113,12 @@ document.addEventListener("click", function (e) {
  * MOBILE PRODUCT CARDS 
  ************************************************************/
 
-function renderCards(productsList) {
+async function renderCards(productsList) {
 
   const list = document.getElementById("mobileList");
+
+  const saleReturns = await db.saleReturns.toArray() || [];
+
   list.innerHTML = "";
 
   productsList.forEach((p) => {
@@ -140,6 +143,10 @@ function renderCards(productsList) {
     card.className = "product-card";
 
     const imageUrl = getProductImageUrl(p.image);
+
+    const returned = getReturnedQuantity(p.id, saleReturns);
+
+    const availableToReturn = Math.max(0, p.sold - returned);
 
     card.innerHTML = `
 
@@ -214,8 +221,19 @@ function renderCards(productsList) {
         : ""
       }
 
+    
        ${(p.sold || 0) > 0
         ? `<div>🛒 Vendu : ${p.sold}</div>`
+        : ""
+      }
+
+      ${(returned || 0) > 0
+        ? `<div>↩️ Retourné : ${returned}</div>`
+        : ""
+      }
+
+      ${(returned || 0) > 0
+        ? `<div>✅ Retournable : ${availableToReturn}</div>`
         : ""
       }
       

@@ -25,7 +25,7 @@
  * → Mise à jour de l’UI complète (KPI + tableaux)
  ************************************************************/
 
-function filterSalesByDate() {
+async function filterSalesByDate() {
 
   const selectedDate = document.getElementById("filterDate").value;
   if (!selectedDate) return;
@@ -38,8 +38,18 @@ function filterSalesByDate() {
 
   // ✅ DATA
   const daySales = getSalesByDate(selectedDate);
-  const stats = computeSalesStats(daySales, selectedCategory, search);
-  const comparison = computeComparison(selectedDate, stats.totalCA);
+
+  const allReturns = await db.saleReturns.toArray();
+
+  const dayReturns =
+    allReturns.filter(
+      r =>
+        r.created_at?.slice(0, 10) ===
+        selectedDate
+    );
+
+  const stats = computeSalesStats(daySales, dayReturns, selectedCategory, search);
+  const comparison = computeComparison(selectedDate, stats.totalEncaisseNet, allReturns);
 
   // ✅ SWITCH DEVICE
   const isMobileOrTablet = window.matchMedia("(max-width: 1200px)").matches;

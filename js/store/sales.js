@@ -748,6 +748,7 @@ async function validerPanier() {
     //Création de mvt de stock
     const profile = await getCurrentProfile();
     const saleMovement = {
+      product_id: product.id,
       product: product.name,
       barcode: product.barcode,
       type: "exit",
@@ -1082,7 +1083,7 @@ function updateCartBadge() {
  * - top produits
  ************************************************************/
 
-function renderDashboard() {
+async function renderDashboard() {
 
   const salesList = document.getElementById("salesList");
   salesList.innerHTML = "";
@@ -1103,6 +1104,37 @@ function renderDashboard() {
   //formatDate(new Date().toLocaleDateString());
 
   const summary = {};
+
+  const saleReturns = await db.saleReturns.toArray() || [];
+
+  const todayReturn =
+    new Date()
+      .toISOString()
+      .slice(0, 10);
+
+  const totalRefunds =
+    (saleReturns || [])
+
+      .filter(r => {
+
+        if (r.return_type !== "refund")
+          return false;
+
+        return (
+          r.created_at?.slice(0, 10) ===
+          todayReturn
+        );
+
+      })
+
+      .reduce(
+        (sum, r) =>
+          sum +
+          Number(
+            r.total_amount || 0
+          ),
+        0
+      );
 
   // ✅ 1. LOOP VENTES
   sales.forEach(sale => {
@@ -1149,8 +1181,7 @@ function renderDashboard() {
 
 
       // ✅ recherche
-      const search = document.getElementById("searchInput")
-        .value.toLowerCase().trim();
+      const search = document.getElementById("searchInput").value.toLowerCase().trim();
 
       sale.items.forEach(item => {
 
@@ -1203,15 +1234,20 @@ function renderDashboard() {
   });
 
   encours = Math.max(0, caTotal - caEncaisse);
-  const CaNet = caTotalbrut - totalRemise;
+  const CaNet = caTotalbrut - totalRemise - totalRefunds;
+
+  const totalEncaisseNet = caEncaisse - totalRefunds
   // ✅ KPI affichage
   const remiseEl = document.getElementById("totalRemise");
 
-  document.getElementById("caEncaisse").innerText = formatPrice(caEncaisse);
+  const retourEl = document.getElementById("totalRefunds");
+
+  document.getElementById("caEncaisse").innerText = formatPrice(totalEncaisseNet);
   document.getElementById("encours").innerText = formatPrice(encours);
   document.getElementById("caBrut").innerText = formatPrice(caTotalbrut);
   document.getElementById("caNet").innerText = formatPrice(CaNet);
   remiseEl.innerHTML = `<span style="color:red;">- ${formatPrice(totalRemise)}</span>`;
+  retourEl.innerHTML = `<span style="color:red;">- ${formatPrice(totalRefunds)}</span>`;
   document.getElementById("todayTickets").innerText = totalTickets;
   document.getElementById("todayItems").innerText = totalItems;
 
@@ -1231,7 +1267,7 @@ function renderDashboard() {
  * ----------------------------------------------------------
  * Regroupe les ventes par date
  ************************************************************/
-function renderSalesByDay() {
+async function renderSalesByDay() {
 
   const container = document.getElementById("salesByDay");
   container.innerHTML = "";
@@ -1239,6 +1275,8 @@ function renderSalesByDay() {
   const today = new Date().toISOString().split("T")[0];
 
   const summary = {};
+
+  const saleReturns = await db.saleReturns.toArray() || [];
 
   sales.forEach(sale => {
 
@@ -1249,7 +1287,9 @@ function renderSalesByDay() {
       summary[key] = {
         brut: 0,
         remise: 0,
+        retours: 0,
         net: 0,
+        encaisseNet: 0,
         encaisse: 0,
         credit: 0
       };
@@ -1286,6 +1326,37 @@ function renderSalesByDay() {
     }
   });
 
+  //Integration retours
+  (saleReturns || []).forEach(retour => {
+
+    if (retour.return_type !== "refund")
+      return;
+
+    const key =
+      new Date(retour.created_at)
+        .toISOString()
+        .split("T")[0];
+
+    summary[key] ??= {
+      brut: 0,
+      remise: 0,
+      retours: 0,
+      net: 0,
+      encaisse: 0,
+      encaisseNet: 0,
+      credit: 0
+    };
+
+    summary[key].retours +=
+      Number(retour.total_amount || 0);
+
+  });
+
+  Object.values(summary)
+    .forEach(day => {
+      day.encaisseNet = Number(day.encaisse || 0) - Number(day.retours || 0);
+    });
+
   let dates = Object.keys(summary);
 
   // ✅ forcer la date sélectionnée
@@ -1298,8 +1369,10 @@ function renderSalesByDay() {
     summary[selectedDate] = {
       brut: 0,
       remise: 0,
+      retours: 0,
       net: 0,
       encaisse: 0,
+      encaisseNet: 0,
       credit: 0
     };
   }
@@ -1344,7 +1417,8 @@ function renderSalesByDay() {
       date: formatDateFR(new Date(date)),
       caBrut: summary[date].brut,
       remise: summary[date].remise,
-      caNet: summary[date].encaisse,
+      retours: summary[date].retours,
+      caNet: summary[date].encaisseNet,
       credit: summary[date].credit
     }));
 
@@ -1369,9 +1443,6 @@ function renderSalesByDay() {
     //const displayDate = new Date(date).toLocaleDateString();
     const displayDate = formatDateFR(new Date(date));
 
-    const caEncaisse = summary[date]?.caEncaisse || 0;
-    const encours = summary[date]?.encours || 0;
-
     row.innerHTML = `
        <td><span class="price-cell">${displayDate}</span></td>
  
@@ -1385,9 +1456,16 @@ function renderSalesByDay() {
         : "-"
       }
      </td>
+
+      <td style="${summary[date].retours > 0 ? 'color:red;' : 'color:#999;'}">
+       ${summary[date].retours > 0
+        ? `- ${formatPrice(summary[date].retours)} GNF`
+        : "-"
+      }
+     </td>
  
     <td>
-     <strong class="price-cell">✅ ${formatPrice(summary[date].encaisse)} GNF encaissé</strong>
+     <strong class="price-cell">✅ ${formatPrice(summary[date].encaisseNet)} GNF encaissé</strong>
  
      ${summary[date].credit > 0 ? `
        <div style="color:orange; font-size:12px;">

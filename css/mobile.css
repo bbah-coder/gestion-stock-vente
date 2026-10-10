@@ -1633,3 +1633,41 @@ body::before {
   margin-top: 2px;
 
 }
+
+/*CSS retour client*/
+#returnFields {
+  margin-top: 12px;
+  padding: 12px;
+  background: #f8fafc;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+}
+
+#returnFields label {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  color: #374151;
+  margin-bottom: 6px;
+
+}
+
+#returnFields select,
+#returnFields input {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 10px;
+  background: white;
+  font-size: 16px;
+  margin-bottom: 12px;
+  box-sizing: border-box;
+
+}
+
+#returnFields select:focus,
+#returnFields input:focus {
+  outline: none;
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+}

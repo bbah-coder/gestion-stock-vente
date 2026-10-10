@@ -6,7 +6,7 @@
    - NE PAS manipuler le DOM
    ========================================================= */
 
-function computeStatsData(sales, context) {
+function computeStatsData(sales, saleReturns, context) {
 
    /* =========================================================
       CONTEXTE
@@ -192,7 +192,9 @@ function computeStatsData(sales, context) {
             quantity: 0,
             brut: 0,
             remise: 0,
+            returns: 0,
             encaisse: 0,
+            encaisseNet: 0,
             credit: 0
          };
 
@@ -219,13 +221,18 @@ function computeStatsData(sales, context) {
             categoryTarget[category] ??= {
                brut: 0,
                remise: 0,
+               returns: 0,
+               net: 0,
                encaisse: 0,
+               encaisseNet: 0,
                credit: 0
             };
 
             categoryTarget[category].brut += brut;
             categoryTarget[category].remise += remise;
-            categoryTarget[category].encaisse += net;
+            //categoryTarget[category].encaisse += net;
+            categoryTarget[category].net += net;
+            categoryTarget[category].encaisse += totalPaid * ratio;
             categoryTarget[category].credit += remaining * ratio;
             // ✅ calcul % (on fera total plus bas)
             categoryTarget[category].percent = 0;
@@ -236,16 +243,114 @@ function computeStatsData(sales, context) {
 
    });
 
+   // injetion retour client 
+   (saleReturns || [])
+
+      .filter(retour => {
+
+         if (retour.return_type !== "refund")
+            return false;
+
+         const d = new Date(retour.created_at);
+
+         const monthKey =
+            d.toISOString().slice(0, 7);
+
+         const yearKey = d.getFullYear().toString();
+
+         return (
+            (isMonth &&
+               monthKey === monthValue)
+            ||
+            (isYear &&
+               yearKey === yearValue)
+         );
+
+      })
+
+      .forEach(retour => {
+
+         const product =
+            products.find(
+               p => p.id === retour.product_id
+            );
+
+         if (!product) return;
+
+         const category =
+            product.category || "Autre";
+
+         const categoryTarget =
+            isMonth
+               ? categoryMonth
+               : categoryYear;
+
+         if (!categoryTarget[category])
+            return;
+
+         categoryTarget[category].returns +=
+            Number(
+               retour.total_amount || 0
+            );
+
+      });
+
+   (saleReturns || [])
+
+      .filter(
+         r => r.return_type === "refund"
+      )
+
+      .forEach(retour => {
+
+         const product =
+            products.find(
+               p => p.id === retour.product_id
+            );
+
+         if (!product) return;
+
+         const productTarget =
+            isMonth
+               ? productStatsMonth
+               : productStatsYear;
+
+         if (!productTarget[product.name])
+            return;
+
+         productTarget[product.name].returns +=
+            Number(
+               retour.total_amount || 0
+            );
+
+      });
+
    /* =========================================================
       CALCULS DERIVÉS (POUR VIEW PROPRE)
       ========================================================= */
+   // calcul retours client avec rembourssement
+   const totalRefunds =
+      (saleReturns || [])
+         .filter(
+            r => r.return_type === "refund"
+         )
+         .reduce(
+            (sum, r) =>
+               sum +
+               Number(
+                  r.total_amount || 0
+               ),
+            0
+         );
 
-   const caNet = totalBrut - totalRemise;
+   const caNet = totalBrut - totalRemise - totalRefunds;
+
+   const totalEncaisseNet = total - totalRefunds;
 
    const nbDays = daysSet.size;
    const lastYearDays = lastYearDaysSet.size;
 
-   const perDayCurrent = nbDays ? total / nbDays : 0;
+   const perDayCurrent = nbDays ? totalEncaisseNet / nbDays : 0;
    const perDayPrev = lastYearDays ? lastYearTotalCA / lastYearDays : 0;
 
 
@@ -254,7 +359,7 @@ function computeStatsData(sales, context) {
       return ((current - prev) / prev * 100).toFixed(1) + "%";
    };
 
-   const evolutionCA = calcDiff(total, lastYearTotalCA);
+   const evolutionCA = calcDiff(totalEncaisseNet, lastYearTotalCA);
    const evolutionTickets = calcDiff(currentTickets, lastYearTickets);
    const evolutionPerDay = calcDiff(perDayCurrent, perDayPrev);
 
@@ -278,6 +383,41 @@ function computeStatsData(sales, context) {
       });
    };
 
+   Object.values(categoryMonth)
+      .forEach(cat => {
+
+         cat.encaisseNet =
+            cat.encaisse -
+            cat.returns;
+
+      });
+
+   Object.values(categoryYear)
+      .forEach(cat => {
+
+         cat.encaisseNet =
+            cat.encaisse -
+            cat.returns;
+
+      });
+
+   //Injection l'encaisse nette
+   [
+      productStatsMonth,
+      productStatsYear
+   ].forEach(products => {
+
+      Object.values(products)
+         .forEach(product => {
+
+            product.encaisseNet =
+               product.encaisse -
+               product.returns;
+
+         });
+
+   });
+
    // ✅ appliquer sur les 2
    applyCategoryMetrics(categoryMonth);
    applyCategoryMetrics(categoryYear);
@@ -290,6 +430,8 @@ function computeStatsData(sales, context) {
       total,
       totalBrut,
       totalRemise,
+      totalRefunds,
+      totalEncaisseNet,
       encoursCurrent,
       currentTickets,
 

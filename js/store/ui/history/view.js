@@ -76,7 +76,7 @@ function renderHeader(dateStr) {
 
 function renderKPIBlock(stats) {
 
-  const caNet = stats.totalBrut - stats.totalRemise;
+  const caNet = stats.totalBrut - stats.totalRemise - stats.totalRefunds;
   const nbProduits = Object.keys(stats.productStatsQty || {}).length;
 
   return `
@@ -89,8 +89,9 @@ function renderKPIBlock(stats) {
     ">
       💰 CA brut : ${formatPrice(stats.totalBrut)} |
       💸 Remise : ${stats.totalRemise > 0 ? `<span style="color:red;">- ${formatPrice(stats.totalRemise)} GNF</span>` : "-"} |
+      ↩️ Retours remboursés : ${stats.totalRefunds > 0 ? `<span style="color:red;">- ${formatPrice(stats.totalRefunds)} GNF</span>` : "-"} |
       💰 CA net : ${formatPrice(caNet)} |
-      ✅ CA encaissé : ${formatPrice(stats.totalCA)} |
+      ✅ CA encaissé : ${formatPrice(stats.totalEncaisseNet)} |
       🟠 Crédit : ${formatPrice(stats.encours)} |
       🎟️ Tickets : ${stats.nbTickets} |
       📦 Articles : ${stats.totalItems} |
@@ -154,7 +155,7 @@ function renderSalesComparisonTable(stats, comparison) {
 
         <td>
           <strong class="price-cell">
-            ✅ ${formatPrice(stats.totalCA)} GNF encaissé
+            ✅ ${formatPrice(stats.totalEncaisseNet)} GNF encaissé
           </strong>
 
           ${stats.encours > 0 ? `
@@ -234,6 +235,7 @@ function renderCategoryTableHistoDay(stats, dateStr) {
         <th>Catégorie</th>
         <th>CA brut</th>
         <th>Remise</th>
+        <th>Retours</th>
         <th>CA net</th>
         <th>% CA</th>
       </tr>
@@ -251,9 +253,13 @@ function renderCategoryTableHistoDay(stats, dateStr) {
         <td style="color:red">
           ${val.remise > 0 ? `- ${formatPrice(val.remise)} GNF` : "-"}
         </td>
+
+         <td style="color:red">
+          ${val.retours > 0 ? `- ${formatPrice(val.retours)} GNF` : "-"}
+        </td>
         <td>
           <strong class="price-cell">
-            ✅ ${formatPrice(val.encaisse)} GNF encaissé
+            ✅ ${formatPrice(val.encaisseNet)} GNF encaissé
           </strong>
 
           ${val.credit > 0 ? `
@@ -383,19 +389,20 @@ function renderTopCATable(data) {
   let totalCA = 0;
 
   data.forEach(([_, val]) => {
-    totalCA += val.encaisse + val.credit;
+    totalCA += val.encaisseNet + val.credit;
   });
 
   return `
     <div class="stats-card">
       <table style="width:100%">
 
-        <tr><th colspan="6">💎 Top Produits (CA)</th></tr>
+        <tr><th colspan="7">💎 Top Produits (CA)</th></tr>
 
         <tr>
           <th>Produit</th>
           <th>CA brut</th>
           <th>Remise</th>
+          <th>Retours</th>
           <th>CA net</th>
           <th>% CA</th>   <!-- ✅ AJOUT -->
           <th>Stock restant</th>
@@ -436,9 +443,13 @@ function renderTopCATable(data) {
               <td style="color:red">
                 ${val.remise > 0 ? `- ${formatPrice(val.remise)} GNF` : "-"}  
               </td>
+
+              <td style="color:red">
+                ${val.retours > 0 ? `- ${formatPrice(val.retours)} GNF` : "-"}  
+              </td>
               
               <td>
-                <strong class="price-cell">✅ ${formatPrice(val.encaisse)} GNF encaissé</strong>
+                <strong class="price-cell">✅ ${formatPrice(val.encaisseNet)} GNF encaissé</strong>
                 ${val.credit > 0 ? `
                  <div style="color:orange; font-size:12px;">
                    🟠 ${formatPrice(val.credit)} crédit
@@ -489,7 +500,9 @@ function renderMobileKPI(stats, comparison, selectedDate) {
   const {
     totalBrut,
     totalRemise,
+    totalRefunds,
     totalCA,
+    totalEncaisseNet,
     encours,
     nbTickets,
     totalCADetail,
@@ -502,7 +515,7 @@ function renderMobileKPI(stats, comparison, selectedDate) {
     productStatsCA
   } = stats;
 
-  const caNet = totalBrut - totalRemise;
+  const caNet = totalBrut - totalRemise - totalRefunds;
 
   const lastCA = comparison.caYesterday || 0;
   const lastDate = comparison.lastDate
@@ -513,7 +526,7 @@ function renderMobileKPI(stats, comparison, selectedDate) {
 
   const displayDiff = diff === "—" ? "—" : diff;
 
-  const amountDiff = totalCA - lastCA;
+  const amountDiff = totalEncaisseNet - lastCA;
 
   const displayAmountDiff =
     amountDiff >= 0
@@ -522,7 +535,7 @@ function renderMobileKPI(stats, comparison, selectedDate) {
 
   // ✅ TOP 3
   const top3 = Object.entries(productStatsCA || {})
-    .sort((a, b) => b[1].encaisse - a[1].encaisse)
+    .sort((a, b) => b[1].encaisseNet - a[1].encaisseNet)
     .slice(0, 3);
 
   const medals = ["🥇", "🥈", "🥉"];
@@ -535,7 +548,7 @@ function renderMobileKPI(stats, comparison, selectedDate) {
       </div>
 
       <div class="top-product-ca">
-        ${formatPrice(p[1].encaisse)} GNF
+        ${formatPrice(p[1].encaisseNet)} GNF
       </div>
 
     </div>
@@ -558,50 +571,29 @@ function renderMobileKPI(stats, comparison, selectedDate) {
         </div>
          ` : ""}
 
-         ${totalCADetail > 0 ? `
-         <div>
-            🛒 CA Détail :
-              <strong>${formatPrice(totalCADetail)} GNF</strong>
-         </div>
+         ${totalRefunds > 0 ? `
+        <div style="color:red;">
+          ↩️ Retours client : - ${formatPrice(totalRefunds)} GNF
+        </div>
          ` : ""}
-       ${totalCAGros > 0 ? `
-       <div>
-        📦 CA Gros :
-       <strong>${formatPrice(totalCAGros)} GNF</strong>
-       </div>
-      ` : ""}
-        <div>💰 CA Net : <strong>${formatPrice(caNet)} GNF</strong></div>
-        <div>✅ Encaissé : <strong>${formatPrice(totalCA)} GNF</strong></div>
 
-        ${encours > 0 ? `
+        <div>💰 CA Net : <strong>${formatPrice(caNet)} GNF</strong></div>
+         ${encours > 0 ? `
           <div>🟠 Crédit : <strong>${formatPrice(encours)} GNF</strong></div>
         ` : ""}
       </div>
+        <div>✅ Encaissé : <strong>${formatPrice(totalEncaisseNet)} GNF</strong></div>
+
 
       <div class="bloc">
         🎟️ Tickets : <strong>${nbTickets}</strong>  
         📦 Articles : <strong>${totalItems}</strong>
       </div>
-        ${detailTickets > 0 ? `
-         <div>
-          🛒 Détail :
-            ${detailTickets} ticket(s) /
-            ${detailArticles} article(s)
-         </div>
-        ` : ""}
-
-        ${wholesaleTickets > 0 ? `
-        <div>
-          📦 Gros :
-         ${wholesaleTickets} ticket(s) /
-         ${wholesaleArticles} article(s)
-       </div>
-      ` : ""}
 
       <div class="bloc">
         📊 Vs ${lastDate} :
         <div>
-          ${formatPrice(totalCA)} GNF vs ${formatPrice(lastCA)} GNF
+          ${formatPrice(totalEncaisseNet)} GNF vs ${formatPrice(lastCA)} GNF
         </div>
         <div style="color:${colorDiff(diff)}; font-weight:600;">
             ${displayAmountDiff}

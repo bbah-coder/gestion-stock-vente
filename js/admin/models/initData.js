@@ -30,6 +30,15 @@ async function initializeLocalData() {
             //console.log(`✅ ${stockMovements.length} mouvements importés`);
         }
 
+        // retours client
+        const saleReturns = await getSaleReturnsSupabase(shopId);
+
+        if (saleReturns?.length) {
+            await db.saleReturns.bulkPut(saleReturns);
+        }
+
+
+
         // Profils
         const profiles = await getProfilesSupabase(shopId);
 
@@ -74,11 +83,13 @@ async function bootstrapData() {
     const productsCount = await db.products.count();
     const profilesCount = await db.profiles.count();
     const movementsCount = await db.stockMovements.count();
+    const saleReturnCount = await db.saleReturns.count();
 
     if (
         productsCount === 0 ||
         profilesCount === 0 ||
-        movementsCount === 0
+        movementsCount === 0 ||
+        saleReturnCount === 0
     ) {
         await initializeLocalData();
     }

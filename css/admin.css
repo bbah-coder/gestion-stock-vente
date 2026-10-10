@@ -1846,3 +1846,11 @@ td:last-child {
   background: #22c55e;
   transition: .3s;
 }
+
+.auto-calculated-info {
+  display: block;
+  margin-top: 6px;
+  font-size: 12px;
+  color: #64748b;
+  text-align: center;
+}
