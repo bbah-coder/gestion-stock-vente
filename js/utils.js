@@ -726,3 +726,32 @@ function parseFrenchDate(dateStr) {
     `${year}-${month}-${day}T${timePart}`
   ).toISOString();
 }
+
+
+/************************************************************
+ * Fonction de génération de numéro de facture
+ ***********************************************************/
+function generateInvoiceNumber() {
+
+  const today =
+    new Date()
+      .toISOString()
+      .slice(0, 10)
+      .replaceAll("-", "");
+
+  const countToday =
+    sales.filter(s => {
+
+      const saleDate =
+        new Date(s.date)
+          .toISOString()
+          .slice(0, 10)
+          .replaceAll("-", "");
+
+      return saleDate === today;
+
+    }).length + 1;
+
+  return `FAC-${today}-${String(countToday).padStart(4, "0")}`;
+
+}

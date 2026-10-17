@@ -1,11 +1,13 @@
-function exportCreditPDF(index){
+function exportCreditPDF(index) {
 
   const sale = sales[index];
-  if(!sale || !sale.payment) return;
+  if (!sale || !sale.payment) return;
 
   const payment = sale.payment;
   const items = sale.items || [];
   const payments = payment.payments || [];
+  const invoiceNumber = sale.invoiceNumber;
+
 
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF();
@@ -13,7 +15,7 @@ function exportCreditPDF(index){
   let y = 10;
 
   // ✅ FORMAT PRIX
-  function formatPricePDF(value){
+  function formatPricePDF(value) {
     return Number(value || 0)
       .toFixed(0)
       .replace(/\B(?=(\d{3})+(?!\d))/g, " ");
@@ -47,6 +49,13 @@ function exportCreditPDF(index){
   // ✅ INFOS CLIENT
   doc.text(`Nom : ${payment.clientName}`, 10, y); y += 6;
   doc.text(`Téléphone : ${payment.clientPhone || "-"}`, 10, y); y += 6;
+
+  doc.setFont("helvetica", "normal");
+  doc.text("N° Facture :", 10, y);
+  doc.setFont("helvetica", "bold");
+  doc.text(invoiceNumber || "-", 32, y);
+  doc.setFont("helvetica", "normal"); y += 6;
+
   doc.text(`Date souscription : ${formatDateISO(payment.createdAt)}`, 10, y); y += 6;
   doc.text(`Date échéance : ${formatDateISO(payment.dueDate)}`, 10, y);
 
@@ -55,26 +64,26 @@ function exportCreditPDF(index){
   // ✅ ✅ ✅ BLOC FINANCE ULTRA PRO
   doc.setFont("helvetica", "bold");
 
-  doc.setTextColor(0,0,0);
+  doc.setTextColor(0, 0, 0);
   doc.text(`Total brut : ${formatPricePDF(totalBrut)} GNF`, 10, y); y += 6;
 
-  doc.setTextColor(200,0,0);
+  doc.setTextColor(200, 0, 0);
   doc.text(totalRemise > 0
     ? `Remise : -${formatPricePDF(totalRemise)} GNF`
     : `Remise : `,
-   10,
-   y);y += 6;
+    10,
+    y); y += 6;
 
-  doc.setTextColor(0,0,0);
+  doc.setTextColor(0, 0, 0);
   doc.text(`Total net : ${formatPricePDF(totalNet)} GNF`, 10, y); y += 6;
 
-  doc.setTextColor(0,128,0);
+  doc.setTextColor(0, 128, 0);
   doc.text(`Montant payé : ${formatPricePDF(totalPaid)} GNF`, 10, y); y += 6;
 
-  doc.setTextColor(255,140,0);
+  doc.setTextColor(255, 140, 0);
   doc.text(`Montant restant : ${formatPricePDF(remaining)} GNF`, 10, y);
 
-  doc.setTextColor(0,0,0); // reset couleur
+  doc.setTextColor(0, 0, 0); // reset couleur
 
   y += 10;
 
@@ -98,7 +107,7 @@ function exportCreditPDF(index){
         item.name,
         item.quantity,
         formatPricePDF(item.price) + " GNF",
-        remise > 0 
+        remise > 0
           ? "- " + formatPricePDF(remise) + " GNF"
           : "",
         formatPricePDF(net) + " GNF"
@@ -128,9 +137,9 @@ function exportCreditPDF(index){
     head: [["Date", "Montant"]],
     body: payments.length > 0
       ? payments.map(p => [
-          formatDateISO(p.date),
-          formatPricePDF(p.amount) + " GNF"
-        ])
+        formatDateISO(p.date),
+        formatPricePDF(p.amount) + " GNF"
+      ])
       : [["Aucun paiement", "-"]],
     theme: "grid",
     styles: { fontSize: 10 },
@@ -150,14 +159,14 @@ function exportCreditPDF(index){
   doc.save(`Credit-${payment.clientName}.pdf`);
 }
 
-function exportGlobalCreditPDF(){
+function exportGlobalCreditPDF() {
 
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF();
 
   let y = 10;
 
-  function formatPricePDF(value){
+  function formatPricePDF(value) {
     return Number(value || 0)
       .toFixed(0)
       .replace(/\B(?=(\d{3})+(?!\d))/g, " ");
@@ -187,10 +196,12 @@ function exportGlobalCreditPDF(){
   // ✅ COLLECT DATA
   sales.forEach(sale => {
 
-    if(sale.payment && sale.payment.type === "credit"){
+    if (sale.payment && sale.payment.type === "credit") {
 
       const payment = sale.payment;
       const items = sale.items || [];
+
+      const invoiceNumber = sale.invoiceNumber;
 
       const totalBrut = items.reduce((sum, item) =>
         sum + (item.price * item.quantity), 0);
@@ -205,12 +216,13 @@ function exportGlobalCreditPDF(){
 
       const remaining = Math.max(0, totalNet - totalPaid);
 
-      if(remaining <= 0) return;
+      if (remaining <= 0) return;
 
       totalEncaisse += totalPaid;
       totalEncours += remaining;
 
       rows.push([
+        invoiceNumber,
         payment.clientName,
         formatPricePDF(totalBrut),
         totalRemise > 0
@@ -224,6 +236,7 @@ function exportGlobalCreditPDF(){
       creditSales.push({
         sale,
         payment,
+        invoiceNumber,
         totalBrut,
         totalRemise,
         totalNet,
@@ -234,8 +247,8 @@ function exportGlobalCreditPDF(){
   });
 
   // ✅ KPI
-  doc.text(`Total encaissé : ${formatPricePDF(totalEncaisse)} GNF`, 10, y); y+=6;
-  doc.text(`Encours total : ${formatPricePDF(totalEncours)} GNF`, 10, y); y+=6;
+  doc.text(`Total encaissé : ${formatPricePDF(totalEncaisse)} GNF`, 10, y); y += 6;
+  doc.text(`Encours total : ${formatPricePDF(totalEncours)} GNF`, 10, y); y += 6;
   doc.text(`Nombre de clients : ${rows.length}`, 10, y);
 
   y += 10;
@@ -243,7 +256,7 @@ function exportGlobalCreditPDF(){
   // ✅ TABLE GLOBAL
   doc.autoTable({
     startY: y,
-    head: [["Client", "Brut", "Remise", "Net", "Payé", "Restant"]],
+    head: [["Facture", "Client", "Brut", "Remise", "Net", "Payé", "Restant"]],
     body: rows,
     theme: "grid",
     styles: { fontSize: 9 },
@@ -265,6 +278,7 @@ function exportGlobalCreditPDF(){
     const {
       sale,
       payment,
+      invoiceNumber,
       totalBrut,
       totalRemise,
       totalNet,
@@ -272,7 +286,7 @@ function exportGlobalCreditPDF(){
       remaining
     } = entry;
 
-    if(y > 250){
+    if (y > 250) {
       doc.addPage();
       y = 10;
     }
@@ -286,31 +300,52 @@ function exportGlobalCreditPDF(){
     doc.setFont("helvetica", "normal");
     doc.setFontSize(10);
 
-    doc.text(`Téléphone : ${payment.clientPhone || "-"}`, 10, y); y+=5;
+    doc.text(`Téléphone : ${payment.clientPhone || "-"}`, 10, y); y += 5;
+
+    doc.setFont("helvetica", "normal");
+
+    const label = "N° Facture :";
+
+    doc.text(label, 10, y);
+
+    const labelWidth =
+      doc.getTextWidth(label);
+
+    doc.setFont("helvetica", "bold");
+
+    doc.text(
+      invoiceNumber || "-",
+      10 + labelWidth + 3,
+      y
+    );
+
+    doc.setFont("helvetica", "normal");
+
+    y += 6;
 
     // ✅ FINANCE
-    doc.setTextColor(0,0,0);
-    doc.text(`Total brut : ${formatPricePDF(totalBrut)} GNF`, 10, y); y+=5;
+    doc.setTextColor(0, 0, 0);
+    doc.text(`Total brut : ${formatPricePDF(totalBrut)} GNF`, 10, y); y += 5;
 
-    if(totalRemise > 0){
-      doc.setTextColor(200,0,0);
+    if (totalRemise > 0) {
+      doc.setTextColor(200, 0, 0);
       doc.text(`Remise : -${formatPricePDF(totalRemise)} GNF`, 10, y);
     } else {
-      doc.setTextColor(120,120,120);
+      doc.setTextColor(120, 120, 120);
       doc.text(`Remise : `, 10, y);
     }
     y += 5;
 
-    doc.setTextColor(0,0,0);
-    doc.text(`Total net : ${formatPricePDF(totalNet)} GNF`, 10, y); y+=5;
+    doc.setTextColor(0, 0, 0);
+    doc.text(`Total net : ${formatPricePDF(totalNet)} GNF`, 10, y); y += 5;
 
-    doc.setTextColor(0,128,0);
-    doc.text(`Payé : ${formatPricePDF(totalPaid)} GNF`, 10, y); y+=5;
+    doc.setTextColor(0, 128, 0);
+    doc.text(`Payé : ${formatPricePDF(totalPaid)} GNF`, 10, y); y += 5;
 
-    doc.setTextColor(255,140,0);
+    doc.setTextColor(255, 140, 0);
     doc.text(`Restant : ${formatPricePDF(remaining)} GNF`, 10, y);
 
-    doc.setTextColor(0,0,0);
+    doc.setTextColor(0, 0, 0);
 
     y += 6;
 
@@ -356,9 +391,9 @@ function exportGlobalCreditPDF(){
       head: [["Date", "Montant"]],
       body: paymentsList.length > 0
         ? paymentsList.map(p => [
-            formatDateISO(p.date),
-            formatPricePDF(p.amount) + " GNF"
-          ])
+          formatDateISO(p.date),
+          formatPricePDF(p.amount) + " GNF"
+        ])
         : [["Aucun paiement", "-"]],
       theme: "grid",
       styles: { fontSize: 10 },

@@ -619,7 +619,7 @@ function renderSalesMobile() {
       </div>
      <div class="credit-actions">
       <button onclick="exportTicketPDF('${sale.id}')">
-        📄 Ticket PDF
+        📄 Ticket de caisse
       </button>
     
     ${sale.clientPhone ? `
@@ -935,7 +935,7 @@ function renderCreditMobile(credits, totalCredit) {
     </div>
 
     <div class="credit-actions">
-      <button onclick="exportCreditPDF(${c.index})">📄 PDF</button>
+      <button onclick="exportCreditPDF(${c.index})">📄 Facture </button>
 
       ${c.remaining > 0
             ? `<button onclick="addPayment(${c.index})">💰 Payer</button>`

@@ -65,6 +65,10 @@ async function getTickets() {
 
     items: s.items || [],
 
+    invoiceNumber: s.invoiceNumber,
+
+    clientName: s.clientName,
+
     clientPhone: s.clientPhone || s.payment?.clientPhone || "",
     user: s.user
 
@@ -327,8 +331,13 @@ async function renderTickets() {
           </button>
 
           <button onclick="exportTicketPDF('${t.id}')">
-            PDF
+            Ticket
           </button>
+
+          <button onclick="generateInvoicePDF('${t.id}')">
+           📄 Facture
+         </button>
+
         </div>
       `;
 
@@ -773,3 +782,359 @@ Merci pour votre achat`;
   window.open(whatsappUrl, "_blank");
 }
 
+//Facture PDF client
+async function generateInvoicePDF(id) {
+
+  const { jsPDF } = window.jspdf;
+
+  const doc = new jsPDF("p", "mm", "a4");
+
+  const tickets = await getTickets();
+
+  const t = tickets.find(
+    x => String(x.id) === String(id)
+  );
+
+  if (!t) {
+
+    showToast("❌ Facture introuvable");
+
+    return;
+  }
+
+  const store = getStoreInfo();
+
+  console.log(
+    "Facture liée :",
+    t.invoiceNumber || "AUCUN NUMÉRO"
+  );
+
+  let y = 20;
+
+  /*const saleIndex =
+    sales.findIndex(
+      s => s.id === t.id
+    ) + 1;
+
+  const invoiceNumber =
+    `FAC-${new Date(t.date)
+      .toISOString()
+      .slice(0, 10)
+      .replaceAll("-", "")
+    }-${String(saleIndex)
+      .padStart(4, "0")
+    }`;*/
+  //const invoiceNumber = t.invoiceNumber || "FACTURE NON NUMÉROTÉE";
+
+  // ==================================================
+  // EN-TÊTE
+  // ==================================================
+
+  doc.setFontSize(18);
+  doc.setFont("helvetica", "bold");
+
+  doc.text(
+    "FACTURE",
+    105,
+    y,
+    { align: "center" }
+  );
+
+  y += 12;
+
+  doc.setFontSize(11);
+  doc.setFont("helvetica", "normal");
+
+  doc.text(
+    store.name || "MON SHOP",
+    15,
+    y
+  );
+
+  y += 6;
+
+  if (store.phone) {
+    doc.text(
+      `Téléphone : ${store.phone}`,
+      15,
+      y
+    );
+
+    y += 6;
+  }
+
+  if (store.address) {
+    doc.text(
+      store.address,
+      15,
+      y
+    );
+
+    y += 6;
+  }
+
+  doc.text(
+    `N° Facture : ${t.invoiceNumber}`,
+    130,
+    32
+  );
+
+  doc.text(
+    `Date : ${new Date(t.date)
+      .toLocaleDateString("fr-FR")}`,
+    130,
+    38
+  );
+
+  y += 10;
+
+  doc.line(15, y, 195, y);
+
+  // ==================================================
+  // CLIENT
+  // ==================================================
+
+  y += 12;
+
+  doc.setFont("helvetica", "bold");
+
+  doc.text(
+    "Informations client",
+    15,
+    y
+  );
+
+  y += 8;
+
+  doc.setFont("helvetica", "normal");
+
+  doc.text(
+    `Nom : ${t.clientName || "Client divers"}`,
+    15,
+    y
+  );
+
+  y += 7;
+
+  doc.text(
+    `Téléphone : ${t.clientPhone || "-"}`,
+    15,
+    y
+  );
+
+  y += 10;
+
+  doc.line(15, y, 195, y);
+
+  // ==================================================
+  // TABLEAU
+  // ==================================================
+
+  y += 12;
+
+  doc.setFont("helvetica", "bold");
+
+  doc.text("Désignation", 15, y);
+  doc.text("Qté", 115, y);
+  doc.text("P.U", 145, y);
+  doc.text("Total", 190, y, {
+    align: "right"
+  });
+
+  y += 4;
+
+  doc.line(15, y, 195, y);
+
+  y += 8;
+
+  doc.setFont("helvetica", "normal");
+
+  let totalBrut = 0;
+
+  (t.items || []).forEach(item => {
+
+    const qty =
+      Number(item.quantity || 0);
+
+    const price =
+      Number(item.price || 0);
+
+    const total =
+      qty * price;
+
+    totalBrut += total;
+
+    doc.text(
+      cleanText(item.name),
+      15,
+      y
+    );
+
+    doc.text(
+      String(qty),
+      115,
+      y
+    );
+
+    doc.text(
+      formatPricePDF(price),
+      145,
+      y
+    );
+
+    doc.text(
+      formatPricePDF(total),
+      190,
+      y,
+      {
+        align: "right"
+      }
+    );
+
+    y += 8;
+
+  });
+
+  // ==================================================
+  // TOTAUX
+  // ==================================================
+
+  y += 5;
+
+  doc.line(15, y, 195, y);
+
+  y += 10;
+
+  const remise =
+    Number(
+      t.totalRemise ||
+      t.remise ||
+      0
+    );
+
+  const totalNet =
+    Number(
+      t.total ||
+      totalBrut
+    );
+
+  doc.text(
+    `Total brut : ${formatPricePDF(totalBrut)} GNF`,
+    120,
+    y
+  );
+
+  y += 8;
+
+  if (remise > 0) {
+
+    doc.text(
+      `Remise : -${formatPricePDF(remise)} GNF`,
+      120,
+      y
+    );
+
+    y += 8;
+
+  }
+
+  doc.setFont("helvetica", "bold");
+
+  doc.text(
+    `TOTAL NET : ${formatPricePDF(totalNet)} GNF`,
+    120,
+    y
+  );
+
+  doc.setFont("helvetica", "normal");
+
+  y += 10;
+
+  const paymentLabel =
+    getPaymentLabelPDF(
+      t.payment ||
+      t.paymentMethod
+    );
+
+  doc.text(
+    `Mode de paiement : ${paymentLabel}`,
+    120,
+    y
+  );
+
+  // ==================================================
+  // CRÉDIT
+  // ==================================================
+
+  if (t.payment === "credit") {
+
+    const remaining = t.credit || 0;
+    const total = t.total || totalBrut;
+
+    const encaisse = total - remaining;
+
+    y += 8;
+
+    if (encaisse > 0) {
+      doc.text(
+        `Payé : ${formatPricePDF(encaisse)} GNF`,
+        120,
+        y
+      );
+
+      y += 8;
+    }
+    if (remaining > 0) {
+      doc.text(
+        `Reste à payer : ${formatPricePDF(remaining)} GNF`,
+        120,
+        y
+      );
+    }
+
+  }
+
+  // ==================================================
+  // SIGNATURES
+  // ==================================================
+
+  y += 25;
+
+  doc.line(15, y, 80, y);
+
+  doc.line(130, y, 195, y);
+
+  y += 5;
+
+  doc.text(
+    "Signature client",
+    20,
+    y
+  );
+
+  doc.text(
+    "Signature vendeur",
+    135,
+    y
+  );
+
+  // ==================================================
+  // FOOTER
+  // ==================================================
+
+  y += 25;
+
+  doc.text(
+    "Merci pour votre confiance",
+    105,
+    y,
+    {
+      align: "center"
+    }
+  );
+
+  doc.save(
+    `facture-${t.invoiceNumber}.pdf`
+  );
+
+}

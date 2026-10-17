@@ -832,6 +832,32 @@ td:first-child {
   /* ✅ s’adapte desktop */
 }
 
+#clientPaiement {
+  padding: 8px 14px;
+  border-radius: 10px;
+  border: 1px solid #ccc;
+  border-radius: 20px;
+
+  min-width: 180px;
+  max-width: 240px;
+  flex: 1;
+  font-size: 16px;
+  /* ✅ s’adapte desktop */
+}
+
+/* === MOBILE === */
+@media (max-width: 768px) {
+  #clientPaiement {
+    width: 100%;
+    max-width: 100%;
+
+    padding: 12px 14px;
+    border-radius: 25px;
+    font-size: 16px;
+    box-sizing: border-box
+  }
+}
+
 /* === MOBILE === */
 @media (max-width: 768px) {
 

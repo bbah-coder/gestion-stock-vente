@@ -5,6 +5,7 @@
 function mapSale(row) {
     return {
         id: row.id,
+        invoiceNumber: row.invoice_number || "",
         shop_id: row.shop_id,
         user: row.user_name,
         role: row.user_role,
@@ -12,6 +13,7 @@ function mapSale(row) {
         totalBrut: row.total_brut || 0,
         totalRemise: row.total_remise || 0,
         total: row.total_net || 0,
+        clientName: row.client_name || "",
         clientPhone: row.client_phone || "",
         payment: row.payment || {},
         date:
@@ -147,6 +149,8 @@ async function saveSaleToSupabase(sale) {
                 .from("sales")
                 .insert([{
                     id: sale.id,
+                    invoice_number:
+                        sale.invoiceNumber,
                     shop_id:
                         sale.shop_id,
                     user_name:
@@ -163,6 +167,8 @@ async function saveSaleToSupabase(sale) {
                         sale.total,
                     total_items:
                         sale.totalItems,
+                    client_name:
+                        sale.clientName,
                     client_phone:
                         sale.clientPhone,
                     payment_method:
@@ -271,6 +277,7 @@ async function updateSaleSupabase(sale) {
                     total_remise: sale.totalRemise,
                     total_net: sale.total,
                     total_items: sale.totalItems,
+                    client_name: sale.clientName,
                     client_phone: sale.clientPhone,
                     payment_method: sale.paymentMethod,
                     payment: sale.payment,

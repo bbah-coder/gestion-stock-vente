@@ -699,6 +699,7 @@ async function validerPanier() {
   let totalNet = 0;
 
   let clientPhone = document.getElementById("ticketPhone")?.value.trim() || "";
+  const clientName = document.getElementById("clientPaiement")?.value.trim() || "";
 
   // ✅ Normalisation WhatsApp Guinée
   clientPhone = clientPhone
@@ -709,6 +710,8 @@ async function validerPanier() {
   const paymentMethod = getPaymentMethod();
 
   const validateBtn = document.getElementById("validateCartBtn");
+
+  const invoiceNumber = generateInvoiceNumber();
 
   // ✅ Anti double-clic
   if (saleValidationInProgress) {
@@ -928,6 +931,11 @@ async function validerPanier() {
         ? creditData?.clientPhone || ""
         : clientPhone;
 
+    const saleClientName =
+      paymentMethod === "credit"
+        ? creditData?.clientName || ""
+        : clientName;
+
     const saleItems =
       cart.map(item => ({
         productId: item.productId,
@@ -956,6 +964,7 @@ async function validerPanier() {
 
     const sale = {
       id: crypto.randomUUID(),
+      invoiceNumber,
       shop_id: await getCurrentShopId(),
       user:
         localStorage.getItem("username"),
@@ -984,6 +993,7 @@ async function validerPanier() {
       totalRemise,
       total: totalNet,
       totalItems,
+      clientName: saleClientName,
       clientPhone: salePhone,
       paymentMethod,
       payment: {
@@ -1073,7 +1083,8 @@ async function validerPanier() {
     showToast("✅ Vente validée avec succès");
 
     document.querySelector('input[name="paymentMethod"][value="cash"]').checked = true;
-    document.getElementById("ticketPhone").value = "";
+    //document.getElementById("ticketPhone").value = "";
+    //document.getElementById("clientPaiement").value = "";
 
   } finally {
 

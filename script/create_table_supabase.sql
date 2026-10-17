@@ -274,6 +274,7 @@ using (
 -- Entête vente
 create table sales (
     id uuid primary key default gen_random_uuid(),
+    invoice_number text,
     shop_id uuid not null references shops(id),
     sale_number text,
     total_brut numeric(12,2) default 0,
@@ -281,6 +282,7 @@ create table sales (
     total_net numeric(12,2) default 0,
     total_items integer default 0,
     client_phone text,
+    client_name text,
     payment_method text,
     user_name text,
     user_role text,
