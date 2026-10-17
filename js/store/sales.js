@@ -39,6 +39,8 @@
 
 let stockMovements = [];
 
+let saleValidationInProgress = false;
+
 const today = new Date().toISOString().split("T")[0];
 document.getElementById("filterDate").value = today;
 
@@ -696,8 +698,7 @@ async function validerPanier() {
   let totalRemise = 0;
   let totalNet = 0;
 
-  let clientPhone =
-    document.getElementById("ticketPhone")?.value.trim() || "";
+  let clientPhone = document.getElementById("ticketPhone")?.value.trim() || "";
 
   // ✅ Normalisation WhatsApp Guinée
   clientPhone = clientPhone
@@ -707,330 +708,387 @@ async function validerPanier() {
   //const paymentMethod = document.getElementById("paymentMethod").value;
   const paymentMethod = getPaymentMethod();
 
-  // ✅ sécurité panier vide
-  if (cart.length === 0) {
-    showToast("❌ Panier vide, impossible de valider la vente");
+  const validateBtn = document.getElementById("validateCartBtn");
+
+  // ✅ Anti double-clic
+  if (saleValidationInProgress) {
     return;
   }
 
-  // ✅ 1. CALCUL + STOCK
-  for (const item of cart) {
+  saleValidationInProgress = true;
 
-    const product = products[item.index];
+  validateBtn.disabled = true;
 
-    if (product.stock < item.quantity) {
-      showToast(`❌ Stock insuffisant pour ${product.name}`);
+  validateBtn.textContent =
+    "⏳ Validation...";
+
+  try {
+    // ✅ sécurité panier vide
+    if (cart.length === 0) {
+      showToast("❌ Panier vide, impossible de valider la vente");
       return;
     }
 
-    product.stock -= item.quantity;
+    // ✅ 1. CALCUL + STOCK
+    for (const item of cart) {
 
-    //Enregistrement local
-    await db.products.put(product);
+      const product = products[item.index];
 
-    //console.log("Produit sauvegardé dans IndexedDB", product.name);
+      if (product.stock < item.quantity) {
+        showToast(`❌ Stock insuffisant pour ${product.name}`);
+        return;
+      }
 
-    if (product.sold === undefined) {
-      product.sold = 0;
-    }
+      product.stock -= item.quantity;
 
-    product.sold += item.quantity;
+      //Enregistrement local
+      await db.products.put(product);
 
-    //Enregistrement local
-    await db.products.put(product);
+      //console.log("Produit sauvegardé dans IndexedDB", product.name);
 
-    //Derniere vente
-    product.lastSaleAt = new Date().toISOString();
+      if (product.sold === undefined) {
+        product.sold = 0;
+      }
 
-    //Synchronisation supabase
-    await updateProductSupabase(product);
+      product.sold += item.quantity;
 
-    //Création de mvt de stock
-    const profile = await getCurrentProfile();
-    const saleMovement = {
-      product_id: product.id,
-      product: product.name,
-      barcode: product.barcode,
-      type: "exit",
-      reason: "sale",
-      quantity: item.quantity,
-      comment: "",//`Vente #${saleNumber}`,
-      user:
-        profile?.username ||
-        localStorage.getItem("username") ||
-        "Inconnu",
-      role:
-        profile?.role ||
-        localStorage.getItem("userRole") ||
-        "Inconnu",
-      movement_date:
-        new Date().toISOString(),
-      date:
-        new Date().toLocaleString("fr-FR"),
-      pending_sync: false
+      //Enregistrement local
+      await db.products.put(product);
 
-    };
-    stockMovements.unshift(saleMovement);
+      //Derniere vente
+      product.lastSaleAt = new Date().toISOString();
 
-    let savedMovement = null;
+      //Synchronisation supabase
+      await updateProductSupabase(product);
 
-    try {
-
-      savedMovement = await saveStockMovementSupabase(saleMovement);
-
-    } catch (error) {
-      console.warn("📴 Vente enregistrée localement");
-
-    }
-    if (savedMovement) {
-
-      await db.stockMovements.put(mapStockMovement(savedMovement));
-
-    } else {
-      await db.stockMovements.put({
-        ...saleMovement,
-        id: crypto.randomUUID(),
-        pending_sync: true,
-        created_at:
+      //Création de mvt de stock
+      const profile = await getCurrentProfile();
+      const saleMovement = {
+        product_id: product.id,
+        product: product.name,
+        barcode: product.barcode,
+        type: "exit",
+        reason: "sale",
+        quantity: item.quantity,
+        comment: "",//`Vente #${saleNumber}`,
+        user:
+          profile?.username ||
+          localStorage.getItem("username") ||
+          "Inconnu",
+        role:
+          profile?.role ||
+          localStorage.getItem("userRole") ||
+          "Inconnu",
+        movement_date:
           new Date().toISOString(),
-        updated_at:
-          new Date().toISOString()
+        date:
+          new Date().toLocaleString("fr-FR"),
+        pending_sync: false
+
+      };
+      stockMovements.unshift(saleMovement);
+
+      let savedMovement = null;
+
+      try {
+
+        savedMovement = await saveStockMovementSupabase(saleMovement);
+
+      } catch (error) {
+        console.warn("📴 Vente enregistrée localement");
+
+      }
+      if (savedMovement) {
+
+        await db.stockMovements.put(mapStockMovement(savedMovement));
+
+      } else {
+        await db.stockMovements.put({
+          ...saleMovement,
+          id: crypto.randomUUID(),
+          pending_sync: true,
+          created_at:
+            new Date().toISOString(),
+          updated_at:
+            new Date().toISOString()
+        });
+
+      }
+
+      // ✅ ✅ ✅ CALCUL ICI (UNE SEULE FOIS)
+
+      const brut = item.price * item.quantity;
+      const remise = Math.min(item.remise || 0, brut);
+      const net = brut - remise;
+
+      totalBrut += brut;
+      totalRemise += remise;
+      totalNet += net;
+
+      totalItems += item.quantity;
+
+      stockLogs.unshift({
+        product: item.name,
+        type: "VENTE",
+        quantity: item.quantity,
+        date: new Date().toLocaleString()
       });
 
+      // ✅ Mise à jour locale immédiate
+      await db.products.put(product);
+
+      // ✅ Tentative de synchronisation Supabase
+      const updatedProduct = await updateProductSupabase(product);
+
+      // ✅ Synchronisation réussie
+      if (updatedProduct) {
+        await db.products.put(mapProduct(updatedProduct));
+
+        await db.products.update(product.id,
+          {
+            pending_sync: false
+          }
+        );
+
+      }
+      // ✅ Synchronisation échouée
+      else {
+
+        await db.products.update(product.id,
+          {
+            pending_sync: true
+          }
+        );
+
+        console.warn("📴 Produit enregistré localement - synchronisation en attente");
+
+      }
     }
 
-    // ✅ ✅ ✅ CALCUL ICI (UNE SEULE FOIS)
-
-    const brut = item.price * item.quantity;
-    const remise = Math.min(item.remise || 0, brut);
-    const net = brut - remise;
-
-    totalBrut += brut;
-    totalRemise += remise;
-    totalNet += net;
-
-    totalItems += item.quantity;
-
-    stockLogs.unshift({
-      product: item.name,
-      type: "VENTE",
-      quantity: item.quantity,
-      date: new Date().toLocaleString()
-    });
-
-    // ✅ Mise à jour locale immédiate
-    await db.products.put(product);
-
-    // ✅ Tentative de synchronisation Supabase
-    const updatedProduct = await updateProductSupabase(product);
-
-    // ✅ Synchronisation réussie
-    if (updatedProduct) {
-      await db.products.put(mapProduct(updatedProduct));
-
-      await db.products.update(product.id,
-        {
-          pending_sync: false
-        }
-      );
-
-    }
-    // ✅ Synchronisation échouée
-    else {
-
-      await db.products.update(product.id,
-        {
-          pending_sync: true
-        }
-      );
-
-      console.warn("📴 Produit enregistré localement - synchronisation en attente");
-
-    }
-  }
-
-  // ✅ sécurité total
-  if (totalNet === 0) {
-    showToast("❌ Le montant de la vente est nul");
-    return;
-  }
-
-  // ✅ ✅ ✅ GESTION MODE DE PAIEMENT (VERSION PRO)
-  let paymentDetails = null;
-
-  if (paymentMethod === "credit") {
-
-    if (!creditData) {
-      showToast("❌ Veuillez saisir les infos crédit");
+    // ✅ sécurité total
+    if (totalNet === 0) {
+      showToast("❌ Le montant de la vente est nul");
       return;
     }
 
-    // ✅ 🔥 MISE À NIVEAU (sécurité si ancien modèle)
-    if (!creditData.payments) {
+    // ✅ ✅ ✅ GESTION MODE DE PAIEMENT (VERSION PRO)
+    let paymentDetails = null;
 
-      creditData.payments = creditData.paidNow > 0 ? [{
-        amount: creditData.paidNow,
-        date: new Date().toISOString()
-      }] : [];
+    if (paymentMethod === "credit") {
 
-      creditData.total = totalNet;
+      if (!creditData) {
+        showToast("❌ Veuillez saisir les infos crédit");
+        return;
+      }
 
-      const totalPaid = creditData.payments
-        .reduce((sum, p) => sum + p.amount, 0);
+      // ✅ 🔥 MISE À NIVEAU (sécurité si ancien modèle)
+      if (!creditData.payments) {
 
-      creditData.remaining = totalNet - totalPaid;
+        creditData.payments = creditData.paidNow > 0 ? [{
+          amount: creditData.paidNow,
+          date: new Date().toISOString()
+        }] : [];
 
-      creditData.status =
-        creditData.remaining <= 0 ? "PAYÉ" : "EN ATTENTE";
+        creditData.total = totalNet;
+
+        const totalPaid = creditData.payments
+          .reduce((sum, p) => sum + p.amount, 0);
+
+        creditData.remaining = totalNet - totalPaid;
+
+        creditData.status =
+          creditData.remaining <= 0 ? "PAYÉ" : "EN ATTENTE";
+      }
+
+      paymentDetails = creditData;
     }
 
-    paymentDetails = creditData;
-  }
+    if (paymentMethod === "mobile") {
+      paymentDetails = {
+        type: "mobile",
+        total: totalNet,
+        status: "PAYÉ"
+      };
+    }
 
-  if (paymentMethod === "mobile") {
-    paymentDetails = {
-      type: "mobile",
-      total: totalNet,
-      status: "PAYÉ"
-    };
-  }
+    if (paymentMethod === "cash") {
+      paymentDetails = {
+        type: "cash",
+        total: totalNet,
+        status: "PAYÉ"
+      };
+    }
 
-  if (paymentMethod === "cash") {
-    paymentDetails = {
-      type: "cash",
-      total: totalNet,
-      status: "PAYÉ"
-    };
-  }
+    // ✅ sauvegarde logs
+    //localStorage.setItem("stockLogs", JSON.stringify(stockLogs));
 
-  // ✅ sauvegarde logs
-  //localStorage.setItem("stockLogs", JSON.stringify(stockLogs));
-
-  // ✅ ✅ ✅ ENREGISTREMENT VENTE (PRO)
-  const salePhone =
-    paymentMethod === "credit"
-      ? creditData?.clientPhone || ""
-      : clientPhone;
-
-  const sale = {
-    id: crypto.randomUUID(),
-    shop_id: await getCurrentShopId(),
-    user:
-      localStorage.getItem("username"),
-    role:
-      localStorage.getItem("userRole"),
-    items: cart.map(item => ({
-      productId: item.productId,
-      name: item.name,
-      quantity: item.quantity,
-      price: item.price,
-      isWholesale:
-        item.isWholesale || false,
-      detailPrice:
-        products[item.index]?.price || 0,
-      wholesalePrice:
-        products[item.index]?.wholesalePrice || 0,
-      remise:
-        item.remise || 0,
-      total:
-        (item.price * item.quantity)
-        - (item.remise || 0)
-    })),
-
-    totalBrut,
-    totalRemise,
-    total: totalNet,
-    totalItems,
-    clientPhone: salePhone,
-    paymentMethod,
-    payment: {
-
-      ...paymentDetails,
-
-      total: totalNet,
-
-      remaining:
-        totalNet -
-        (paymentDetails.payments?.reduce(
-          (s, p) => s + p.amount,
-          0
-        ) || 0)
-
-    },
-    status:
+    // ✅ ✅ ✅ ENREGISTREMENT VENTE (PRO)
+    const salePhone =
       paymentMethod === "credit"
-        ? "pending"
-        : "paid",
-    //pending_sync: false,
-    date: new Date().toISOString()
+        ? creditData?.clientPhone || ""
+        : clientPhone;
 
-  };
-  await db.sales.put(sale);
+    const saleItems =
+      cart.map(item => ({
+        productId: item.productId,
+        name: item.name,
+        quantity: item.quantity,
+        price: item.price,
+        isWholesale: item.isWholesale || false,
+        detailPrice:
+          products[item.index]?.price || 0,
+        wholesalePrice:
+          products[item.index]?.wholesalePrice || 0,
+        remise: item.remise || 0,
+        total:
+          (item.price * item.quantity)
+          - (item.remise || 0)
+      }));
 
-  sales.unshift(sale);
+    if (saleItems.length === 0) {
 
-  const savedSale = await saveSaleToSupabase(sale);
-
-  if (savedSale) {
-
-    try {
-
-      await db.sales.put(
-        mapSale(savedSale)
+      showToast(
+        "❌ Aucun article dans la vente"
       );
 
-      //console.log("✅ Vente enregistrée dans IndexedDB");
-
-    } catch (error) {
-
-      console.error("❌ Erreur sauvegarde vente IndexedDB", error);
+      return;
     }
 
-  } else {
+    const sale = {
+      id: crypto.randomUUID(),
+      shop_id: await getCurrentShopId(),
+      user:
+        localStorage.getItem("username"),
+      role:
+        localStorage.getItem("userRole"),
+      items: saleItems,
+      /*items: cart.map(item => ({
+        productId: item.productId,
+        name: item.name,
+        quantity: item.quantity,
+        price: item.price,
+        isWholesale:
+          item.isWholesale || false,
+        detailPrice:
+          products[item.index]?.price || 0,
+        wholesalePrice:
+          products[item.index]?.wholesalePrice || 0,
+        remise:
+          item.remise || 0,
+        total:
+          (item.price * item.quantity)
+          - (item.remise || 0)
+      })),*/
 
-    try {
+      totalBrut,
+      totalRemise,
+      total: totalNet,
+      totalItems,
+      clientPhone: salePhone,
+      paymentMethod,
+      payment: {
 
-      await db.sales.update(
-        sale.id,
-        {
-          pending_sync: true,
-          sync_action: "insert"
-        }
-      );
+        ...paymentDetails,
 
-      console.warn("📴 Vente en attente de synchronisation");
+        total: totalNet,
 
-    } catch (error) {
+        remaining:
+          totalNet -
+          (paymentDetails.payments?.reduce(
+            (s, p) => s + p.amount,
+            0
+          ) || 0)
 
-      console.error("❌ Erreur mise à jour pending_sync", error);
+      },
+      status:
+        paymentMethod === "credit"
+          ? "pending"
+          : "paid",
+      //pending_sync: false,
+      date: new Date().toISOString()
+
+    };
+    await db.sales.put(sale);
+
+    sales.unshift(sale);
+
+    const savedSale = await saveSaleToSupabase(sale);
+
+    if (savedSale) {
+
+      try {
+
+        await db.sales.put(
+          mapSale(savedSale)
+        );
+
+        //console.log("✅ Vente enregistrée dans IndexedDB");
+
+      } catch (error) {
+
+        console.error("❌ Erreur sauvegarde vente IndexedDB", error);
+      }
+
+    } else {
+
+      try {
+
+        await db.sales.update(
+          sale.id,
+          {
+            pending_sync: true,
+            sync_action: "insert"
+          }
+        );
+
+        console.warn("📴 Vente en attente de synchronisation");
+
+      } catch (error) {
+
+        console.error("❌ Erreur mise à jour pending_sync", error);
+
+      }
+
+    }
+
+    // ✅ reset panier
+    cart = [];
+    localStorage.setItem("cart", JSON.stringify([]));
+
+    // ✅ reset crédit
+    creditData = null;
+
+    // ✅ refresh UI
+    renderCart();
+    await refreshShopProducts();
+    renderDashboard();
+    renderSalesByDay();
+    updateCartBadge();
+    renderStatsTables();
+    filterSalesByDate();
+    renderLowStock();
+    updateCartMobileBtn();
+
+
+    showToast("✅ Vente validée avec succès");
+
+    document.querySelector('input[name="paymentMethod"][value="cash"]').checked = true;
+    document.getElementById("ticketPhone").value = "";
+
+  } finally {
+
+    saleValidationInProgress = false;
+
+    if (validateBtn) {
+
+      validateBtn.disabled = false;
+
+      validateBtn.textContent =
+        "✅ Valider vente";
 
     }
 
   }
-
-  // ✅ reset panier
-  cart = [];
-  localStorage.setItem("cart", JSON.stringify([]));
-
-  // ✅ reset crédit
-  creditData = null;
-
-  // ✅ refresh UI
-  renderCart();
-  await refreshShopProducts();
-  renderDashboard();
-  renderSalesByDay();
-  updateCartBadge();
-  renderStatsTables();
-  filterSalesByDate();
-  renderLowStock();
-  updateCartMobileBtn();
-
-
-  showToast("✅ Vente validée avec succès");
-
-  document.querySelector('input[name="paymentMethod"][value="cash"]').checked = true;
-  document.getElementById("ticketPhone").value = "";
 
 }
 

@@ -65,9 +65,12 @@ async function initApp() {
   // ✅ Synchronisation
   syncProfiles().catch(console.error);
 
-  await syncProducts();
+  /*await syncProducts();
   await syncStockMovements();
-  await syncSaleReturns();
+  await syncSaleReturns();*/
+  syncProducts().catch(console.error);
+  syncStockMovements().catch(console.error);
+  syncSaleReturns().catch(console.error);
 
   window.addEventListener("online", handleOnlineSync);
 
