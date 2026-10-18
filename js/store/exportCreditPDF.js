@@ -47,17 +47,57 @@ function exportCreditPDF(index) {
   doc.setFontSize(11);
 
   // ✅ INFOS CLIENT
-  doc.text(`Nom : ${payment.clientName}`, 10, y); y += 6;
-  doc.text(`Téléphone : ${payment.clientPhone || "-"}`, 10, y); y += 6;
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(11);
+
+  doc.text("CLIENT", 10, y);
+  doc.text("FACTURE", 120, y);
+
+  y += 8;
 
   doc.setFont("helvetica", "normal");
-  doc.text("N° Facture :", 10, y);
-  doc.setFont("helvetica", "bold");
-  doc.text(invoiceNumber || "-", 32, y);
-  doc.setFont("helvetica", "normal"); y += 6;
 
-  doc.text(`Date souscription : ${formatDateISO(payment.createdAt)}`, 10, y); y += 6;
-  doc.text(`Date échéance : ${formatDateISO(payment.dueDate)}`, 10, y);
+  doc.text(
+    `Nom : ${payment.clientName || "-"}`,
+    10,
+    y
+  );
+
+  doc.setFont("helvetica", "bold");
+
+  doc.text(
+    invoiceNumber || "-",
+    120,
+    y
+  );
+
+  y += 6;
+
+  doc.setFont("helvetica", "normal");
+
+  doc.text(
+    `Téléphone : ${payment.clientPhone || "-"}`,
+    10,
+    y
+  );
+
+  doc.text(
+    `Souscription : ${formatDateISO(payment.createdAt)}`,
+    120,
+    y
+  );
+
+  y += 6;
+
+  doc.text(
+    `Échéance : ${formatDateISO(payment.dueDate)}`,
+    120,
+    y
+  );
+
+  y += 4;
+
+  doc.line(10, y, 200, y);
 
   y += 10;
 
@@ -132,25 +172,108 @@ function exportCreditPDF(index) {
 
   y += 6;
 
-  doc.autoTable({
-    startY: y,
-    head: [["Date", "Montant"]],
-    body: payments.length > 0
-      ? payments.map(p => [
-        formatDateISO(p.date),
-        formatPricePDF(p.amount) + " GNF"
-      ])
-      : [["Aucun paiement", "-"]],
-    theme: "grid",
-    styles: { fontSize: 10 },
-    headStyles: { fillColor: [41, 128, 185] },
-    columnStyles: {
-      1: { halign: "right" }
-    }
-  });
+  if (payments.length > 0) {
+    doc.autoTable({
+      startY: y,
+      head: [["Date", "Mode de paiement", "Montant"]],
+      body: payments.length > 0
+        ? payments.map(p => [
+          formatDateISO(p.date),
+          p.paymentMethod === "cash"
+            ? "Comptant"
+            : p.paymentMethod === "mobile"
+              ? "Mobile Money"
+              : p.paymentMethod === "check"
+                ? "Chèque"
+                : "-",
+          formatPricePDF(p.amount) + " GNF"
+        ])
+        : [["Aucun paiement", "-", "-"]],
+      theme: "grid",
+      styles: { fontSize: 10 },
+      headStyles: { fillColor: [41, 128, 185] },
+      columnStyles: {
+        2: { halign: "right" }
+      }
+    });
+    y = doc.lastAutoTable.finalY + 10;
+  } else {
+
+    doc.setFont("helvetica", "italic");
+
+    doc.text(
+      "Aucun paiement enregistré.",
+      10,
+      y
+    );
+
+    doc.setFont("helvetica", "normal");
+
+    y += 15;
+
+  }
+
+  //INFO Chéque
+
+  const chequePayments =
+    payments.filter(
+      p => p.paymentMethod === "check"
+    );
+
+  if (chequePayments.length) {
+
+    y = doc.lastAutoTable.finalY + 8;
+
+    doc.setFont("helvetica", "bold");
+    doc.text("INFORMATIONS CHÈQUES", 10, y);
+
+    y += 8;
+
+    chequePayments.forEach(p => {
+
+      doc.setDrawColor(200);
+
+      doc.rect(10, y - 4, 190, 24);
+
+      doc.setFont("helvetica", "normal");
+
+      doc.text(
+        `Banque : ${p.bankName || "-"}`,
+        15,
+        y + 2
+      );
+
+      doc.text(
+        `N° Chèque : ${p.chequeNumber || "-"}`,
+        15,
+        y + 8
+      );
+
+      doc.text(
+        `Date du chèque : ${formatDateISO(p.chequeDate)}`,
+        15,
+        y + 14
+      );
+
+      doc.setFont("helvetica", "bold");
+
+      doc.text(
+        `Montant : ${formatPricePDF(p.amount)} GNF`,
+        120,
+        y + 14
+      );
+
+      doc.setFont("helvetica", "normal");
+
+      y += 30;
+
+    });
+
+  }
 
   // ✅ FOOTER
-  y = doc.lastAutoTable.finalY + 12;
+  //y = doc.lastAutoTable.finalY + 12;
+  y += 12;
 
   doc.setFont("helvetica", "normal");
   doc.setFontSize(10);
@@ -291,38 +414,64 @@ function exportGlobalCreditPDF() {
       y = 10;
     }
 
+    // ✅ EN-TÊTE CLIENT / FACTURE
+
     doc.setFont("helvetica", "bold");
-    doc.setFontSize(13);
-    doc.text(`CLIENT : ${payment.clientName}`, 10, y);
+    doc.setFontSize(12);
 
-    y += 6;
+    doc.text("CLIENT", 10, y);
+    doc.text("FACTURE", 120, y);
 
-    doc.setFont("helvetica", "normal");
-    doc.setFontSize(10);
-
-    doc.text(`Téléphone : ${payment.clientPhone || "-"}`, 10, y); y += 5;
+    y += 10;
 
     doc.setFont("helvetica", "normal");
+    doc.setFontSize(11);
 
-    const label = "N° Facture :";
-
-    doc.text(label, 10, y);
-
-    const labelWidth =
-      doc.getTextWidth(label);
+    doc.text(
+      `Nom : ${payment.clientName || "-"}`,
+      10,
+      y
+    );
 
     doc.setFont("helvetica", "bold");
 
     doc.text(
       invoiceNumber || "-",
-      10 + labelWidth + 3,
+      120,
       y
     );
 
+    y += 8;
+
     doc.setFont("helvetica", "normal");
 
-    y += 6;
+    doc.text(
+      `Téléphone : ${payment.clientPhone || "-"}`,
+      10,
+      y
+    );
 
+    doc.text(
+      `Souscription : ${formatDateISO(payment.createdAt)}`,
+      120,
+      y
+    );
+
+    y += 8;
+
+    doc.text(
+      `Échéance : ${formatDateISO(payment.dueDate)}`,
+      120,
+      y
+    );
+
+    y += 4;
+
+    // Ligne de séparation
+    doc.setDrawColor(220);
+    doc.line(10, y, 200, y);
+
+    y += 10;
     // ✅ FINANCE
     doc.setTextColor(0, 0, 0);
     doc.text(`Total brut : ${formatPricePDF(totalBrut)} GNF`, 10, y); y += 5;
@@ -388,23 +537,53 @@ function exportGlobalCreditPDF() {
 
     doc.autoTable({
       startY: y,
-      head: [["Date", "Montant"]],
+
+      head: [[
+        "Date",
+        "Mode de paiement",
+        "Montant"
+      ]],
+
       body: paymentsList.length > 0
+
         ? paymentsList.map(p => [
+
           formatDateISO(p.date),
+
+          p.paymentMethod === "cash"
+            ? "Comptant"
+            : p.paymentMethod === "mobile"
+              ? "Mobile Money"
+              : p.paymentMethod === "check"
+                ? "Chèque"
+                : "-",
+
           formatPricePDF(p.amount) + " GNF"
+
         ])
-        : [["Aucun paiement", "-"]],
+
+        : [["Aucun paiement", "-", "-"]],
+
       theme: "grid",
-      styles: { fontSize: 10 },
+
+      styles: {
+        fontSize: 10
+      },
+
       headStyles: {
         fillColor: [39, 174, 96],
         textColor: 255
       },
+
       columnStyles: {
-        1: { halign: "right" }
+        2: {
+          halign: "right"
+        }
       }
+
     });
+
+    y = doc.lastAutoTable.finalY + 6;
 
     y = doc.lastAutoTable.finalY + 6;
 
@@ -415,14 +594,97 @@ function exportGlobalCreditPDF() {
     );
 
     doc.setFont("helvetica", "bold");
+    doc.setFontSize(11);
+
     doc.text(
       `Total payé : ${formatPricePDF(totalPaidLocal)} GNF`,
-      200,
+      190,
       y,
-      { align: "right" }
+      {
+        align: "right"
+      }
     );
 
-    y += 10;
+    y += 12;
+
+    // ✅ INFOS CHÈQUES
+
+    const chequePayments =
+      paymentsList.filter(
+        p => p.paymentMethod === "check"
+      );
+
+    if (chequePayments.length) {
+
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(12);
+
+      doc.text(
+        "INFORMATIONS CHÈQUES",
+        10,
+        y
+      );
+
+      y += 8;
+
+      chequePayments.forEach(p => {
+
+        doc.setDrawColor(220);
+
+        doc.rect(
+          10,
+          y - 4,
+          190,
+          24
+        );
+
+        doc.setFont(
+          "helvetica",
+          "normal"
+        );
+
+        doc.text(
+          `Banque : ${p.bankName || "-"}`,
+          15,
+          y + 2
+        );
+
+        doc.text(
+          `N° Chèque : ${p.chequeNumber || "-"}`,
+          15,
+          y + 8
+        );
+
+        doc.text(
+          `Date du chèque : ${formatDateISO(p.chequeDate)}`,
+          15,
+          y + 14
+        );
+
+        doc.setFont(
+          "helvetica",
+          "bold"
+        );
+
+        doc.text(
+          `Montant : ${formatPricePDF(p.amount)} GNF`,
+          120,
+          y + 14
+        );
+
+        doc.setFont(
+          "helvetica",
+          "normal"
+        );
+
+        y += 30;
+
+      });
+
+      y += 5;
+
+    }
+
 
   });
 

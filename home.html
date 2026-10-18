@@ -682,6 +682,60 @@
 
     </section>
 
+    <!--=========Section Credit payment Modal ==============-->
+    <section>
+      <div id="creditPaymentModal" class="modal" style="display:none;">
+
+        <div class="modal-content">
+
+          <h3>💰 Paiement crédit</h3>
+
+          <p id="creditRemainingLabel"></p>
+
+          <input type="number" id="creditPaymentAmount" placeholder="Montant payé">
+
+          <div class="payment-methods">
+
+            <input type="radio" id="payCash" name="creditPaymentMethod" value="cash" checked>
+            <label class="payment-pill" for="payCash">
+              💵 Comptant
+            </label>
+
+            <input type="radio" id="payMobile" name="creditPaymentMethod" value="mobile">
+            <label class="payment-pill" for="payMobile">
+              📱 Mobile Money
+            </label>
+
+            <input type="radio" id="payCheck" name="creditPaymentMethod" value="check">
+            <label class="payment-pill" for="payCheck">
+              🏦 Chèque
+            </label>
+
+          </div>
+
+          <div id="checkFields" style="display:none;">
+
+            <input type="text" id="checkBank" placeholder="🏦 Banque">
+
+            <input type="text" id="checkNumber" placeholder="🧾 N° chèque">
+
+            <input type="date" id="checkDate">
+
+          </div>
+
+          <div class="modal-actions">
+
+            <button onclick="saveCreditPayment()">✅ Valider</button>
+
+            <button onclick="closeCreditPaymentModal()">❌ Annuler</button>
+          </div>
+
+        </div>
+
+      </div>
+
+    </section>
+
     <!--====== FOOTER ===== -->
     <footer class="app-footer">
       <div class="footer-content">

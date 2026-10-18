@@ -41,6 +41,9 @@ let stockMovements = [];
 
 let saleValidationInProgress = false;
 
+let currentCreditIndex = null;
+let currentRemainingAmount = 0;
+
 const today = new Date().toISOString().split("T")[0];
 document.getElementById("filterDate").value = today;
 
@@ -2154,80 +2157,163 @@ async function addPayment(index) {
     return;
   }
 
-  let amount = prompt(
-    `💰 Montant payé (reste : ${formatPrice(remaining)} GNF) :`,
-    0
-  );
+  closeCreditPaymentModal();
 
-  amount = Number(amount);
+  currentCreditIndex = index;
+  currentRemainingAmount = remaining;
+
+  document.getElementById("creditRemainingLabel").textContent = `💰 Montant restant : ${formatPrice(remaining)} GNF`;
+
+  document.getElementById("creditPaymentAmount").value = "";
+
+  document.getElementById("creditPaymentModal").style.display = "flex";
+
+  return;
+
+}
+
+// Enregistrement credit paiement
+async function saveCreditPayment() {
+
+  const amount = Number(document.getElementById("creditPaymentAmount")?.value || 0);
 
   if (!amount || amount <= 0) {
+
     showToast("❌ Montant invalide");
+
     return;
   }
 
-  // ✅ ✅ ✅ BLOQUER SI DÉPASSEMENT
-  if (amount > remaining) {
-    showToast(`❌ Le montant dépasse la dette (${formatPrice(remaining)} GNF)`);
+  if (amount > currentRemainingAmount) {
+
+    showToast(`❌ Le montant dépasse la dette (${formatPrice(currentRemainingAmount)} GNF)`);
+    return;
+  }
+
+  const paymentMethod = document.querySelector('input[name="creditPaymentMethod"\]:checked')?.value;
+
+  const checkBank = document.getElementById("checkBank")?.value.trim() || "";
+
+  const checkNumber = document.getElementById("checkNumber")?.value.trim() || "";
+
+  const checkDate = document.getElementById("checkDate")?.value || "";
+
+  // ✅ Validation chèque
+  if (paymentMethod === "check") {
+
+    if (!checkBank) {
+      showToast("❌ Veuillez renseigner la banque");
+      return;
+    }
+
+    if (!checkNumber) {
+      showToast("❌ Veuillez renseigner le numéro du chèque");
+      return;
+    }
+
+    if (!checkDate) {
+      showToast("❌ Veuillez renseigner la date du chèque");
+      return;
+    }
+
+  }
+
+  const sale =
+    sales[currentCreditIndex];
+
+  if (
+    !sale ||
+    !sale.payment ||
+    sale.payment.type !== "credit"
+  ) {
+
+    showToast("❌ Crédit introuvable");
+
     return;
   }
 
   // ✅ init si vide
   if (!sale.payment.payments) {
+
     sale.payment.payments = [];
+
   }
 
-  // ✅ ajouter paiement
+  // ✅ ajout paiement
   sale.payment.payments.push({
-    amount: amount,
-    date: new Date().toISOString()
+
+    amount,
+    date:
+      new Date().toISOString(),
+    paymentMethod,
+
+    bankName:
+      paymentMethod === "check"
+        ? checkBank
+        : "",
+    chequeNumber:
+      paymentMethod === "check"
+        ? checkNumber
+        : "",
+    chequeDate:
+      paymentMethod === "check"
+        ? checkDate
+        : ""
+
   });
 
-  // ✅ recalcul final
-  const newTotalPaid = sale.payment.payments
-    .reduce((sum, p) => sum + Number(p.amount || 0), 0);
+  // ✅ recalcul
+  const total =
+    sale.payment.total || 0;
 
-  const newRemaining = Math.max(0, total - newTotalPaid);
+  const totalPaid =
+    sale.payment.payments.reduce(
+      (sum, p) =>
+        sum + Number(p.amount || 0),
+      0
+    );
 
-  sale.payment.remaining = newRemaining;
+  const remaining =
+    Math.max(
+      0,
+      total - totalPaid
+    );
+
+  sale.payment.remaining =
+    remaining;
 
   sale.payment.status =
-    newRemaining <= 0 ? "PAYÉ" : "EN ATTENTE";
+    remaining <= 0
+      ? "PAYÉ"
+      : "EN ATTENTE";
 
-  // ✅ mise à jour du status de la vente
   sale.status =
-    newRemaining <= 0
+    remaining <= 0
       ? "paid"
       : "pending";
 
-  // ✅ sauvegarde
-  //localStorage.setItem("sales", JSON.stringify(sales));
-  // ✅ mise à jour date modification
   sale.updated_at =
     new Date().toISOString();
 
   try {
 
-    // ✅ Sauvegarde locale immédiate
+    // ✅ Sauvegarde locale
     await db.sales.put({
       ...sale,
       pending_sync: false
     });
 
-    //console.log("✅ Sauvegarde locale OK");
-
     // ✅ Synchronisation Supabase
-    const savedSale = await updateSaleSupabase(sale);
-
-    //console.log("Résultat updateSaleSupabase :", savedSale);
+    const savedSale =
+      await updateSaleSupabase(
+        sale
+      );
 
     if (savedSale) {
 
       await db.sales.put(
         mapSale(savedSale)
       );
-
-      //console.log("✅ Vente synchronisée", savedSale.id);
 
     } else {
 
@@ -2237,39 +2323,62 @@ async function addPayment(index) {
         sync_action: "update"
       });
 
-      console.warn("📴 Vente enregistrée localement - synchronisation en attente");
+      console.warn(
+        "📴 Vente enregistrée localement - synchronisation en attente"
+      );
 
     }
 
   } catch (error) {
 
-    console.error("Erreur mise à jour vente", error);
+    console.error(
+      "Erreur mise à jour vente",
+      error
+    );
 
-
-    try {
-
-      await db.sales.put({
-        ...sale,
-        pending_sync: true,
-        sync_action: "update"
-      });
-
-      console.warn("📴 Vente enregistrée localement suite à une erreur");
-
-    } catch (dbError) {
-
-      console.error("❌ Erreur IndexedDB", dbError);
-
-      showToast("❌ Impossible d'enregistrer la vente");
-
-    }
+    await db.sales.put({
+      ...sale,
+      pending_sync: true,
+      sync_action: "update"
+    });
 
   }
 
-  // ✅ refresh UI
+  closeCreditPaymentModal();
+
   renderCreditDashboard();
 
   showToast("✅ Paiement enregistré");
+
+}
+
+// Function close modal paiement crédit
+
+function closeCreditPaymentModal() {
+
+  document.getElementById("creditPaymentModal").style.display = "none";
+
+  document.getElementById("creditPaymentAmount").value = "";
+
+  document.getElementById("creditRemainingLabel").textContent = "";
+
+  document.getElementById("checkBank").value = "";
+
+  document.getElementById("checkNumber").value = "";
+
+  document.getElementById("checkDate").value = "";
+
+  document.getElementById("checkFields").style.display = "none";
+
+  const cashRadio = document.getElementById("payCash");
+
+  if (cashRadio) {
+    cashRadio.checked = true;
+  }
+
+  currentCreditIndex = null;
+  currentRemainingAmount = 0;
+
 }
 
 // Mode de paiement Radio
@@ -2277,6 +2386,45 @@ function getPaymentMethod() {
   const selected = document.querySelector('input[name="paymentMethod"]:checked');
   return selected ? selected.value : "cash";
 }
+
+// Open credit payement modal
+function openCreditPaymentModal(index, remaining) {
+  currentCreditIndex = index;
+
+  document.getElementById("creditPaymentAmount").value = "";
+
+  document.getElementById("creditPaymentModal").style.display = "flex";
+}
+
+// Afficher les champs chèque si paiement par chèque
+document
+  .querySelectorAll(
+    'input[name="creditPaymentMethod"]'
+  )
+  .forEach(radio => {
+
+    radio.addEventListener(
+      "change",
+      () => {
+
+        const method =
+          document.querySelector(
+            'input[name="creditPaymentMethod"\]:checked'
+          )?.value;
+
+        document.getElementById(
+          "checkFields"
+        ).style.display =
+          method === "check"
+            ? "block"
+            : "none";
+
+      }
+    );
+
+  });
+
+
 
 document.getElementById("paidNow").addEventListener("input", function () {
 
