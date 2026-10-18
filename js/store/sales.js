@@ -2027,7 +2027,8 @@ function filterCredits(credits) {
 
   return credits.filter(c =>
     clean(c.clientName).includes(clean(search)) ||
-    clean(c.clientPhone).includes(clean(search))
+    clean(c.clientPhone).includes(clean(search)) ||
+    clean(c.invoiceNumber).includes(clean(search))
   );
 }
 
@@ -2068,6 +2069,7 @@ function renderCreditDashboard() {
       // ✅ garder TOUS les crédits
       credits.push({
         index,
+        invoiceNumber: sale.invoiceNumber || "",
         ...sale.payment,
         remaining,
         total: totalNet, // ✅ AJOUT IMPORTANT

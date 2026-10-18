@@ -157,15 +157,30 @@ async function renderTickets() {
     const matchPayment =
       paymentFilter === "all" || t.payment === paymentFilter;
 
-    // ✅ ✅ NOUVEAU FILTRE TÉLÉPHONE
-    const phone = clean(t.clientPhone);
+    // ✅ ✅ NOUVEAU FILTRE TÉLÉPHONE, CLIENT, N° FACTURE
 
-    const matchPhone =
-      !searchPhone
+    const phone =
+      clean(t.clientPhone || "");
+
+    const clientName =
+      clean(t.clientName || "");
+
+    const invoiceNumber =
+      (t.invoiceNumber || "")
+        .toLowerCase();
+
+    const search =
+      searchPhone.toLowerCase();
+
+    const matchSearch =
+      !search
         ? true
-        : phone.includes(searchPhone);
+        : phone.includes(search)
+        || clientName.includes(search)
+        || invoiceNumber.includes(search);
 
-    return matchDate && matchPayment && matchPhone;
+    //return matchDate && matchPayment && matchPhone;
+    return matchDate && matchPayment && matchSearch;
   });
 
 
