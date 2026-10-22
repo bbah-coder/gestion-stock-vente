@@ -129,6 +129,10 @@ async function login() {
   const password = passEl.value;
   const email = toEmail(username);
 
+  const loginBtn = document.getElementById("loginBtn");
+  const loginSpinner = document.getElementById("loginSpinner");
+  const loginText = document.getElementById("loginText");
+
   errorEl.innerText = "";
 
   let onlineSuccess = false;
@@ -136,13 +140,25 @@ async function login() {
 
   // ✅ ✅ ✅ TENTATIVE ONLINE SÉCURISÉE
   try {
-
     //console.log("🌐 tentative ONLINE...");
+
+    loginBtn.disabled = true;
+    loginSpinner.style.display = "block";
+    loginText.textContent = "Connexion...";
 
     const { data, error } = await supabaseClient.auth.signInWithPassword({
       email,
       password
     });
+
+    if (error) {
+      loginBtn.disabled = false;
+      loginSpinner.style.display = "none";
+      loginText.textContent = "Se connecter";
+
+      errorEl.innerText = "❌ Identifiants incorrects";
+      return;
+    }
 
     if (!error && data?.user) {
 
@@ -167,6 +183,10 @@ async function login() {
   } catch (err) {
 
     console.warn("⚠️ OFFLINE détecté (fetch failed)");
+    loginBtn.disabled = false;
+    loginSpinner.style.display = "none";
+    loginText.textContent = "Se connecter";
+    errorEl.innerText = "❌ Impossible de se connecter";
   }
 
   // ✅ ✅ ✅ SI ONLINE OK
