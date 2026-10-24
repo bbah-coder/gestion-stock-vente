@@ -8,6 +8,8 @@ function exportCreditPDF(index) {
   const payments = payment.payments || [];
   const invoiceNumber = sale.invoiceNumber;
 
+  const store = getStoreInfo();
+
 
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF();
@@ -41,10 +43,48 @@ function exportCreditPDF(index) {
   doc.setFontSize(16);
   doc.text("FICHE CREDIT CLIENT", 105, y, { align: "center" });
 
-  y += 12;
+  y += 8;
 
   doc.setFont("helvetica", "normal");
   doc.setFontSize(11);
+
+  // INFOS MAGASIN
+  y += 9;
+
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(12);
+  doc.text(store.name || "Boutique Manager", 105, y, {
+    align: "center"
+  });
+
+  y += 5;
+
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(10);
+
+  doc.text(
+    store.address || "",
+    105,
+    y,
+    { align: "center" }
+  );
+
+  y += 4;
+
+  doc.text(
+    store.phone || "",
+    105,
+    y,
+    { align: "center" }
+  );
+
+  y += 5;
+
+  // Ligne séparatrice
+  doc.setDrawColor(180);
+  doc.line(10, y, 200, y);
+
+  y += 8;
 
   // ✅ INFOS CLIENT
   doc.setFont("helvetica", "bold");
@@ -66,7 +106,7 @@ function exportCreditPDF(index) {
   doc.setFont("helvetica", "bold");
 
   doc.text(
-    invoiceNumber || "-",
+    `N° : ${invoiceNumber || "-"}`,
     120,
     y
   );
@@ -189,6 +229,12 @@ function exportCreditPDF(index) {
           formatPricePDF(p.amount) + " GNF"
         ])
         : [["Aucun paiement", "-", "-"]],
+      foot: [[
+        "",
+        "TOTAL PAYÉ",
+        formatPricePDF(totalPaid) + " GNF"
+      ]],
+
       theme: "grid",
       styles: { fontSize: 10 },
       headStyles: { fillColor: [41, 128, 185] },
@@ -271,13 +317,47 @@ function exportCreditPDF(index) {
 
   }
 
-  // ✅ FOOTER
-  //y = doc.lastAutoTable.finalY + 12;
-  y += 12;
+  // Si on arrive trop bas dans la page
+  const pageHeight = doc.internal.pageSize.height;
 
-  doc.setFont("helvetica", "normal");
+  if (y + 60 > pageHeight) {
+    doc.addPage();
+    y = 20;
+  }
+  // ✅ FOOTER
+  // ✅ SIGNATURES
+  y += 15;
+
+  doc.line(20, y, 80, y);
+  doc.text("Signature client", 25, y + 8);
+
+  doc.line(130, y, 190, y);
+  doc.text("Signature vendeur", 135, y + 8);
+
+  // ✅ PIED DE PAGE
+  y += 45;
+
+  doc.setFontSize(9);
+  doc.setTextColor(100);
+
+  doc.text(
+    `Document édité le ${formatDateISO(new Date())}`,
+    105,
+    y,
+    { align: "center" }
+  );
+
+  y += 6;
+
   doc.setFontSize(10);
-  doc.text("Merci pour votre confiance", 10, y);
+  doc.text(
+    "Merci pour votre confiance",
+    105,
+    y,
+    { align: "center" }
+  );
+
+  doc.setTextColor(0);
 
   doc.save(`Credit-${payment.clientName}.pdf`);
 }

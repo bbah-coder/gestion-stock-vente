@@ -826,20 +826,6 @@ async function generateInvoicePDF(id) {
 
   let y = 20;
 
-  /*const saleIndex =
-    sales.findIndex(
-      s => s.id === t.id
-    ) + 1;
-
-  const invoiceNumber =
-    `FAC-${new Date(t.date)
-      .toISOString()
-      .slice(0, 10)
-      .replaceAll("-", "")
-    }-${String(saleIndex)
-      .padStart(4, "0")
-    }`;*/
-  //const invoiceNumber = t.invoiceNumber || "FACTURE NON NUMÉROTÉE";
 
   // ==================================================
   // EN-TÊTE
